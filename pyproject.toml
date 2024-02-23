@@ -21,10 +21,10 @@ build-backend = "poetry.core.masonry.api"
 [tool.ruff]
 line-length = 160
 target-version = "py312"
-select = [
+lint.select = [
     "ALL", # include all the rules, including new ones
 ]
-ignore = [
+lint.ignore = [
     #### modules
     "ANN", # flake8-annotations
     "COM", # flake8-commas
@@ -35,7 +35,7 @@ ignore = [
     "TID", # flake8-tidy-imports
 
     #### specific rules
-    #"D100",   # ignore missing docs
+    "D100",   # ignore missing docs
     "D101",
     "D102",
     "D103",
