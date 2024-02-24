@@ -45,6 +45,7 @@ lint.ignore = [
     "D107",
     "D200",
     "D205",
+    "D211",  # no blank line before class
     "D212",
     "D400",
     "D401",
@@ -55,4 +56,7 @@ lint.ignore = [
     "TD002",
     "TD003",
     "FIX002", # too verbose descriptions of todos
+    'PLR0913', # too many arguments in function definition
+    'T201', # allow print()
+    'ISC001',
 ]
