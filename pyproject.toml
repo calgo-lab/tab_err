@@ -13,10 +13,16 @@ pandas = "^2.2.1"
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.2.2"
 pre-commit = "^3.6.2"
+mypy = "^1.8.0"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.mypy]
+python_version = "3.9"
+disallow_untyped_defs = true
+ignore_missing_imports = true
 
 [tool.ruff]
 line-length = 160
