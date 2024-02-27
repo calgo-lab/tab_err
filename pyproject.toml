@@ -2,7 +2,10 @@
 name = "error-generation"
 version = "0.1.0"
 description = "Fully-controllable error generation for tabular data."
-authors = ["Philipp Jung <philippjung@posteo.de>"]
+authors = [
+    "Philipp Jung <philippjung@posteo.de>",
+    "Sebastian Jäger <error-generation@sebastian-jaeger.me>",
+]
 license = "Apache License 2.0"
 readme = "README.md"
 
