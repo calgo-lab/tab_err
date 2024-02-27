@@ -7,8 +7,8 @@ license = "Apache License 2.0"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.12"
-pandas = "^2.2"
+python = "^3.9,<3.12"
+pandas = "^2.2.1"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.2.2"
@@ -20,9 +20,9 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
 line-length = 160
-target-version = "py312"
 lint.select = [
     "ALL", # include all the rules, including new ones
+target-version = "py39"
 ]
 lint.ignore = [
     #### modules
