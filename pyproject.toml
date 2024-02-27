@@ -29,43 +29,27 @@ ignore_missing_imports = true
 
 [tool.ruff]
 line-length = 160
-lint.select = [
-    "ALL", # include all the rules, including new ones
 target-version = "py39"
-]
-lint.ignore = [
-    #### modules
-    "ANN", # flake8-annotations
-    "COM", # flake8-commas
-    "C90", # mccabe complexity
-    "DJ",  # django
-    "EXE", # flake8-executable
-    "T10", # debugger
-    "TID", # flake8-tidy-imports
+fix = true
+extend-include = ["*.ipynb"]
 
-    #### specific rules
-    "D100",   # ignore missing docs
-    "D101",
-    "D102",
-    "D103",
-    "D104",
-    "D105",
-    "D106",
-    "D107",
-    "D200",
-    "D205",
-    "D211",  # no blank line before class
-    "D212",
-    "D400",
-    "D401",
-    "D415",
-    "E402",   # false positives for local imports
-    "E501",   # line too long
-    "TRY003", # external messages in exceptions are too verbose
-    "TD002",
-    "TD003",
-    "FIX002", # too verbose descriptions of todos
-    'PLR0913', # too many arguments in function definition
-    'T201', # allow print()
-    'ISC001',
+[tool.ruff.lint]
+select = [
+    "ALL", # Include all the rules, including new ones
 ]
+ignore = [
+    "FIX", # Temporary developer notes should not break actions
+
+    "D100",   # Do not document public modules
+    "D104",   # Do not document public packages
+    "TD003",  # Allow TODOs without links
+    "ISC003", # Do not implicietly concatenate strings
+]
+
+[tool.ruff.lint.per-file-ignores]
+"**/__init__.py" = [
+    "F401", # Unused imports in __init__ files can make sense
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"

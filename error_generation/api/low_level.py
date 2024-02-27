@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import math
 import random
 from dataclasses import dataclass, field
@@ -7,13 +9,12 @@ import pandas as pd
 
 @dataclass
 class Column:
-
     """Describe a column in a Dataframe."""
 
-    name: str = field(default=None)
-    index: int = field(default=None)
+    name: str | None = field(default=None)
+    index: int | None = field(default=None)
 
-    def __post_init__(self):
+    def __post_init__(self: Column) -> None:
         if self.name is None and self.index is None:
             msg = "Specify either column name or index."
             raise ValueError(msg)
@@ -32,7 +33,12 @@ def error_function(x):
 
 
 def create_errors(
-    table: pd.DataFrame, column: Column, error_rate: float, mechanism: Mechanism, error_type: ErrorType, condition_to_column: Column | None = None
+    table: pd.DataFrame,
+    column: Column,
+    error_rate: float,
+    mechanism: Mechanism,
+    error_type: ErrorType,
+    condition_to_column: Column | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     try:
         series = table.loc[column.name]
@@ -43,8 +49,8 @@ def create_errors(
         raise ValueError(msg) from None
     n_rows = len(series)
 
-    # TODO: this should be its own function
-    print(f"And use {mechanism} and {error_type} and {condition_to_column} to infer " "error positions.")
+    # TODO(phju): this should be its own function
+    print(f"And use {mechanism} and {error_type} and {condition_to_column} to infer error positions.")
     n_errors = math.floor(n_rows * error_rate)
 
     error_rows = random.sample(n_rows, n_errors)
