@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import warnings
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -12,6 +13,23 @@ if TYPE_CHECKING:
 
 
 class ENAR(ErrorMechanism):
-    def _sample(data: pd.DataFrame, error_rate: float, condition_to_column: Dtype | None = None, seed: int | None = None) -> np.array:
-        # TODO: warning when condition_to_column is used
-        return np.array("ENAR")
+    @staticmethod
+    def _sample(data: pd.DataFrame, error_rate: float, condition_to_column: Dtype | None = None, seed: int | None = None) -> pd.DataFrame:
+        if condition_to_column is not None:
+            warnings.warn("'condition_to_column' is set but will be ignored by ENAR.", stacklevel=1)
+
+        error_mask = pd.DataFrame(data=False, index=data.index, columns=data.columns)
+
+        # distribute errors equally over all columns
+        how_many_error_cells_for_each_column = int(data.size * error_rate / len(data.columns))
+        for column in data.columns:
+            lower_error_index = np.random.default_rng(seed=seed).integers(0, len(data) - how_many_error_cells_for_each_column)
+            error_index_range = range(lower_error_index, lower_error_index + how_many_error_cells_for_each_column)
+
+            error_mask.loc[data.sort_values(by=column).index[error_index_range], column] = True
+
+            # avoid sample same indices for each column
+            if isinstance(seed, int):
+                seed += 1
+
+        return error_mask
