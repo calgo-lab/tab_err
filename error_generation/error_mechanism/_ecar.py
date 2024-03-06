@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import warnings
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -14,7 +15,8 @@ if TYPE_CHECKING:
 class ECAR(ErrorMechanism):
     @staticmethod
     def _sample(data: pd.DataFrame, error_rate: float, condition_to_column: Dtype | None = None, seed: int | None = None) -> pd.DataFrame:
-        # TODO: warning when condition_to_column is used
+        if condition_to_column is not None:
+            warnings.warn("'condition_to_column' is set but will be ignored by ECAR.", stacklevel=1)
 
         how_many_error_cells = int(data.size * error_rate)
         error_mask = pd.DataFrame(data=False, index=data.index, columns=data.columns)
