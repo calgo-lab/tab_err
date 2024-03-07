@@ -6,11 +6,11 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     import pandas as pd
 
-    from error_generation.api import Column
+    from error_generation.utils import Column
 
 
 class NotInstantiableError(Exception):
-    def __init__(self: ErrorType) -> None:
+    def __init__(self: NotInstantiableError) -> None:
         super().__init__("This class is not meant to be instantiated.")
 
 
