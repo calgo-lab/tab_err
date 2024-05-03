@@ -27,10 +27,7 @@ class ErrorMechanism(ABC):
         seed: int | None = None,
     ) -> pd.DataFrame:
         error_rate_msg = "'error_rate' need to be float: 0 <= error_rate <= 1."
-        if not isinstance(error_rate, float):
-            raise TypeError(error_rate_msg)
-
-        if error_rate <= 0 or error_rate >= 1:
+        if error_rate < 0 or error_rate > 1:
             raise ValueError(error_rate_msg)
 
         if not (isinstance(seed, int) or seed is None):

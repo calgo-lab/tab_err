@@ -1,17 +1,22 @@
-import random
+from __future__ import annotations
 
-import pandas as pd
+import random
+from typing import TYPE_CHECKING
+
 from pandas.api.types import is_string_dtype
 
 from error_generation.error_type import ErrorType
-from error_generation.utils import Column, get_column
+from error_generation.utils import get_column
+
+if TYPE_CHECKING:
+    import pandas as pd
 
 
 class Mojibake(ErrorType):
     """Inserts mojibake into a column containing strings."""
 
     @staticmethod
-    def _check_type(table: pd.DataFrame, column: Column) -> None:
+    def _check_type(table: pd.DataFrame, column: int | str) -> None:
         series = get_column(table, column)
 
         if not is_string_dtype(series):
@@ -19,15 +24,31 @@ class Mojibake(ErrorType):
             raise TypeError(msg)
 
     @staticmethod
-    def _apply(table: pd.DataFrame, error_mask: pd.DataFrame, column: Column) -> pd.Series:
+    def _apply(table: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
         # Top 10 most used encodings on the internet
         # https://w3techs.com/technologies/overview/character_encoding
-        encodings: list[str] = ["utf_8", "iso-8859-1", "windows-1252", "windows-1251", "shift_jis", "euc_jp", "gb2312", "euc_kr", "windows-1250", "iso-8859-2"]
+        top10 = {"utf_8", "iso-8859-1", "windows-1252", "windows-1251", "shift_jis", "euc_jp", "gb2312", "euc_kr", "windows-1250", "iso-8859-2"}
+
+        # Some encodings are compatible with other encodings, which I remove here.
+        encodings: dict[str, set[str]] = {
+            "utf_8": top10 - {"utf_8"},
+            "iso-8859-1": top10 - {"iso-8859-1", "windows-1252", "windows-1250", "iso-8859-2"},
+            "windows-1252": top10 - {"windows-1252", "windows-1250", "iso-8859-1", "iso-8859-2"},
+            "windows-1251": top10 - {"windows-1251"},
+            "shift_jis": top10 - {"shift_jis"},
+            "euc_jp": top10 - {"euc_jp"},
+            "gb2312": top10 - {"gb2312"},
+            "euc_kr": top10 - {"euc_kr"},
+            "windows-1250": top10 - {"windows-1250", "iso-8859-1", "iso-8859-2", "windows-1252", "windows-1251"},
+            "iso-8859-2": top10 - {"iso-8859-2", "windows-1250", "iso-8859-1", "windows-1252"},
+        }
 
         series = get_column(table, column).copy()
-        encoding_sender, encoding_receiver = random.sample(encodings, 2)
+        encoding_sender = random.choice(list(top10))
+        encoding_receiver = random.choice(list(encodings[encoding_sender]))
 
         series_mask = get_column(error_mask, column)
-        series.iloc[series_mask].apply(lambda x: x.encode(encoding_sender))
-        series.iloc[series_mask].apply(lambda x: x.decode(encoding_receiver))
+        series.loc[series_mask] = (
+            series.loc[series_mask].apply(lambda x: x.encode(encoding_sender, errors="ignore")).apply(lambda x: x.decode(encoding_receiver, errors="ignore"))
+        )
         return series

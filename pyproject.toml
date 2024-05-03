@@ -10,13 +10,15 @@ license = "Apache License 2.0"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
+python = "^3.10,<3.12"
 pandas = "^2.2.1"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.2.2"
 pre-commit = "^3.6.2"
 mypy = "^1.8.0"
+ipython = "^8.24.0"
+jupyter = "^1.0.0"
 
 [build-system]
 requires = ["poetry-core"]
@@ -39,7 +41,9 @@ select = [
 ]
 ignore = [
     "FIX", # Temporary developer notes should not break actions
-
+    "COM812",  # For compatibility with ruff-format
+    "ISC001",  # For compatibility with ruff-format
+    "S311",  # We do not require cryptographically-sound randomness
     "D100",   # Do not document public modules
     "D104",   # Do not document public packages
     "TD003",  # Allow TODOs without links

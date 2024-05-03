@@ -1,44 +1,48 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     import pandas as pd
 
+    from error_generation.error_mechanism import ErrorMechanism
+    from error_generation.error_type import ErrorType
+
 
 @dataclass
-class Column:
-    """Describe a column in a Dataframe. We support selection by both index and column names."""
+class ErrorConfig:
+    """Parameters that describe the error and its distribution.
 
-    name: str | None = field(default=None)
-    index: int | None = field(default=None)
+    Args:
+        error_rate: The rate at which the error occurs.
+        mechanism: The mechanism that generates the error.
+        error_type: The type of error that is generated.
+        condition_to_column: The column that determines whether the error is generated.
+    """
 
-    def __post_init__(self: Column) -> None:
-        """Ensures that either column name, or an index is set."""
-        if self.name is None and self.index is None:
-            msg = "Specify either column name or index."
-            raise ValueError(msg)
+    error_rate: float
+    mechanism: ErrorMechanism
+    error_type: ErrorType
+    condition_to_column: int | str | None = None
 
 
-def get_column(table: pd.DataFrame, column: Column) -> pd.Series:
+def get_column(table: pd.DataFrame, column: int | str) -> pd.Series:
     """Selects a column from a dataframe and returns it as a series."""
-    try:
-        return table.loc[column.name]
-    except KeyError:  # Assume it's integer index
-        return table.iloc[column.index]
-    except IndexError:
-        msg = f"Invalid column: {column}"
-        raise ValueError(msg) from None
+    if isinstance(column, int):
+        series = table.iloc[:, column]
+    elif isinstance(column, str):
+        series = table.loc[:, column]
+    else:
+        msg = f"Column must be an int or str, not {type(column)}"
+        raise TypeError(msg)
+    return series
 
 
-def set_column(table: pd.DataFrame, column: Column, series: pd.Series) -> pd.Series:
+def set_column(table: pd.DataFrame, column: int | str, series: pd.Series) -> pd.Series:
     """Replaces a column in a dataframe with a series. Mutates table."""
-    try:
-        table.loc[column.name] = series
-    except KeyError:  # Assume it's integer index
-        table.iloc[column.index] = series
-    except IndexError:
-        msg = f"Invalid column: {column}"
-        raise ValueError(msg) from None
+    if isinstance(column, int):
+        table.iloc[:, column] = series
+    elif isinstance(column, str):
+        table.loc[:, column] = series
     return table
