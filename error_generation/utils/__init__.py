@@ -1,1 +1,1 @@
-from .utils import ErrorConfig, get_column, set_column
+from .utils import ErrorMechanismConfig, ErrorTypeConfig, get_column, set_column

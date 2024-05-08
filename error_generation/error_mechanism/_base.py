@@ -5,29 +5,32 @@ from typing import TYPE_CHECKING
 
 import pandas as pd
 
+from error_generation.utils import ErrorMechanismConfig
+
 if TYPE_CHECKING:
     from pandas._typing import Dtype
 
 
-class NotInstantiableError(Exception):
-    def __init__(self: NotInstantiableError) -> None:
-        super().__init__("This class is not meant to be instantiated.")
-
-
 class ErrorMechanism(ABC):
-    def __init__(self: ErrorMechanism) -> None:
-        raise NotInstantiableError
+    def __init__(self: ErrorMechanism, config: ErrorMechanismConfig | dict) -> None:
+        if isinstance(config, dict):
+            self.config = ErrorMechanismConfig(**config)
+        elif isinstance(config, ErrorMechanismConfig):
+            self.config = config
+        elif config is None:
+            msg = "'config' need to be ErrorMechanismConfig or dict."
+            raise TypeError(msg)
+        else:
+            msg = "Invalid config type."
+            raise TypeError(msg)
 
-    @classmethod
     def sample(
-        cls: type[ErrorMechanism],
+        self: ErrorMechanism,
         data: pd.DataFrame,
-        error_rate: float,
-        condition_to_column: Dtype | None = None,
         seed: int | None = None,
     ) -> pd.DataFrame:
         error_rate_msg = "'error_rate' need to be float: 0 <= error_rate <= 1."
-        if error_rate < 0 or error_rate > 1:
+        if self.config.error_rate < 0 or self.config.error_rate > 1:
             raise ValueError(error_rate_msg)
 
         if not (isinstance(seed, int) or seed is None):
@@ -42,11 +45,11 @@ class ErrorMechanism(ABC):
             raise ValueError(data_msg)
 
         # At least two columns are necessary if we condition to another
-        if condition_to_column is not None and len(data.columns) < 2:  # noqa: PLR2004
+        if self.config.condition_to_column is not None and len(data.columns) < 2:  # noqa: PLR2004
             msg = "'data' need at least 2 columns if 'condition_to_column' is given."
             raise ValueError(msg)
 
-        return cls._sample(data=data, error_rate=error_rate, condition_to_column=condition_to_column, seed=seed)
+        return self._sample(data=data, error_rate=self.config.error_rate, condition_to_column=self.config.condition_to_column, seed=seed)
 
     @staticmethod
     @abstractmethod
