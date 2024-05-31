@@ -6,25 +6,26 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     import pandas as pd
 
-    from error_generation.error_mechanism import ErrorMechanism
-    from error_generation.error_type import ErrorType
-
 
 @dataclass
-class ErrorConfig:
-    """Parameters that describe the error and its distribution.
+class ErrorTypeConfig:
+    """Parameters that describe the error type.
+
+    Arguments that are specific to the error type. Most error types do not share the same arguments, which
+    is why there are many attributes of this dataclass that are mostly default values.
 
     Args:
-        error_rate: The rate at which the error occurs.
-        mechanism: The mechanism that generates the error.
-        error_type: The type of error that is generated.
-        condition_to_column: The column that determines whether the error is generated.
+        encoding_sender: When creating Mojibake, used to encode strings to bytes.
+        encoding_receiver: When creating Mojibake, used to decode bytes back to strings.
+        keyboard_layout: When using Butterfinger, the keyboard layout used by the typer.
+        error_period: When using Butterfinger, the period at which the error occurs.
     """
 
-    error_rate: float
-    mechanism: ErrorMechanism
-    error_type: ErrorType
-    condition_to_column: int | str | None = None
+    encoding_sender: str | None = None
+    encoding_receiver: str | None = None
+
+    keyboard_layout: str = "ansi-qwerty"
+    error_period: int = 10
 
 
 def get_column(table: pd.DataFrame, column: int | str) -> pd.Series:

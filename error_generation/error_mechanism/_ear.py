@@ -19,7 +19,7 @@ class EAR(ErrorMechanism):
             raise ValueError(msg)
 
         if condition_to_column is None:
-            condition_to_column = np.random.default_rng(seed=42).choice(data.columns)
+            condition_to_column = np.random.default_rng(seed).choice(data.columns)
 
         # NOTE: We do not perturb the 'condition_to_column' column, so we need to handle the following edge case:
         # If 'columns_to_create_errors' don't have enough cells to reach 'error_rate',
@@ -41,7 +41,7 @@ class EAR(ErrorMechanism):
 
         # distribute errors equally over all columns but not 'condition_to_column'
         for column in columns_to_create_errors:
-            lower_error_index = np.random.default_rng(seed=seed).integers(
+            lower_error_index = np.random.default_rng(seed).integers(
                 0,
                 1 if is_error_rate_too_large else len(data) - how_many_error_cells_for_each_column,
             )
