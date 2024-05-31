@@ -8,20 +8,6 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class ErrorMechanismConfig:
-    """Parameters that describe the error distribution, which we call the mechanism.
-
-    Args:
-        error_rate: The rate at which the error occurs.
-        error_type: The type of error that is generated.
-        condition_to_column: The column that determines whether the error is generated.
-    """
-
-    error_rate: float
-    condition_to_column: int | str | None = None
-
-
-@dataclass
 class ErrorTypeConfig:
     """Parameters that describe the error type.
 
