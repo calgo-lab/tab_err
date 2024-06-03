@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     import pandas as pd
@@ -19,6 +19,9 @@ class ErrorTypeConfig:
         encoding_receiver: When creating Mojibake, used to decode bytes back to strings.
         keyboard_layout: When using Butterfinger, the keyboard layout used by the typer.
         error_period: When using Butterfinger, the period at which the error occurs.
+        na_value: Token used to indicate missing values in Pandas.
+        mislabel_weighing: Weight of the distribution that mislables are drawn from. Either "uniform", "frequency" or "custom".
+        mistype_dtype: Pandas dtype of the column that is incorrectly types.
     """
 
     encoding_sender: str | None = None
@@ -26,6 +29,13 @@ class ErrorTypeConfig:
 
     keyboard_layout: str = "ansi-qwerty"
     error_period: int = 10
+
+    na_value = None
+
+    mislabel_weighing: str = "uniform"
+    mislabel_weights: dict[Any, float] | None = None
+
+    mistype_dtype: pd.Series.dtype | None = None
 
 
 def get_column(table: pd.DataFrame, column: int | str) -> pd.Series:
