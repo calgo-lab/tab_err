@@ -50,7 +50,8 @@ class Mojibake(ErrorType):
             encoding_sender = random.choice(list(top10))
             encoding_receiver = random.choice(list(encodings[encoding_sender]))
 
-        series.loc[error_mask] = (
-            series.loc[error_mask].apply(lambda x: x.encode(encoding_sender, errors="ignore")).apply(lambda x: x.decode(encoding_receiver, errors="ignore"))
+        series_mask = get_column(error_mask, column)
+        series.loc[series_mask] = (
+            series.loc[series_mask].apply(lambda x: x.encode(encoding_sender, errors="ignore")).apply(lambda x: x.decode(encoding_receiver, errors="ignore"))
         )
         return series

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Callable
 
 if TYPE_CHECKING:
     import pandas as pd
@@ -22,6 +22,7 @@ class ErrorTypeConfig:
         na_value: Token used to indicate missing values in Pandas.
         mislabel_weighing: Weight of the distribution that mislables are drawn from. Either "uniform", "frequency" or "custom".
         mistype_dtype: Pandas dtype of the column that is incorrectly types.
+        wrong_unit_scaling: Function that scales a value from one unit to another.
     """
 
     encoding_sender: str | None = None
@@ -37,23 +38,28 @@ class ErrorTypeConfig:
 
     mistype_dtype: pd.Series.dtype | None = None
 
+    wrong_unit_scaling: Callable | None = None
+
 
 def get_column(table: pd.DataFrame, column: int | str) -> pd.Series:
     """Selects a column from a dataframe and returns it as a series."""
     if isinstance(column, int):
-        series = table.iloc[:, column]
+        col = table.columns[column]
     elif isinstance(column, str):
-        series = table.loc[:, column]
+        col = column
     else:
         msg = f"Column must be an int or str, not {type(column)}"
         raise TypeError(msg)
-    return series
+    return table[col]
 
 
 def set_column(table: pd.DataFrame, column: int | str, series: pd.Series) -> pd.Series:
-    """Replaces a column in a dataframe with a series. Mutates table."""
-    if isinstance(column, int):
-        table.iloc[:, column] = series
-    elif isinstance(column, str):
-        table.loc[:, column] = series
+    """Replaces a column in a dataframe with a series.
+
+    Mutates table and changes the dtype of the original table to that of the series,
+    which, depending on the error type, might change.
+    """
+    col = table.columns[column] if isinstance(column, int) else column
+    table[col] = table[col].astype(series.dtype)
+    table[col] = series
     return table

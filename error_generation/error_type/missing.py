@@ -25,5 +25,6 @@ class MissingValue(ErrorType):
 
     def _apply(self: MissingValue, table: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
         series = get_column(table, column).copy()
-        series[error_mask] = self.config.na_value
+        series_mask = get_column(error_mask, column)
+        series[series_mask] = self.config.na_value
         return series

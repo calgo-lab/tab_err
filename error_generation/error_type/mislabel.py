@@ -15,9 +15,9 @@ class Mislabel(ErrorType):
     def _check_type(table: pd.DataFrame, column: int | str) -> None:
         series = get_column(table, column)
 
-        if not isinstance(series, pd.CategoricalDtype):
+        if not isinstance(series.dtype, pd.CategoricalDtype):
             msg = f"Column {column} does not contain values of the Categorical dtype. Cannot insert Mislables.\n"
-            msg += "Try casting the column to CategoricalDtype using df.[column].astype('category')."
+            msg += "Try casting the column to CategoricalDtype using df[column].astype('category')."
             raise TypeError(msg)
 
         if len(series.cat.categories) <= 1:
@@ -39,5 +39,6 @@ class Mislabel(ErrorType):
                 se_sample = series.loc[series != old_label]
                 return se_sample.sample(1, replace=True).to_numpy()[0]
 
-        series.loc[error_mask] = series.loc[error_mask].apply(sample_label)
+        series_mask = get_column(error_mask, column)
+        series.loc[series_mask] = series.loc[series_mask].apply(sample_label)
         return series

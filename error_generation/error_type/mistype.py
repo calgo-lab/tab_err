@@ -42,6 +42,7 @@ class Mistype(ErrorType):
                 target_dtype = "int64"
             # not sture about this logic. There is a larget hierarchy that I could tap into.
 
-        series.loc[error_mask] = series.loc[error_mask].astype(target_dtype)
+        series_mask = get_column(error_mask, column)
+        series.loc[series_mask] = series.loc[series_mask].astype(target_dtype)
 
         return series
