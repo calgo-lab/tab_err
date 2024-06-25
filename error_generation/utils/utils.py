@@ -23,6 +23,8 @@ class ErrorTypeConfig:
         mislabel_weighing: Weight of the distribution that mislables are drawn from. Either "uniform", "frequency" or "custom".
         mistype_dtype: Pandas dtype of the column that is incorrectly types.
         wrong_unit_scaling: Function that scales a value from one unit to another.
+        permutation_separator: A Char that separates structured text, e.g. ' ' in an address or '-' in a date.
+        permutation_pattern: Permutations either all follow the same pattern (fixed) or not (random).
     """
 
     encoding_sender: str | None = None
@@ -39,6 +41,9 @@ class ErrorTypeConfig:
     mistype_dtype: pd.Series.dtype | None = None
 
     wrong_unit_scaling: Callable | None = None
+
+    permutation_separator: str = " "
+    permutation_pattern: str = "random"
 
 
 def get_column(table: pd.DataFrame, column: int | str) -> pd.Series:
