@@ -1,29 +1,27 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
 
 import pandas as pd
 
-if TYPE_CHECKING:
-    from pandas._typing import Dtype
-
 
 class ErrorMechanism(ABC):
-    def __init__(self: ErrorMechanism, error_rate: float, condition_to_column: int | str | None = None) -> None:
-        self.error_rate = error_rate
+    def __init__(self: ErrorMechanism, condition_to_column: int | str | None = None, seed: int | None = None) -> None:
         self.condition_to_column = condition_to_column
+        self.seed = seed
 
     def sample(
         self: ErrorMechanism,
         data: pd.DataFrame,
-        seed: int | None = None,
+        column: int | str,
+        error_rate: float,
+        error_mask: pd.DataFrame | None = None,
     ) -> pd.DataFrame:
-        if self.error_rate < 0 or self.error_rate > 1:
+        if error_rate < 0 or error_rate > 1:
             error_rate_msg = "'error_rate' need to be float: 0 <= error_rate <= 1."
             raise ValueError(error_rate_msg)
 
-        if not (isinstance(seed, int) or seed is None):
+        if not (isinstance(self.seed, int) or self.seed is None):
             msg = "'seed' need to be int or None."
             raise TypeError(msg)
 
@@ -39,9 +37,15 @@ class ErrorMechanism(ABC):
             msg = "'data' need at least 2 columns if 'condition_to_column' is given."
             raise ValueError(msg)
 
-        return self._sample(data=data, error_rate=self.error_rate, condition_to_column=self.condition_to_column, seed=seed)
+        # When using the mid_level or high_level API, error mechanisms sample on top of
+        # an existing error_mask. To avoid inserting errors into cells that another error_mechanism
+        # already inserted errors into, we have error mechanisms sample only from cells that
+        # do not contain errors.
+        if error_mask is None:  # initialize empty error_mask
+            error_mask = pd.DataFrame(data=False, index=data.index, columns=data.columns)
 
-    @staticmethod
+        return self._sample(data, column, error_rate, error_mask)
+
     @abstractmethod
-    def _sample(data: pd.DataFrame, error_rate: float, condition_to_column: Dtype | None = None, seed: int | None = None) -> pd.DataFrame:
+    def _sample(self: ErrorMechanism, data: pd.DataFrame, column: str | int, error_rate: float, error_mask: pd.DataFrame) -> pd.DataFrame:
         pass

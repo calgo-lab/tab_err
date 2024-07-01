@@ -1,9 +1,12 @@
 from __future__ import annotations
 
-import pandas as pd
+from typing import TYPE_CHECKING
 
 from error_generation.error_type import ErrorType
 from error_generation.utils import get_column
+
+if TYPE_CHECKING:
+    import pandas as pd
 
 
 class Mistype(ErrorType):
@@ -22,9 +25,10 @@ class Mistype(ErrorType):
         series = get_column(table, column).copy()
 
         if self.config.mistype_dtype is not None:
-            is_valid_type = pd.api.types.is_dtype_registered(self.config.mistype_dtype)
-            if not is_valid_type:
-                msg = f"Invalid user-specified dtype {self.config.mistype_dtype}"
+            supported_dtypes = ["object", "string", "int64", "Int64", "float64", "Float64"]
+
+            if self.config.mistype_dtype not in supported_dtypes:
+                msg = f"Unsupported user-specified dtype {self.config.mistype_dtype}. Supported dtypes as {supported_dtypes}."
                 raise TypeError(msg)
             target_dtype = self.config.mistype_dtype
         else:  # no user-specified dtype, use heuristict to infer one
@@ -40,8 +44,13 @@ class Mistype(ErrorType):
                 target_dtype = "Float64"
             elif current_dtype == "float64":
                 target_dtype = "int64"
-            # not sture about this logic. There is a larget hierarchy that I could tap into.
+            elif current_dtype == "Float64":
+                target_dtype = "Int64"
+            elif current_dtype == "bool":
+                target_dtype = "int64"
+            # PJ: not sure about this logic, there might be a better way to do this.
 
+        series = series.astype("object")
         series_mask = get_column(error_mask, column)
         series.loc[series_mask] = series.loc[series_mask].astype(target_dtype)
 

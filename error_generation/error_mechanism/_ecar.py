@@ -4,24 +4,26 @@ import warnings
 from typing import TYPE_CHECKING
 
 import numpy as np
-import pandas as pd
+
+from error_generation.utils import get_column
 
 from ._base import ErrorMechanism
 
 if TYPE_CHECKING:
-    from pandas._typing import Dtype
+    import pandas as pd
 
 
 class ECAR(ErrorMechanism):
-    @staticmethod
-    def _sample(data: pd.DataFrame, error_rate: float, condition_to_column: Dtype | None = None, seed: int | None = None) -> pd.DataFrame:
-        if condition_to_column is not None:
+    def _sample(self: ECAR, data: pd.DataFrame, column: str | int, error_rate: float, error_mask: pd.DataFrame) -> pd.DataFrame:
+        se_data = get_column(data, column)
+        se_mask = get_column(error_mask, column)
+
+        if self.condition_to_column is not None:
             warnings.warn("'condition_to_column' is set but will be ignored by ECAR.", stacklevel=1)
 
-        how_many_error_cells = int(data.size * error_rate)
-        error_mask = pd.DataFrame(data=False, index=data.index, columns=data.columns)
+        n_errors = int(se_data.size * error_rate)
 
-        # randomly choose cells as errors
-        error_indices = np.random.default_rng(seed=seed).choice(data.size, how_many_error_cells, replace=False)
-        error_mask.to_numpy().ravel()[error_indices] = True
+        # randomly choose error-cells
+        error_indices = np.random.default_rng(seed=self.seed).choice(se_data.size, n_errors, replace=False)
+        se_mask[error_indices] = True
         return error_mask
