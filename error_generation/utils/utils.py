@@ -12,10 +12,11 @@ if TYPE_CHECKING:
 
 @dataclasses.dataclass
 class ErrorModel:
-    """An ErrorModel, which consists of an ErrorMechanism and an ErrorType."""
+    """An ErrorModel, which consists of an ErrorMechanis, an ErrorType, and an error rate."""
 
     error_mechanism: ErrorMechanism
     error_type: ErrorType
+    error_rate: float
 
 
 @dataclasses.dataclass
@@ -27,7 +28,7 @@ class MidLevelConfig:
     API.
     """
 
-    columns: dict[int | str, ErrorModel]
+    columns: dict[int | str, list[ErrorModel]]
 
 
 @dataclasses.dataclass

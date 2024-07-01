@@ -25,7 +25,7 @@ class EAR(ErrorMechanism):
             condition_to_column = np.random.default_rng(self.seed).choice(column_selection)
             warnings.warn(
                 "The user did not specify 'condition_to_column', the column on which the EAR Mechanism conditions the error distribution. "
-                f"Randomly select {condition_to_column}.",
+                f"Randomly select column '{condition_to_column}'.",
                 stacklevel=1,
             )
         else:
