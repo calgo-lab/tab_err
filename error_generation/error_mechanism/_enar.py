@@ -4,32 +4,34 @@ import warnings
 from typing import TYPE_CHECKING
 
 import numpy as np
-import pandas as pd
+
+from error_generation.utils import get_column
 
 from ._base import ErrorMechanism
 
 if TYPE_CHECKING:
-    from pandas._typing import Dtype
+    import pandas as pd
 
 
 class ENAR(ErrorMechanism):
-    @staticmethod
-    def _sample(data: pd.DataFrame, error_rate: float, condition_to_column: Dtype | None = None, seed: int | None = None) -> pd.DataFrame:
-        if condition_to_column is not None:
+    def _sample(self: ENAR, data: pd.DataFrame, column: str | int, error_rate: float, error_mask: pd.DataFrame | None = None) -> pd.DataFrame:
+        se_data = get_column(data, column)
+        se_mask = get_column(error_mask, column)
+
+        if self.condition_to_column is not None:
             warnings.warn("'condition_to_column' is set but will be ignored by ENAR.", stacklevel=1)
 
-        error_mask = pd.DataFrame(data=False, index=data.index, columns=data.columns)
-
         # distribute errors equally over all columns
-        how_many_error_cells_for_each_column = int(data.size * error_rate / len(data.columns))
-        for column in data.columns:
-            lower_error_index = np.random.default_rng(seed=seed).integers(0, len(data) - how_many_error_cells_for_each_column)
-            error_index_range = range(lower_error_index, lower_error_index + how_many_error_cells_for_each_column)
+        n_errors = int(se_data.size * error_rate)
 
-            error_mask.loc[data.sort_values(by=column).index[error_index_range], column] = True
+        if n_errors < len(se_data):  # noqa: SIM108
+            lower_error_index = np.random.default_rng(seed=self.seed).integers(0, len(se_data) - n_errors)
+        else:  # all cells are errors
+            lower_error_index = 0
+        error_index_range = range(lower_error_index, lower_error_index + n_errors)
 
-            # avoid sample same indices for each column
-            if isinstance(seed, int):
-                seed += 1
+        se_mask.loc[se_data.sort_values().index[error_index_range]] = True
+
+        # TODO(PJ): Remember to run if isinstance(seed, int): seed += 1 in mid-level API
 
         return error_mask

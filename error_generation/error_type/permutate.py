@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import random
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING
 
 from pandas.api.types import is_string_dtype
 
@@ -12,22 +12,15 @@ if TYPE_CHECKING:
     import pandas as pd
 
 
-def fixed_shuffle_pattern(format_len: int, permutation_separator: str) -> Callable:
-    """Returns a function that shuffles the values in a column following a fixed pattern."""
+def generate_shuffle_pattern(format_len: int) -> list[int]:
+    """Generates a list of integers that indicates the positions of each value in a formatted string."""
     initial_pattern = list(range(format_len + 1))  # list that indicates the positions of each value
     new_pattern = initial_pattern
 
     while initial_pattern == new_pattern:
         new_pattern = random.sample(initial_pattern, len(initial_pattern))
 
-    def shuffle_pattern(old_string: str) -> str:
-        old_list = old_string.split(permutation_separator)
-        new = ["" for _ in range(len(old_list))]
-        for i, n in zip(initial_pattern, new_pattern):
-            new[n] = old_list[i]
-        return permutation_separator.join(new)
-
-    return shuffle_pattern
+    return new_pattern
 
 
 class Permutate(ErrorType):
@@ -41,7 +34,7 @@ class Permutate(ErrorType):
             msg = f"Column {column} does not contain values of the string dtype. Cannot Permutate values."
             raise TypeError(msg)
 
-    def _apply(self: Permutate, table: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
+    def _apply(self: Permutate, table: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:  # noqa: C901
         series = get_column(table, column).copy()
         series_mask = get_column(error_mask, column)
 
@@ -52,21 +45,36 @@ class Permutate(ErrorType):
                 msg += f'"{self.config.permutation_separator}". To use another separator, define it in the ErrorTypeconfig.'
                 raise ValueError(msg)
 
-        if self.config.permutation_pattern == "fixed":
+        if self.config.permutation_pattern is not None or self.config.permutation_automation_pattern == "fixed":
             if len(set(separator_counts)) > 1:
-                msg = f"Column {column} cannot be permutated using a fixed permutation_pattern: A fixed permutation_pattern requires all values "
-                msg += "to be formatted in the same way."
+                msg = f"Column {column} cannot be permutated using a fixed permutation_automation_pattern: A fixed permutation_automation_pattern requires "
+                msg += "all values to be formatted in the same way."
                 raise ValueError(msg)
-            shuffle_pattern = fixed_shuffle_pattern(separator_counts[0], self.config.permutation_separator)
 
-        if self.config.permutation_pattern == "random":
+            if self.config.permutation_pattern is not None:
+                new_pattern = self.config.permutation_pattern
 
-            def shuffle_pattern(old_string: str) -> str:
+            elif self.config.permutation_automation_pattern == "fixed":
+                new_pattern = generate_shuffle_pattern(separator_counts[0])
+
+            def fixed_shuffle_pattern(old_string: str) -> str:
+                old_list = old_string.split(self.config.permutation_separator)
+                new = ["" for _ in range(len(old_list))]
+                for i, n in enumerate(new_pattern):
+                    new[n] = old_list[i]
+                return self.config.permutation_separator.join(new)
+
+            series.loc[series_mask] = series.loc[series_mask].apply(fixed_shuffle_pattern)
+            return series
+
+        if self.config.permutation_automation_pattern == "random":
+
+            def random_shuffle_pattern(old_string: str) -> str:
                 old_list = old_string.split(self.config.permutation_separator)
                 new = old_list
                 while new == old_list:
                     new = random.sample(old_list, len(old_list))
                 return self.config.permutation_separator.join(new)
 
-        series.loc[series_mask] = series.loc[series_mask].apply(shuffle_pattern)
+        series.loc[series_mask] = series.loc[series_mask].apply(random_shuffle_pattern)
         return series

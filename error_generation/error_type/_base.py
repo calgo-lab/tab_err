@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from error_generation.utils import ErrorTypeConfig
 
@@ -21,13 +21,7 @@ class ErrorType(ABC):
             msg = "config must be of type ErrorTypeConfig or dict"
             raise TypeError(msg)
 
-    # TODO (seja): def apply(cls: type[ErrorType], table: pd.DataFrame, error_mask: pd.DataFrame, preserve_dtypes: bool = True)
-    # -> tuple[pd.DataFrame, pd.DataFrame]:
-    # 1. prüft parameters, sodass table.shape == error_mask.shape
-    # 2. kopiert 'table'
-    # 3. ruft '_get_valid_columns' auf um mögliche Spalten zu bekommen
-    # 4. ruft '_apply' mit 'table[valid_columns]' auf um geänderte 'table' zu bekommen
-    # 5. gibt gänderte 'table' und maske zurück, die anzeigt welche Zellen verändert wurden
+    # TODO (seja): prüfe parameters, sodass table.shape == error_mask.shape
     def apply(self: ErrorType, table: pd.DataFrame, error_mask: pd.DataFrame, column: str | int) -> pd.Series:
         self._check_type(table, column)
         return self._apply(table, error_mask, column)
@@ -45,3 +39,29 @@ class ErrorType(ABC):
     # Gibt geänderte 'table' zurück.
     def _apply(self: ErrorType, table: pd.DataFrame, error_mask: pd.DataFrame, column: str | int) -> pd.Series:
         pass
+
+    def to_dict(self: ErrorType) -> dict[str, Any]:
+        """Serialized the ErrorType object into a dictionary.
+
+        Returns:
+            dict[str, Any]: A dictionary representation of the ErrorType object.
+        """
+        return {
+            "error_type": self.__class__.__name__,
+            "config": self.config.to_dict(),
+        }
+
+    @classmethod
+    def from_dict(cls: type[ErrorType], data: dict[str, Any]) -> ErrorType:
+        """Deserialize an ErrorType object from a dictionary.
+
+        Args:
+            data (dict[str, Any]): A dictionary representation of the ErrorType object.
+
+        Returns:
+            ErrorType: An ErrorType object deserialized from the dictionary.
+        """
+        error_type_name = data["error_type"]
+        error_type_class = globals()[error_type_name]
+
+        return error_type_class(data["config"])
