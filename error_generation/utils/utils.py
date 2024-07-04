@@ -50,6 +50,11 @@ class ErrorTypeConfig:
         permutation_separator: A Char that separates structured text, e.g. ' ' in an address or '-' in a date.
         permutation_automation_pattern: Permutations either all follow the same pattern (fixed) or not (random).
         permutation_pattern: Manually specify the pattern which the permutations follow. Overwrite automation patterns if set.
+        extraneous_value_template: Template string used to add extraneous data to the value. The position of the value is indicated by the template string
+        '{value}'.
+        replace_what: String that the Replace Error Type replaces with replace_with.
+        replace_with: String that the Replace Error Type uses to replace replace_what with. Defaults to "".
+        add_delta_value: Value that is added to the value by the AddDelta Error Type.
     """
 
     encoding_sender: str | None = None
@@ -70,6 +75,13 @@ class ErrorTypeConfig:
     permutation_separator: str = " "
     permutation_automation_pattern: str = "random"
     permutation_pattern: list[int] | None = None
+
+    extraneous_value_template: str | None = None
+
+    replace_what: str | None = None
+    replace_with: str = ""
+
+    add_delta_value: Any | None = None
 
     def to_dict(self: ErrorTypeConfig) -> dict[str, Any]:
         """Serializes the ErrorTypeConfig to a dict."""
