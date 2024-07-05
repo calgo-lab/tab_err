@@ -21,17 +21,24 @@ class ENAR(ErrorMechanism):
         if self.condition_to_column is not None:
             warnings.warn("'condition_to_column' is set but will be ignored by ENAR.", stacklevel=1)
 
-        # distribute errors equally over all columns
-        n_errors = int(se_data.size * error_rate)
+        n_errors = int(len(se_data) * error_rate)
 
-        if n_errors < len(se_data):  # noqa: SIM108
-            lower_error_index = np.random.default_rng(seed=self.seed).integers(0, len(se_data) - n_errors)
-        else:  # all cells are errors
+        # if mid-level or high-level API call ENAR, the error_mask already contains errors. Below we make sure that we only sample rows that do not
+        # already contain errors.
+        se_data_error_free = se_data[~se_mask]
+
+        if len(se_data_error_free) < n_errors:
+            msg = f"The error rate of {error_rate} requires {n_errors} error-free cells. "
+            msg += f"However, only {len(se_data_error_free)} error-free cells are available."
+            raise ValueError(msg)
+
+        if len(se_data_error_free) != n_errors:  # noqa: SIM108
+            lower_error_index = np.random.default_rng(seed=self.seed).integers(0, len(se_data_error_free) - n_errors)
+        else:
             lower_error_index = 0
         error_index_range = range(lower_error_index, lower_error_index + n_errors)
+        selected_rows = se_data_error_free.sort_values().iloc[error_index_range]
 
-        se_mask.loc[se_data.sort_values().index[error_index_range]] = True
-
-        # TODO(PJ): Remember to run if isinstance(seed, int): seed += 1 in mid-level API
+        se_mask.loc[selected_rows.index] = True
 
         return error_mask

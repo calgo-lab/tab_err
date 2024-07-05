@@ -63,7 +63,7 @@ class ErrorTypeConfig:
     keyboard_layout: str = "ansi-qwerty"
     error_period: int = 10
 
-    na_value = None
+    na_value: str | None = None
 
     mislabel_weighing: str = "uniform"
     mislabel_weights: dict[Any, float] | None = None

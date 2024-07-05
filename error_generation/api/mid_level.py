@@ -27,6 +27,6 @@ def create_errors(table: pd.DataFrame, config: MidLevelConfig) -> tuple[pd.DataF
             old_error_mask = error_mask.copy()
             error_mask = error_mechanism.sample(table, column, error_rate, error_mask)
 
-            series = error_type.apply(table, old_error_mask != error_mask, column)
+            series = error_type.apply(table_dirty, old_error_mask != error_mask, column)
             set_column(table_dirty, column, series)
     return table_dirty, error_mask

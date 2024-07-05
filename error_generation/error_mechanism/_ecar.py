@@ -26,7 +26,7 @@ class ECAR(ErrorMechanism):
         n_errors = int(se_mask.size * error_rate)
 
         if len(se_mask_error_free) < n_errors:
-            msg = f"The error rate of {error_rate} requires {len(se_mask_error_free)} error-free cells. "
+            msg = f"The error rate of {error_rate} requires {n_errors} error-free cells. "
             msg += f"However, only {len(se_mask_error_free)} error-free cells are available."
             raise ValueError(msg)
 

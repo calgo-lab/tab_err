@@ -35,10 +35,20 @@ class EAR(ErrorMechanism):
         se_mask = get_column(error_mask, column)
         n_errors = int(se_data.size * error_rate)
 
-        upper_bound = len(se_data) - n_errors
+        se_mask_error_free = se_mask[~se_mask]
+        data_column_error_free = data.loc[se_mask_error_free.index, :]
+
+        if len(se_mask_error_free) < n_errors:
+            msg = f"The error rate of {error_rate} requires {n_errors} error-free cells. "
+            msg += f"However, only {len(se_mask_error_free)} error-free cells are available."
+            raise ValueError(msg)
+
+        # we offset the upper bound of the lower_error_index by a) the existing number of errors in the row, and b) the number of errors to-be generated.
+        upper_bound = len(se_data) - sum(se_mask) - n_errors
         lower_error_index = np.random.default_rng(self.seed).integers(0, upper_bound) if upper_bound > 0 else 0
         error_index_range = range(lower_error_index, lower_error_index + n_errors)
+        selected_rows = data_column_error_free.sort_values(by=condition_to_column).iloc[error_index_range, :]
 
-        se_mask.loc[data.sort_values(by=condition_to_column).index[error_index_range]] = True
+        se_mask.loc[selected_rows.index] = True
 
         return error_mask
