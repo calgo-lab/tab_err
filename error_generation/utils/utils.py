@@ -55,6 +55,8 @@ class ErrorTypeConfig:
         replace_what: String that the Replace Error Type replaces with replace_with.
         replace_with: String that the Replace Error Type uses to replace replace_what with. Defaults to "".
         add_delta_value: Value that is added to the value by the AddDelta Error Type.
+        clip_lower_bound: Lower bound of the clipping range for ValueClipping Error Type.
+        clip_upper_bound: Upper bound of the clipping range for ValueClipping Error Type.
     """
 
     encoding_sender: str | None = None
@@ -82,6 +84,9 @@ class ErrorTypeConfig:
     replace_with: str = ""
 
     add_delta_value: Any | None = None
+    
+    clip_lower_bound: float = 0.0
+    clip_upper_bound: float = 1.0
 
     def to_dict(self: ErrorTypeConfig) -> dict[str, Any]:
         """Serializes the ErrorTypeConfig to a dict."""

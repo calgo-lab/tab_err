@@ -9,3 +9,4 @@ from .mojibake import Mojibake
 from .permutate import Permutate
 from .replace import Replace
 from .wrong_unit import WrongUnit
+from .clipping import ValueClipping
