@@ -57,6 +57,8 @@ class ErrorTypeConfig:
         add_delta_value: Value that is added to the value by the AddDelta Error Type.
         clip_lower_bound: Lower bound of the clipping range for ValueClipping Error Type.
         clip_upper_bound: Upper bound of the clipping range for ValueClipping Error Type.
+        outlier_coefficient: Coefficient that determines the magnitude of the outliers for the Outlier Error Type.
+        outlier_noise_coeff: Coefficient that influences the standard deviation of the noise added to the outliers for the Outlier Error Type.
     """
 
     encoding_sender: str | None = None
@@ -87,6 +89,9 @@ class ErrorTypeConfig:
     
     clip_lower_bound: float = 0.0
     clip_upper_bound: float = 1.0
+    
+    outlier_coefficient: float = 1.0
+    outlier_noise_coeff: float = 0.1
 
     def to_dict(self: ErrorTypeConfig) -> dict[str, Any]:
         """Serializes the ErrorTypeConfig to a dict."""
