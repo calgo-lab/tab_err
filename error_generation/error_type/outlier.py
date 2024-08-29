@@ -45,20 +45,18 @@ class Outlier(ErrorType):
         perturbation_upper = self.config.outlier_coefficient * (upper_boundary - mean_value)
         perturbation_lower = self.config.outlier_coefficient * (mean_value - lower_boundary)
         
-        # Apply outliers based on value relative to mean
-        for idx in series.loc[series_mask].index:
-            if series[idx] < mean_value:
-                # Push towards lower outlier
-                series[idx] -= perturbation_lower
-            elif series[idx] > mean_value:
-                # Push towards upper outlier
-                series[idx] += perturbation_upper
-            else:
-                # Value is equal to the mean, use a coin flip
-                if np.random.rand() > 0.5:
-                    series[idx] += perturbation_upper
-                else:
-                    series[idx] -= perturbation_lower
+        # Get masks for the different outlier types depending on the mean
+        mask_lower = (series < mean_value) & series_mask
+        mask_upper = (series > mean_value) & series_mask
+        mask_equal = (series == mean_value) & series_mask
+
+        # Apply perturbations
+        series.loc[mask_lower] -= perturbation_lower
+        series.loc[mask_upper] += perturbation_upper
+
+        # Handle the mean values with a coin flip
+        coin_flips = np.random.rand(mask_equal.sum())
+        series.loc[mask_equal] += np.where(coin_flips > 0.5, perturbation_upper, -perturbation_lower)
         
         # Apply Gaussian noise
         noise_std = self.config.outlier_noise_coeff * IQR
