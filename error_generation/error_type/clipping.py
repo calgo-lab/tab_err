@@ -11,10 +11,10 @@ if TYPE_CHECKING:
     import pandas as pd
 
 class ValueClipping(ErrorType):
-    """Simulate a column containing values that are clipped at a specified lower and upper bound.
+    """Simulate a column containing values that are clipped at specified quantiles.
     
-    Values below the lower bound are set to the lower bound, values above the upper bound are set to the upper bound.
-    If any of the bounds are None, the corresponding clipping is not applied.
+    Values below the lower quantile are set to the value at that quantile, and values above the upper quantile are set to the value at that quantile.
+    If any of the quantiles are None, the corresponding clipping is not applied.
     """
 
     @staticmethod
@@ -30,7 +30,11 @@ class ValueClipping(ErrorType):
         series = get_column(table, column).copy()
         series_mask = get_column(error_mask, column)
 
+        # Calculate the quantile-based bounds
+        lower_bound = series.quantile(self.config.clip_lower_quantile) if self.config.clip_lower_quantile is not None else None
+        upper_bound = series.quantile(self.config.clip_upper_quantile) if self.config.clip_upper_quantile is not None else None
+
         # Apply clipping to the values where the mask is True
-        series.loc[series_mask] = series.loc[series_mask].clip(lower=self.config.clip_lower_bound, upper=self.config.clip_upper_bound)
+        series.loc[series_mask] = series.loc[series_mask].clip(lower=lower_bound, upper=upper_bound)
         
         return series
