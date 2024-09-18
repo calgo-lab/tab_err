@@ -11,6 +11,7 @@ from error_generation.utils import get_column
 if TYPE_CHECKING:
     import pandas as pd
 
+
 class Outlier(ErrorType):
     """Simulate outliers in a column by pushing data points beyond the IQR-based boundaries.
 

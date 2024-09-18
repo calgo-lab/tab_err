@@ -10,6 +10,7 @@ from error_generation.utils import get_column
 if TYPE_CHECKING:
     import pandas as pd
 
+
 class ValueClipping(ErrorType):
     """Simulate a column containing values that are clipped at specified quantiles.
 
