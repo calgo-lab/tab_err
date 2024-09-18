@@ -86,10 +86,10 @@ class ErrorTypeConfig:
     replace_with: str = ""
 
     add_delta_value: Any | None = None
-    
+
     clip_lower_quantile: float | None = None
     clip_upper_quantile: float | None = None
-    
+
     outlier_coefficient: float = 1.0
     outlier_noise_coeff: float = 0.1
 

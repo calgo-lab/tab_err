@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 class ValueClipping(ErrorType):
     """Simulate a column containing values that are clipped at specified quantiles.
-    
+
     Values below the lower quantile are set to the value at that quantile, and values above the upper quantile are set to the value at that quantile.
     If any of the quantiles are None, the corresponding clipping is not applied.
     """
@@ -36,5 +36,5 @@ class ValueClipping(ErrorType):
 
         # Apply clipping to the values where the mask is True
         series.loc[series_mask] = series.loc[series_mask].clip(lower=lower_bound, upper=upper_bound)
-        
+
         return series
