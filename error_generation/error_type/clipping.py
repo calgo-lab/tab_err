@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     import pandas as pd
 
 
-class ValueClipping(ErrorType):
+class Clipping(ErrorType):
     """Simulate a column containing values that are clipped at specified quantiles.
 
     Values below the lower quantile are set to the value at that quantile, and values above the upper quantile are set to the value at that quantile.
