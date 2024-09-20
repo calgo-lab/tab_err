@@ -13,17 +13,21 @@ if TYPE_CHECKING:
 
 
 class Outlier(ErrorType):
-    """
-    Inserts outliers into a column by pushing data points outside the interquartile range (IQR) boundaries.
+    """Inserts outliers into a column by pushing data points outside the interquartile range (IQR) boundaries.
 
     - Data points below the mean are pushed towards lower outliers, while those above the mean are pushed towards upper outliers.
-    - The `outlier_coefficient` controls how far values are pushed relative to the IQR. An `outlier_coefficient` of 1.0 means the push is equal to half of the IQR, shifting the mean value exactly to the edge of the IQR. Values that deviate more from the mean will be pushed beyond the IQR boundary. When `outlier_coefficient` is less than 1.0, values—including the mean—are pushed less drastically, potentially keeping them within the IQR. 
+    - The `outlier_coefficient` controls how far values are pushed relative to the IQR. An `outlier_coefficient` of 1.0 means the
+    push is equal to half of the IQR, shifting the mean value exactly to the edge of the IQR. Values that deviate more from the
+    mean will be pushed beyond the IQR boundary. When `outlier_coefficient` is less than 1.0, values—including the mean—are pushed
+    less drastically, potentially keeping them within the IQR.
     - The push is calculated as:
         push = outlier_coefficient * |upper_boundary - mean_value|
-    - Values above the mean are pushed towards the upper boundary, and values below the mean are pushed towards the lower boundary. If a value equals the mean, a coin flip decides whether it is pushed towards the upper or lower boundary.
-    - After this process, Gaussian noise is added to simulate measurement errors and make the outliers appear more realistic. The amount of noise can be controlled via the `outlier_noise_coeff` parameter and is scaled with the IQR to ensure it is proportional to the data's spread.
+    - Values above the mean are pushed towards the upper boundary, and values below the mean are pushed towards the lower boundary.
+    If a value equals the mean, a coin flip decides whether it is pushed towards the upper or lower boundary.
+    - After this process, Gaussian noise is added to simulate measurement errors and make the outliers appear more realistic. The
+    amount of noise can be controlled via the `outlier_noise_coeff` parameter and is scaled with the IQR to ensure it is proportional
+    to the data's spread.
     """
-
 
     @staticmethod
     def _check_type(table: pd.DataFrame, column: int | str) -> None:

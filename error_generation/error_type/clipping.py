@@ -26,7 +26,7 @@ class Clipping(ErrorType):
             msg = f"Column {column} does not contain numeric values. Cannot apply value clipping."
             raise TypeError(msg)
 
-    def _apply(self: ValueClipping, table: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
+    def _apply(self: Clipping, table: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
         # Get the column series and mask
         series = get_column(table, column).copy()
         series_mask = get_column(error_mask, column)
