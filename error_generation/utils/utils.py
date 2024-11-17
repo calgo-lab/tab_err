@@ -55,6 +55,8 @@ class ErrorTypeConfig:
         replace_what: String that the Replace Error Type replaces with replace_with.
         replace_with: String that the Replace Error Type uses to replace replace_what with. Defaults to "".
         add_delta_value: Value that is added to the value by the AddDelta Error Type.
+        outlier_coefficient: Coefficient that determines the magnitude of the outliers for the Outlier Error Type.
+        outlier_noise_coeff: Coefficient that influences the standard deviation of the noise added to the outliers for the Outlier Error Type.
     """
 
     encoding_sender: str | None = None
@@ -82,6 +84,9 @@ class ErrorTypeConfig:
     replace_with: str = ""
 
     add_delta_value: Any | None = None
+
+    outlier_coefficient: float = 1.0
+    outlier_noise_coeff: float = 0.1
 
     def to_dict(self: ErrorTypeConfig) -> dict[str, Any]:
         """Serializes the ErrorTypeConfig to a dict."""

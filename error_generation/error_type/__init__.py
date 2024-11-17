@@ -6,6 +6,7 @@ from .mislabel import Mislabel
 from .missing import MissingValue
 from .mistype import Mistype
 from .mojibake import Mojibake
+from .outlier import Outlier
 from .permutate import Permutate
 from .replace import Replace
 from .wrong_unit import WrongUnit
