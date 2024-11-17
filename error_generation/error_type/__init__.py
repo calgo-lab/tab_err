@@ -1,7 +1,6 @@
 from ._base import ErrorType
 from .add_delta import AddDelta
 from .butterfinger import Butterfinger
-from .clipping import Clipping
 from .extraneous import Extraneous
 from .mislabel import Mislabel
 from .missing import MissingValue

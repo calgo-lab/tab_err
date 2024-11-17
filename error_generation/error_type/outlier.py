@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import numpy as np
-from pandas.api.types import is_numeric_dtype
+from pandas.api.types import is_integer_dtype, is_numeric_dtype
 
 from error_generation.error_type import ErrorType
 from error_generation.utils import get_column
@@ -54,6 +54,10 @@ class Outlier(ErrorType):
         perturbation_upper = self.config.outlier_coefficient * (upper_boundary - mean_value)
         perturbation_lower = self.config.outlier_coefficient * (mean_value - lower_boundary)
 
+        if is_integer_dtype(series):  # round float to int when series is int
+            perturbation_upper = np.ceil(perturbation_upper)
+            perturbation_lower = np.floor(perturbation_lower)
+
         # Get masks for the different outlier types depending on the mean
         mask_lower = (series < mean_value) & series_mask
         mask_upper = (series > mean_value) & series_mask
@@ -73,6 +77,10 @@ class Outlier(ErrorType):
 
         # Apply Gaussian noise to simulate the increase in measurement error of the outliers
         noise_std = self.config.outlier_noise_coeff * iqr
-        series.loc[series_mask] += rng.normal(loc=0, scale=noise_std, size=series_mask.sum())
+
+        if is_integer_dtype(series):  # round float to int when series is int
+            series.loc[series_mask] += np.rint(rng.normal(loc=0, scale=noise_std, size=series_mask.sum()))
+        else:
+            series.loc[series_mask] += rng.normal(loc=0, scale=noise_std, size=series_mask.sum())
 
         return series
