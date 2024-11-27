@@ -13,7 +13,7 @@ def create_errors(table: pd.DataFrame, config: MidLevelConfig) -> tuple[pd.DataF
         config: The configuration for the error generation process.
 
     Returns:
-        A tuple of a copy of the DataFrame with errors, and the error mask.
+        A tuple of a copy of the table with errors, and the error mask.
     """
     table_dirty = table.copy()
     error_mask = pd.DataFrame(data=False, index=table.index, columns=table.columns)

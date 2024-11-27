@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 @dataclasses.dataclass
 class ErrorModel:
-    """An ErrorModel, which consists of an ErrorMechanis, an ErrorType, and an error rate."""
+    """An ErrorModel, which consists of an ErrorMechanism, an ErrorType, and an error rate."""
 
     error_mechanism: ErrorMechanism
     error_type: ErrorType
@@ -98,8 +98,8 @@ class ErrorTypeConfig:
         return ErrorTypeConfig(**data)
 
 
-def set_column(table: pd.DataFrame, column: int | str, series: pd.Series) -> pd.Series:
-    """Replaces a column in a dataframe with a series.
+def set_column(table: pd.DataFrame, column: int | str, series: pd.Series) -> None:
+    """Replaces a column in the given DataFrame with the given Series.
 
     Mutates table and changes the dtype of the original table to that of the series,
     which, depending on the error type, might change.
@@ -107,11 +107,10 @@ def set_column(table: pd.DataFrame, column: int | str, series: pd.Series) -> pd.
     col = table.columns[column] if isinstance(column, int) else column
     table[col] = table[col].astype(series.dtype)
     table[col] = series
-    return table
 
 
 def get_column_str(table: pd.DataFrame, column: int | str) -> str:
-    """Return the a column's name from the available names of columns of a dataframe."""
+    """Return column's name of the given DataFrame, where column can be defined as name or index."""
     if isinstance(column, int):
         col = table.columns[column]
     elif isinstance(column, str):
@@ -119,9 +118,10 @@ def get_column_str(table: pd.DataFrame, column: int | str) -> str:
     else:
         msg = f"Column must be an int or str, not {type(column)}"
         raise TypeError(msg)
+
     return col
 
 
 def get_column(table: pd.DataFrame, column: int | str) -> pd.Series:
-    """Selects a column from a dataframe and returns it as a series."""
+    """Selects a column from the given DataFrame and returns it as a Series."""
     return table[get_column_str(table, column)]

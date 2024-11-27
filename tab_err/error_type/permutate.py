@@ -42,7 +42,7 @@ class Permutate(ErrorType):
         for i, count in enumerate(separator_counts):
             if count == 0:
                 msg = f'Cannot permutate values, because column {column} contains value "{series[i]}" that is not separated by the separator '
-                msg += f'"{self.config.permutation_separator}". To use another separator, define it in the ErrorTypeconfig.'
+                msg += f'"{self.config.permutation_separator}". To use another separator, define it in the ErrorTypeConfig.'
                 raise ValueError(msg)
 
         if self.config.permutation_pattern is not None or self.config.permutation_automation_pattern == "fixed":

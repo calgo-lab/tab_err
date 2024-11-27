@@ -17,7 +17,7 @@ class EAR(ErrorMechanism):
     # TODO(seja): Docs
     def _sample(self: EAR, data: pd.DataFrame, column: str | int, error_rate: float, error_mask: pd.DataFrame) -> pd.DataFrame:
         if len(data.columns) < 2:  # noqa: PLR2004
-            msg = "The table into which error at random (EAR) are to be injected requies at least 2 columns."
+            msg = "The table into which error at random (EAR) are to be injected requires at least 2 columns."
             raise ValueError(msg)
 
         if self.condition_to_column is None:
@@ -26,7 +26,7 @@ class EAR(ErrorMechanism):
             condition_to_column = np.random.default_rng(self.seed).choice(column_selection)
             warnings.warn(
                 "The user did not specify 'condition_to_column', the column on which the EAR Mechanism conditions the error distribution. "
-                f"Randomly select column '{condition_to_column}'.",
+                + f"Randomly select column '{condition_to_column}'.",
                 stacklevel=1,
             )
         else:

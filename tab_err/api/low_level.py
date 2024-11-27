@@ -24,7 +24,7 @@ def create_errors(
         error_type: The type of the error that will be distributed.
 
     Returns:
-        A tuple of a copy of the DataFrame with errors, and the error mask.
+        A tuple of a copy of the table with errors, and the error mask.
     """
     table_copy = table.copy()
 

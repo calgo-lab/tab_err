@@ -14,11 +14,9 @@ if TYPE_CHECKING:
 
 
 class ECAR(ErrorMechanism):
-    def _sample(self: ECAR, data: pd.DataFrame, column: str | int, error_rate: float, error_mask: pd.DataFrame) -> pd.DataFrame:
-        se_data = get_column(data, column)  # noqa: F841
     # TODO(seja): Docs
+    def _sample(self: ECAR, data: pd.DataFrame, column: str | int, error_rate: float, error_mask: pd.DataFrame) -> pd.DataFrame:  # noqa: ARG002
         se_mask = get_column(error_mask, column)
-
         se_mask_error_free = se_mask[~se_mask]
 
         if self.condition_to_column is not None:

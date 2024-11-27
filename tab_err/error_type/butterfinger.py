@@ -35,7 +35,7 @@ class Butterfinger(ErrorType):
     def _apply(self: Butterfinger, table: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
         """Apply butterfinger.
 
-        table: the pandas dataframe to-be-corrupted
+        table: the pandas DataFrame to-be-corrupted
         error_mask: binary mask the marks the error positions
         column: column into which errors shall be inserted
         error_period: specifies how frequent butterfinger corruptions are - see class description for details.

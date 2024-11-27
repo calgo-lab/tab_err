@@ -14,8 +14,8 @@ if TYPE_CHECKING:
 
 
 class ENAR(ErrorMechanism):
-    def _sample(self: ENAR, data: pd.DataFrame, column: str | int, error_rate: float, error_mask: pd.DataFrame | None = None) -> pd.DataFrame:
     # TODO(seja): Docs
+    def _sample(self: ENAR, data: pd.DataFrame, column: str | int, error_rate: float, error_mask: pd.DataFrame) -> pd.DataFrame:
         se_data = get_column(data, column)
         se_mask = get_column(error_mask, column)
 
@@ -37,6 +37,7 @@ class ENAR(ErrorMechanism):
             lower_error_index = np.random.default_rng(seed=self.seed).integers(0, len(se_data_error_free) - n_errors)
         else:
             lower_error_index = 0
+
         error_index_range = range(lower_error_index, lower_error_index + n_errors)
         selected_rows = se_data_error_free.sort_values().iloc[error_index_range]
 
