@@ -4,8 +4,8 @@ from typing import TYPE_CHECKING
 
 from pandas.api.types import is_string_dtype
 
-from error_generation.error_type import ErrorType
-from error_generation.utils import get_column
+from tab_err.error_type import ErrorType
+from tab_err.utils import get_column
 
 if TYPE_CHECKING:
     import pandas as pd

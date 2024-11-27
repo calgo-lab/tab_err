@@ -4,8 +4,8 @@ import random
 
 import pandas as pd
 
-from error_generation.error_type import ErrorType
-from error_generation.utils import get_column
+from tab_err.error_type import ErrorType
+from tab_err.utils import get_column
 
 
 class Mislabel(ErrorType):

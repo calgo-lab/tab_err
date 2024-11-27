@@ -1,10 +1,10 @@
 [tool.poetry]
-name = "error-generation"
+name = "tab_err"
 version = "0.1.0"
 description = "Fully-controllable error generation for tabular data."
 authors = [
     "Philipp Jung <philippjung@posteo.de>",
-    "Sebastian Jäger <error-generation@sebastian-jaeger.me>",
+    "Sebastian Jäger <tab_err@sebastian-jaeger.me>",
 ]
 license = "Apache License 2.0"
 readme = "README.md"
@@ -39,10 +39,10 @@ select = [
     "ALL", # Include all the rules, including new ones
 ]
 ignore = [
-    "FIX", # Temporary developer notes should not break actions
-    "COM812",  # For compatibility with ruff-format
-    "ISC001",  # For compatibility with ruff-format
-    "S311",  # We do not require cryptographically-sound randomness
+    "FIX",    # Temporary developer notes should not break actions
+    "COM812", # For compatibility with ruff-format
+    "ISC001", # For compatibility with ruff-format
+    "S311",   # We do not require cryptographically-sound randomness
     "D100",   # Do not document public modules
     "D104",   # Do not document public packages
     "TD003",  # Allow TODOs without links

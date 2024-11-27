@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from error_generation.utils import set_column
+from tab_err.utils import set_column
 
 if TYPE_CHECKING:
     import pandas as pd
 
-    from error_generation.error_mechanism import ErrorMechanism
-    from error_generation.error_type import ErrorType
+    from tab_err.error_mechanism import ErrorMechanism
+    from tab_err.error_type import ErrorType
 
 
 def create_errors(

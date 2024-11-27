@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pandas as pd
 
-from error_generation.utils import MidLevelConfig, set_column
+from tab_err.utils import MidLevelConfig, set_column
 
 
 def create_errors(table: pd.DataFrame, config: MidLevelConfig) -> tuple[pd.DataFrame, pd.DataFrame]:

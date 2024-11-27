@@ -6,8 +6,8 @@ from typing import TYPE_CHECKING, Any, Callable
 if TYPE_CHECKING:
     import pandas as pd
 
-    from error_generation.error_mechanism import ErrorMechanism
-    from error_generation.error_type import ErrorType
+    from tab_err.error_mechanism import ErrorMechanism
+    from tab_err.error_type import ErrorType
 
 
 @dataclasses.dataclass

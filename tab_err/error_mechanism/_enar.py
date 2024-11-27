@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
-from error_generation.utils import get_column
+from tab_err.utils import get_column
 
 from ._base import ErrorMechanism
 
