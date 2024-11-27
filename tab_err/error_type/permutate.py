@@ -57,24 +57,28 @@ class Permutate(ErrorType):
             elif self.config.permutation_automation_pattern == "fixed":
                 new_pattern = generate_shuffle_pattern(separator_counts[0])
 
+            # TODO(anyone): new_pattern possible unbound
+
             def fixed_shuffle_pattern(old_string: str) -> str:
                 old_list = old_string.split(self.config.permutation_separator)
                 new = ["" for _ in range(len(old_list))]
                 for i, n in enumerate(new_pattern):
                     new[n] = old_list[i]
+
                 return self.config.permutation_separator.join(new)
 
             series.loc[series_mask] = series.loc[series_mask].apply(fixed_shuffle_pattern)
             return series
 
-        if self.config.permutation_automation_pattern == "random":
+        # TODO(seja): quick-fix to avoid 'random_shuffle_pattern' being unbound, removing the following line
+        # if self.config.permutation_automation_pattern == "random":
+        def random_shuffle_pattern(old_string: str) -> str:
+            old_list = old_string.split(self.config.permutation_separator)
+            new = old_list
+            while new == old_list:
+                new = random.sample(old_list, len(old_list))
 
-            def random_shuffle_pattern(old_string: str) -> str:
-                old_list = old_string.split(self.config.permutation_separator)
-                new = old_list
-                while new == old_list:
-                    new = random.sample(old_list, len(old_list))
-                return self.config.permutation_separator.join(new)
+            return self.config.permutation_separator.join(new)
 
         series.loc[series_mask] = series.loc[series_mask].apply(random_shuffle_pattern)
         return series

@@ -48,7 +48,9 @@ class Mistype(ErrorType):
                 target_dtype = "Int64"
             elif current_dtype == "bool":
                 target_dtype = "int64"
-            # PJ: not sure about this logic, there might be a better way to do this.
+            # NOTE(PJ): not sure about this logic, there might be a better way to do this.
+
+        # TODO(anyone): target_dtype possible unbound
 
         series = series.astype("object")
         series_mask = get_column(error_mask, column)

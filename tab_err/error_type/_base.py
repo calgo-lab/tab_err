@@ -10,6 +10,7 @@ if TYPE_CHECKING:
 
 
 class ErrorType(ABC):
+    # TODO(seja): Docs
     def __init__(self: ErrorType, config: ErrorTypeConfig | dict | None = None) -> None:
         if config is None:
             self.config = ErrorTypeConfig()
@@ -21,22 +22,23 @@ class ErrorType(ABC):
             msg = "config must be of type ErrorTypeConfig or dict"
             raise TypeError(msg)
 
-    # TODO (seja): prüfe parameters, sodass table.shape == error_mask.shape
+    # TODO(seja): check table.shape == error_mask.shape
     def apply(self: ErrorType, table: pd.DataFrame, error_mask: pd.DataFrame, column: str | int) -> pd.Series:
+        # TODO(seja): Docs
         self._check_type(table, column)
         return self._apply(table, error_mask, column)
 
     @staticmethod
     @abstractmethod
-    # TODO (seja): def _get_valid_columns(table: pd.DataFrame, preserve_dtypes: bool = True) -> list[Dtype]:
-    # Prüft auf welche columns dieser Fehler angewendet werden kann und gibt die entsprechenden Namen zurück.
+    # TODO(seja): def _get_valid_columns(table: pd.DataFrame, preserve_dtypes: bool = True) -> list[Dtype]:
+    # supposed to check for which columns this type can be applied and returns those.
     def _check_type(table: pd.DataFrame, column: str | int) -> None:
         pass
 
     @abstractmethod
-    # TODO (seja): def _apply(table: pd.DataFrame, error_mask: pd.DataFrame) -> pd.DataFrame:
-    # erwartet, dass 'table' ausschließlich valide columns hat. Wendet fehler stumpf auf alle Zellen an, wenn 'error_mask' True ist
-    # Gibt geänderte 'table' zurück.
+    # TODO(seja): def _apply(table: pd.DataFrame, error_mask: pd.DataFrame) -> pd.DataFrame:
+    # Assumes 'table' has valid columns. Simply applies error_type to those cells where error_mask is True.
+    # Returns changed table
     def _apply(self: ErrorType, table: pd.DataFrame, error_mask: pd.DataFrame, column: str | int) -> pd.Series:
         pass
 

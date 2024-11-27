@@ -38,6 +38,9 @@ class Mislabel(ErrorType):
             def sample_label(old_label: pd.Any) -> pd.Any:
                 se_sample = series.loc[series != old_label]
                 return se_sample.sample(1, replace=True).to_numpy()[0]
+        else:
+            # TODO(anyone): raising exception
+            pass
 
         series_mask = get_column(error_mask, column)
         series.loc[series_mask] = series.loc[series_mask].apply(sample_label)

@@ -17,6 +17,7 @@ class ErrorMechanism(ABC):
         error_rate: float,
         error_mask: pd.DataFrame | None = None,
     ) -> pd.DataFrame:
+        # TODO(seja): Docs
         if error_rate < 0 or error_rate > 1:
             error_rate_msg = "'error_rate' need to be float: 0 <= error_rate <= 1."
             raise ValueError(error_rate_msg)
@@ -48,4 +49,5 @@ class ErrorMechanism(ABC):
 
     @abstractmethod
     def _sample(self: ErrorMechanism, data: pd.DataFrame, column: str | int, error_rate: float, error_mask: pd.DataFrame) -> pd.DataFrame:
+        # TODO(seja): Docs
         pass

@@ -14,6 +14,7 @@ if TYPE_CHECKING:
 
 
 class EAR(ErrorMechanism):
+    # TODO(seja): Docs
     def _sample(self: EAR, data: pd.DataFrame, column: str | int, error_rate: float, error_mask: pd.DataFrame) -> pd.DataFrame:
         if len(data.columns) < 2:  # noqa: PLR2004
             msg = "The table into which error at random (EAR) are to be injected requies at least 2 columns."

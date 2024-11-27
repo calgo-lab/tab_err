@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 
 class ENAR(ErrorMechanism):
     def _sample(self: ENAR, data: pd.DataFrame, column: str | int, error_rate: float, error_mask: pd.DataFrame | None = None) -> pd.DataFrame:
+    # TODO(seja): Docs
         se_data = get_column(data, column)
         se_mask = get_column(error_mask, column)
 
