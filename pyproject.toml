@@ -10,14 +10,14 @@ license = "Apache License 2.0"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
-pandas = "^2.2.1"
+python = "^3.9,<3.13"
+pandas = "^2.2.3"
 
 [tool.poetry.group.dev.dependencies]
-ruff = "^0.2.2"
-pre-commit = "^3.6.2"
-mypy = "^1.8.0"
-jupyter = "^1.0.0"
+ruff = "^0.8.0"
+pre-commit = "^4.0.1"
+mypy = "^1.13.0"
+jupyter = "^1.1.1"
 
 [build-system]
 requires = ["poetry-core"]
