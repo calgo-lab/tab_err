@@ -31,4 +31,5 @@ def create_errors(
     error_mask = error_mechanism.sample(table_copy, column, error_rate, error_mask=None)
     series = error_type.apply(table_copy, error_mask, column)
     set_column(table_copy, column, series)
+
     return table_copy, error_mask

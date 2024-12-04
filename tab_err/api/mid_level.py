@@ -29,4 +29,5 @@ def create_errors(table: pd.DataFrame, config: MidLevelConfig) -> tuple[pd.DataF
 
             series = error_type.apply(table_dirty, old_error_mask != error_mask, column)
             set_column(table_dirty, column, series)
+
     return table_dirty, error_mask
