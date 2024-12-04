@@ -8,7 +8,7 @@ from tab_err.error_type import ErrorType
 from tab_err.utils import get_column
 
 
-class Mislabel(ErrorType):
+class CategorySwap(ErrorType):
     """Simulate incorrect labels in a column that contains categorical values."""
 
     @staticmethod
@@ -24,7 +24,7 @@ class Mislabel(ErrorType):
             msg = f"Column {column} contains {len(series.cat.categories)} categories. Require at least 2 categories to insert mislabels.."
             raise ValueError(msg)
 
-    def _apply(self: Mislabel, table: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
+    def _apply(self: CategorySwap, table: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
         series = get_column(table, column).copy()
 
         if self.config.mislabel_weighing == "uniform":
