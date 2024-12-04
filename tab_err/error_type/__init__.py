@@ -1,6 +1,5 @@
 from ._base import ErrorType
 from .add_delta import AddDelta
-from .butterfinger import Butterfinger
 from .extraneous import Extraneous
 from .mislabel import Mislabel
 from .missing import MissingValue
@@ -9,4 +8,5 @@ from .mojibake import Mojibake
 from .outlier import Outlier
 from .permutate import Permutate
 from .replace import Replace
+from .typo import Typo
 from .wrong_unit import WrongUnit

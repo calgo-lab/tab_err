@@ -12,16 +12,16 @@ if TYPE_CHECKING:
     import pandas as pd
 
 
-class Butterfinger(ErrorType):
+class Typo(ErrorType):
     """Inserts realistic typos into a column containing strings.
 
-    Butterfinger imitates a typist who misses the correct key. For a given keyboard-layout and key, Butterfinger maps
+    Typo imitates a typist who misses the correct key. For a given keyboard-layout and key, Typo maps
     all keys that physically border the given key on the given layout. It assumes that all bordering keys are equally
     likely to be hit by the typist.
 
-    Butterfinger assumes that words are separated by whitespaces. Applied to a cell, the period with which Butterfinger
-    will corrupt words in that cell is controlled by the parameter `error_period`. By default, Butterfinger will insert
-    a typo into every 10th word. Butterfinger will always insert at least one typo into an affected cell.
+    Typo assumes that words are separated by whitespaces. Applied to a cell, the period with which Typo
+    will corrupt words in that cell is controlled by the parameter `error_period`. By default, Typo will insert
+    a typo into every 10th word. Typo will always insert at least one typo into an affected cell.
     """
 
     @staticmethod
@@ -29,41 +29,41 @@ class Butterfinger(ErrorType):
         series = get_column(table, column)
 
         if not is_string_dtype(series):
-            msg = f"Column {column} does not contain values of the string dtype. Cannot apply Butterfingers."
+            msg = f"Column {column} does not contain values of the string dtype. Cannot apply Typos."
             raise TypeError(msg)
 
-    def _apply(self: Butterfinger, table: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
-        """Apply butterfinger.
+    def _apply(self: Typo, table: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
+        """Apply typo.
 
         table: the pandas DataFrame to-be-corrupted
         error_mask: binary mask the marks the error positions
         column: column into which errors shall be inserted
-        error_period: specifies how frequent butterfinger corruptions are - see class description for details.
+        error_period: specifies how frequent typo corruptions are - see class description for details.
         """
         series = get_column(table, column).copy()
         series_mask = get_column(error_mask, column)
 
         def butterfn(x: str) -> str:
-            return butterfinger(x, self.config.error_period, self.config.keyboard_layout)
+            return typo(x, self.config.error_period, self.config.keyboard_layout)
 
         series.loc[series_mask] = series.loc[series_mask].apply(butterfn)
         return series
 
 
-def butterfinger(input_text: str, error_period: int = 10, layout: str = "ansi-qwerty") -> str:
+def typo(input_text: str, error_period: int = 10, layout: str = "ansi-qwerty") -> str:
     """Inserts realistic typos into a string.
 
-    Butterfinger imitates a typist who misses the correct key. For a given keyboard-layout and key, Butterfinger maps
+    Typo imitates a typist who misses the correct key. For a given keyboard-layout and key, Typo maps
     all keys that physically border the given key on the given layout. It assumes that all bordering keys are equally
     likely to be hit by the typist.
 
-    Butterfinger assumes that words are separated by whitespaces. It will corrupt words in the input text with a period
-    controlled by the parameter `error_period`. By default, Butterfinger will insert a typo into every 10th word.
-    Butterfinger will always insert at least one typo into the input text.
+    Typo assumes that words are separated by whitespaces. It will corrupt words in the input text with a period
+    controlled by the parameter `error_period`. By default, Typo will insert a typo into every 10th word.
+    Typo will always insert at least one typo into the input text.
 
     Args:
         input_text: the string to be corrupted
-        error_period: specifies how frequent butterfinger corruptions are - see class description for details.
+        error_period: specifies how frequent typo corruptions are - see class description for details.
         layout: the keyboard layout to be used for the corruption. Currently, only "ansi-qwerty" is supported.
 
     Returns:

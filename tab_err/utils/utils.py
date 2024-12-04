@@ -41,8 +41,8 @@ class ErrorTypeConfig:
     Args:
         encoding_sender: When creating Mojibake, used to encode strings to bytes.
         encoding_receiver: When creating Mojibake, used to decode bytes back to strings.
-        keyboard_layout: When using Butterfinger, the keyboard layout used by the typer.
-        error_period: When using Butterfinger, the period at which the error occurs.
+        keyboard_layout: When using Typo, the keyboard layout used by the typer.
+        error_period: When using Typo, the period at which the error occurs.
         na_value: Token used to indicate missing values in Pandas.
         mislabel_weighing: Weight of the distribution that mislables are drawn from. Either "uniform", "frequency" or "custom".
         mistype_dtype: dtype of the column that is incorrectly typed. One of "object", "string", "int64", "Int64", "float64", "Float64".
