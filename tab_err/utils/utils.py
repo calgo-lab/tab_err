@@ -6,17 +6,7 @@ from typing import TYPE_CHECKING, Any, Callable
 if TYPE_CHECKING:
     import pandas as pd
 
-    from tab_err.error_mechanism import ErrorMechanism
-    from tab_err.error_type import ErrorType
-
-
-@dataclasses.dataclass
-class ErrorModel:
-    """An ErrorModel, which consists of an ErrorMechanism, an ErrorType, and an error rate."""
-
-    error_mechanism: ErrorMechanism
-    error_type: ErrorType
-    error_rate: float
+    from tab_err import ErrorModel
 
 
 @dataclasses.dataclass
