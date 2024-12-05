@@ -3,8 +3,6 @@ from __future__ import annotations
 import warnings
 from typing import TYPE_CHECKING
 
-import numpy as np
-
 from tab_err._utils import get_column, get_column_str
 
 from ._error_mechanism import ErrorMechanism
@@ -23,7 +21,7 @@ class EAR(ErrorMechanism):
         if self.condition_to_column is None:
             col = get_column_str(data, column)
             column_selection = [x for x in data.columns if x != col]
-            condition_to_column = np.random.default_rng(self.seed).choice(column_selection)
+            condition_to_column = self._random_generator.choice(column_selection)
             warnings.warn(
                 "The user did not specify 'condition_to_column', the column on which the EAR Mechanism conditions the error distribution. "
                 + f"Randomly select column '{condition_to_column}'.",
@@ -46,7 +44,7 @@ class EAR(ErrorMechanism):
 
         # we offset the upper bound of the lower_error_index by a) the existing number of errors in the row, and b) the number of errors to-be generated.
         upper_bound = len(se_data) - sum(se_mask) - n_errors
-        lower_error_index = np.random.default_rng(self.seed).integers(0, upper_bound) if upper_bound > 0 else 0
+        lower_error_index = self._random_generator.integers(0, upper_bound) if upper_bound > 0 else 0
         error_index_range = range(lower_error_index, lower_error_index + n_errors)
         selected_rows = data_column_error_free.sort_values(by=condition_to_column).iloc[error_index_range, :]
 

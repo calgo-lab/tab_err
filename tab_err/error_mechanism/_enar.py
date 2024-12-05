@@ -3,8 +3,6 @@ from __future__ import annotations
 import warnings
 from typing import TYPE_CHECKING
 
-import numpy as np
-
 from tab_err._utils import get_column
 
 from ._error_mechanism import ErrorMechanism
@@ -33,10 +31,7 @@ class ENAR(ErrorMechanism):
             msg += f"However, only {len(se_data_error_free)} error-free cells are available."
             raise ValueError(msg)
 
-        if len(se_data_error_free) != n_errors:  # noqa: SIM108
-            lower_error_index = np.random.default_rng(seed=self.seed).integers(0, len(se_data_error_free) - n_errors)
-        else:
-            lower_error_index = 0
+        lower_error_index = self._random_generator.integers(0, len(se_data_error_free) - n_errors) if len(se_data_error_free) != n_errors else 0
 
         error_index_range = range(lower_error_index, lower_error_index + n_errors)
         selected_rows = se_data_error_free.sort_values().iloc[error_index_range]

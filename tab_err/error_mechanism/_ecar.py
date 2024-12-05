@@ -3,8 +3,6 @@ from __future__ import annotations
 import warnings
 from typing import TYPE_CHECKING
 
-import numpy as np
-
 from tab_err._utils import get_column
 
 from ._error_mechanism import ErrorMechanism
@@ -30,6 +28,6 @@ class ECAR(ErrorMechanism):
             raise ValueError(msg)
 
         # randomly choose error-cells
-        error_indices = np.random.default_rng(seed=self.seed).choice(se_mask_error_free.index, n_errors, replace=False)
+        error_indices = self._random_generator.choice(se_mask_error_free.index, n_errors, replace=False)
         se_mask[error_indices] = True
         return error_mask
