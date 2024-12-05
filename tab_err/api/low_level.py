@@ -7,9 +7,7 @@ from tab_err._utils import set_column
 if TYPE_CHECKING:
     import pandas as pd
 
-    from tab_err import ErrorMechanism
-
-    from ._error_type import ErrorType
+    from tab_err import ErrorMechanism, ErrorType
 
 
 def create_errors(

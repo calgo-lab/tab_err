@@ -58,6 +58,7 @@ class ErrorTypeConfig:
 
     add_delta_value: Any | None = None
 
+    outlier_coin_flip_threshold: float = 0.5
     outlier_coefficient: float = 1.0
     outlier_noise_coeff: float = 0.1
 

@@ -51,7 +51,7 @@ class Outlier(ErrorType):
         upper_boundary = q3 + 1.5 * iqr
         lower_boundary = q1 - 1.5 * iqr
 
-        # Precompute the perturbations
+        # Pre-compute the perturbations
         perturbation_upper = self.config.outlier_coefficient * (upper_boundary - mean_value)
         perturbation_lower = self.config.outlier_coefficient * (mean_value - lower_boundary)
 
@@ -64,13 +64,9 @@ class Outlier(ErrorType):
         mask_upper = (series > mean_value) & series_mask
         mask_equal = (series == mean_value) & series_mask
 
-        # Apply the constant perturbation to the respecitve mask
+        # Apply the constant perturbation to the respective mask
         series.loc[mask_lower] -= perturbation_lower
         series.loc[mask_upper] += perturbation_upper
-
-        # Random number generator for coin flip
-        rng = np.random.default_rng()
-        coin_flip_threshold = 0.5
 
         # Handle the mean values with a coin flip
         coin_flips = rng.random(mask_equal.sum())
