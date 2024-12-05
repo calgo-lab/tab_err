@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import random
 from typing import TYPE_CHECKING
+
+import numpy as np
 
 if TYPE_CHECKING:
     import pandas as pd
@@ -33,3 +36,14 @@ def get_column_str(data: pd.DataFrame, column: int | str) -> str:
 def get_column(data: pd.DataFrame, column: int | str) -> pd.Series:
     """Selects a column from the given DataFrame and returns it as a Series."""
     return data[get_column_str(data, column)]
+
+
+def seed_randomness(seed: int | None) -> np.random.Generator:
+    if seed is not None:
+        random.seed(seed)
+        random_generator = np.random.default_rng(seed=seed)
+
+    else:
+        random_generator = np.random.default_rng()
+
+    return random_generator

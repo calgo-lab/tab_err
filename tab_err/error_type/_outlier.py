@@ -69,15 +69,15 @@ class Outlier(ErrorType):
         series.loc[mask_upper] += perturbation_upper
 
         # Handle the mean values with a coin flip
-        coin_flips = rng.random(mask_equal.sum())
-        series.loc[mask_equal] += np.where(coin_flips > coin_flip_threshold, perturbation_upper, -perturbation_lower)
+        coin_flips = self._random_generator.random(mask_equal.sum())
+        series.loc[mask_equal] += np.where(coin_flips > self.config.outlier_coin_flip_threshold, perturbation_upper, -perturbation_lower)
 
         # Apply Gaussian noise to simulate the increase in measurement error of the outliers
         noise_std = self.config.outlier_noise_coeff * iqr
 
         if is_integer_dtype(series):  # round float to int when series is int
-            series.loc[series_mask] += np.rint(rng.normal(loc=0, scale=noise_std, size=series_mask.sum()))
+            series.loc[series_mask] += np.rint(self._random_generator.normal(loc=0, scale=noise_std, size=series_mask.sum()))
         else:
-            series.loc[series_mask] += rng.normal(loc=0, scale=noise_std, size=series_mask.sum())
+            series.loc[series_mask] += self._random_generator.normal(loc=0, scale=noise_std, size=series_mask.sum())
 
         return series
