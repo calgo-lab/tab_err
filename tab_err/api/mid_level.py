@@ -1,8 +1,26 @@
 from __future__ import annotations
 
+import dataclasses
+from typing import TYPE_CHECKING
+
 import pandas as pd
 
-from tab_err.utils import MidLevelConfig, set_column
+from tab_err._utils import set_column
+
+if TYPE_CHECKING:
+    from tab_err._error_model import ErrorModel
+
+
+@dataclasses.dataclass
+class MidLevelConfig:
+    """Configuration of the mid_level API.
+
+    The mid_level API applies N pairs of (error_mechanism, error_type) to a table. In consequence, the user
+    is required to specify up to N pairs of error_mechanism, error_type per column when calling the mid_level
+    API.
+    """
+
+    columns: dict[int | str, list[ErrorModel]]
 
 
 def create_errors(table: pd.DataFrame, config: MidLevelConfig) -> tuple[pd.DataFrame, pd.DataFrame]:

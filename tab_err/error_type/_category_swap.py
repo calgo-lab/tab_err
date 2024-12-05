@@ -4,8 +4,9 @@ import random
 
 import pandas as pd
 
-from tab_err.error_type import ErrorType
-from tab_err.utils import get_column
+from tab_err._utils import get_column
+
+from ._error_type import ErrorType
 
 
 class CategorySwap(ErrorType):

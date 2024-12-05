@@ -5,9 +5,9 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
-from tab_err.utils import get_column
+from tab_err._utils import get_column
 
-from ._base import ErrorMechanism
+from ._error_mechanism import ErrorMechanism
 
 if TYPE_CHECKING:
     import pandas as pd

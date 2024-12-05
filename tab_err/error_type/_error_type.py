@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any
 
-from tab_err.utils import ErrorTypeConfig
+from ._config import ErrorTypeConfig
 
 if TYPE_CHECKING:
     import pandas as pd

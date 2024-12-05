@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from tab_err.error_type import ErrorType
-from tab_err.utils import get_column
+from tab_err._utils import get_column
+
+from ._error_type import ErrorType
 
 if TYPE_CHECKING:
     import pandas as pd

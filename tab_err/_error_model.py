@@ -8,8 +8,7 @@ from tab_err.api import low_level
 if TYPE_CHECKING:
     import pandas as pd
 
-    from .error_mechanism import ErrorMechanism
-    from .error_type import ErrorType
+    from tab_err import ErrorMechanism, ErrorType
 
 
 @dataclasses.dataclass
