@@ -13,8 +13,8 @@ class CategorySwap(ErrorType):
     """Simulate incorrect labels in a column that contains categorical values."""
 
     @staticmethod
-    def _check_type(table: pd.DataFrame, column: int | str) -> None:
-        series = get_column(table, column)
+    def _check_type(data: pd.DataFrame, column: int | str) -> None:
+        series = get_column(data, column)
 
         if not isinstance(series.dtype, pd.CategoricalDtype):
             msg = f"Column {column} does not contain values of the Categorical dtype. Cannot insert Mislables.\n"
@@ -25,8 +25,8 @@ class CategorySwap(ErrorType):
             msg = f"Column {column} contains {len(series.cat.categories)} categories. Require at least 2 categories to insert mislabels.."
             raise ValueError(msg)
 
-    def _apply(self: CategorySwap, table: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
-        series = get_column(table, column).copy()
+    def _apply(self: CategorySwap, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
+        series = get_column(data, column).copy()
 
         if self.config.mislabel_weighing == "uniform":
 

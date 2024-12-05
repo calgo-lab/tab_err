@@ -18,12 +18,12 @@ class Mistype(ErrorType):
     """
 
     @staticmethod
-    def _check_type(table: pd.DataFrame, column: int | str) -> None:
+    def _check_type(data: pd.DataFrame, column: int | str) -> None:
         # all dtypes are supported
         pass
 
-    def _apply(self: Mistype, table: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
-        series = get_column(table, column).copy()
+    def _apply(self: Mistype, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
+        series = get_column(data, column).copy()
 
         if self.config.mistype_dtype is not None:
             supported_dtypes = ["object", "string", "int64", "Int64", "float64", "Float64"]

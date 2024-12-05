@@ -20,12 +20,12 @@ class MissingValue(ErrorType):
     """
 
     @staticmethod
-    def _check_type(table: pd.DataFrame, column: int | str) -> None:
+    def _check_type(data: pd.DataFrame, column: int | str) -> None:
         # all dtypes are supported
         pass
 
-    def _apply(self: MissingValue, table: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
-        series = get_column(table, column).copy()
+    def _apply(self: MissingValue, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
+        series = get_column(data, column).copy()
         series_mask = get_column(error_mask, column)
         series[series_mask] = self.config.na_value
         return series

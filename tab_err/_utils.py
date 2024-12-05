@@ -6,21 +6,21 @@ if TYPE_CHECKING:
     import pandas as pd
 
 
-def set_column(table: pd.DataFrame, column: int | str, series: pd.Series) -> None:
+def set_column(data: pd.DataFrame, column: int | str, series: pd.Series) -> None:
     """Replaces a column in the given DataFrame with the given Series.
 
-    Mutates table and changes the dtype of the original table to that of the series,
+    Mutates data and changes the dtype of the original data to that of the series,
     which, depending on the error type, might change.
     """
-    col = table.columns[column] if isinstance(column, int) else column
-    table[col] = table[col].astype(series.dtype)
-    table[col] = series
+    col = data.columns[column] if isinstance(column, int) else column
+    data[col] = data[col].astype(series.dtype)
+    data[col] = series
 
 
-def get_column_str(table: pd.DataFrame, column: int | str) -> str:
+def get_column_str(data: pd.DataFrame, column: int | str) -> str:
     """Return column's name of the given DataFrame, where column can be defined as name or index."""
     if isinstance(column, int):
-        col = table.columns[column]
+        col = data.columns[column]
     elif isinstance(column, str):
         col = column
     else:
@@ -30,6 +30,6 @@ def get_column_str(table: pd.DataFrame, column: int | str) -> str:
     return col
 
 
-def get_column(table: pd.DataFrame, column: int | str) -> pd.Series:
+def get_column(data: pd.DataFrame, column: int | str) -> pd.Series:
     """Selects a column from the given DataFrame and returns it as a Series."""
-    return table[get_column_str(table, column)]
+    return data[get_column_str(data, column)]

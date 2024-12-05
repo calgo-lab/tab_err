@@ -31,16 +31,16 @@ class Outlier(ErrorType):
     """
 
     @staticmethod
-    def _check_type(table: pd.DataFrame, column: int | str) -> None:
-        series = get_column(table, column)
+    def _check_type(data: pd.DataFrame, column: int | str) -> None:
+        series = get_column(data, column)
 
         if not is_numeric_dtype(series):
             msg = f"Column {column} does not contain numeric values. Cannot apply outliers."
             raise TypeError(msg)
 
-    def _apply(self: Outlier, table: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
+    def _apply(self: Outlier, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
         # Get the column series and mask
-        series = get_column(table, column).copy()
+        series = get_column(data, column).copy()
         series_mask = get_column(error_mask, column)
 
         mean_value = series.mean()

@@ -26,22 +26,22 @@ class Typo(ErrorType):
     """
 
     @staticmethod
-    def _check_type(table: pd.DataFrame, column: int | str) -> None:
-        series = get_column(table, column)
+    def _check_type(data: pd.DataFrame, column: int | str) -> None:
+        series = get_column(data, column)
 
         if not is_string_dtype(series):
             msg = f"Column {column} does not contain values of the string dtype. Cannot apply Typos."
             raise TypeError(msg)
 
-    def _apply(self: Typo, table: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
+    def _apply(self: Typo, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
         """Apply typo.
 
-        table: the pandas DataFrame to-be-corrupted
+        data: the pandas DataFrame to-be-corrupted
         error_mask: binary mask the marks the error positions
         column: column into which errors shall be inserted
         error_period: specifies how frequent typo corruptions are - see class description for details.
         """
-        series = get_column(table, column).copy()
+        series = get_column(data, column).copy()
         series_mask = get_column(error_mask, column)
 
         def butterfn(x: str) -> str:

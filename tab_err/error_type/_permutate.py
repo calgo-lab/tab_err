@@ -28,15 +28,15 @@ class Permutate(ErrorType):
     """Permutates the values in a column."""
 
     @staticmethod
-    def _check_type(table: pd.DataFrame, column: int | str) -> None:
-        series = get_column(table, column)
+    def _check_type(data: pd.DataFrame, column: int | str) -> None:
+        series = get_column(data, column)
 
         if not is_string_dtype(series):
             msg = f"Column {column} does not contain values of the string dtype. Cannot Permutate values."
             raise TypeError(msg)
 
-    def _apply(self: Permutate, table: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:  # noqa: C901
-        series = get_column(table, column).copy()
+    def _apply(self: Permutate, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:  # noqa: C901
+        series = get_column(data, column).copy()
         series_mask = get_column(error_mask, column)
 
         separator_counts = [x.count(self.config.permutation_separator) for x in series.dropna()]

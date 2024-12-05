@@ -17,14 +17,14 @@ class Mojibake(ErrorType):
     """Inserts mojibake into a column containing strings."""
 
     @staticmethod
-    def _check_type(table: pd.DataFrame, column: int | str) -> None:
-        series = get_column(table, column)
+    def _check_type(data: pd.DataFrame, column: int | str) -> None:
+        series = get_column(data, column)
 
         if not is_string_dtype(series):
             msg = f"Column {column} does not contain values of the string dtype. Cannot insert Mojibake."
             raise TypeError(msg)
 
-    def _apply(self: Mojibake, table: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
+    def _apply(self: Mojibake, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
         # Top 10 most used encodings on the internet
         # https://w3techs.com/technologies/overview/character_encoding
         top10 = {"utf_8", "iso-8859-1", "windows-1252", "windows-1251", "shift_jis", "euc_jp", "gb2312", "euc_kr", "windows-1250", "iso-8859-2"}
@@ -43,7 +43,7 @@ class Mojibake(ErrorType):
             "iso-8859-2": top10 - {"iso-8859-2", "windows-1250", "iso-8859-1", "windows-1252"},
         }
 
-        series = get_column(table, column).copy()
+        series = get_column(data, column).copy()
         encoding_sender = self.config.encoding_sender
         encoding_receiver = self.config.encoding_receiver
 
