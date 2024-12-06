@@ -25,7 +25,7 @@ def generate_shuffle_pattern(format_len: int) -> list[int]:
 
 
 class Permutate(ErrorType):
-    """Permutates the values in a column."""
+    """Permutates the parts of a compound value in a column."""
 
     @staticmethod
     def _check_type(data: pd.DataFrame, column: int | str) -> None:
@@ -35,7 +35,7 @@ class Permutate(ErrorType):
             msg = f"Column {column} does not contain values of the string dtype. Cannot Permutate values."
             raise TypeError(msg)
 
-    def _apply(self: Permutate, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:  # noqa: C901
+    def _apply(self: Permutate, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
         series = get_column(data, column).copy()
         series_mask = get_column(error_mask, column)
 
@@ -61,12 +61,10 @@ class Permutate(ErrorType):
             # TODO(anyone): new_pattern possible unbound
 
             def fixed_shuffle_pattern(old_string: str) -> str:
-                old_list = old_string.split(self.config.permutation_separator)
-                new = ["" for _ in range(len(old_list))]
-                for i, n in enumerate(new_pattern):
-                    new[n] = old_list[i]
+                string_as_part_lists = old_string.split(self.config.permutation_separator)
+                new_string_as_part_list = [string_as_part_lists[index] for index in new_pattern]
 
-                return self.config.permutation_separator.join(new)
+                return self.config.permutation_separator.join(new_string_as_part_list)
 
             series.loc[series_mask] = series.loc[series_mask].apply(fixed_shuffle_pattern)
             return series
