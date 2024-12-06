@@ -21,7 +21,7 @@ class Typo(ErrorType):
     likely to be hit by the typist.
 
     Typo assumes that words are separated by whitespaces. Applied to a cell, the period with which Typo
-    will corrupt words in that cell is controlled by the parameter `error_period`. By default, Typo will insert
+    will corrupt words in that cell is controlled by the parameter `typo_error_period`. By default, Typo will insert
     a typo into every 10th word. Typo will always insert at least one typo into an affected cell.
     """
 
@@ -39,19 +39,19 @@ class Typo(ErrorType):
         data: the pandas DataFrame to-be-corrupted
         error_mask: binary mask the marks the error positions
         column: column into which errors shall be inserted
-        error_period: specifies how frequent typo corruptions are - see class description for details.
+        typo_error_period: specifies how frequent typo corruptions are - see class description for details.
         """
         series = get_column(data, column).copy()
         series_mask = get_column(error_mask, column)
 
         def butterfn(x: str) -> str:
-            return typo(x, self.config.error_period, self.config.keyboard_layout)
+            return typo(x, self.config.typo_error_period, self.config.typo_keyboard_layout)
 
         series.loc[series_mask] = series.loc[series_mask].apply(butterfn)
         return series
 
 
-def typo(input_text: str, error_period: int = 10, layout: str = "ansi-qwerty") -> str:
+def typo(input_text: str, typo_error_period: int = 10, layout: str = "ansi-qwerty") -> str:
     """Inserts realistic typos into a string.
 
     Typo imitates a typist who misses the correct key. For a given keyboard-layout and key, Typo maps
@@ -59,12 +59,12 @@ def typo(input_text: str, error_period: int = 10, layout: str = "ansi-qwerty") -
     likely to be hit by the typist.
 
     Typo assumes that words are separated by whitespaces. It will corrupt words in the input text with a period
-    controlled by the parameter `error_period`. By default, Typo will insert a typo into every 10th word.
+    controlled by the parameter `typo_error_period`. By default, Typo will insert a typo into every 10th word.
     Typo will always insert at least one typo into the input text.
 
     Args:
         input_text: the string to be corrupted
-        error_period: specifies how frequent typo corruptions are - see class description for details.
+        typo_error_period: specifies how frequent typo corruptions are - see class description for details.
         layout: the keyboard layout to be used for the corruption. Currently, only "ansi-qwerty" is supported.
 
     Returns:
@@ -123,15 +123,15 @@ def typo(input_text: str, error_period: int = 10, layout: str = "ansi-qwerty") -
         message = f"Unsupported keyboard layout {layout}."
         raise ValueError(message)
 
-    if error_period < 1:
-        message = "error_period smaller than 1 is invalid, as multiple errors per word are not supported."
+    if typo_error_period < 1:
+        message = "typo_error_period smaller than 1 is invalid, as multiple errors per word are not supported."
         raise ValueError(message)
 
     splits = input_text.split(" ")
 
     # draw only from splits that have a content
     valid_positions = [i for i, w in enumerate(splits) if len(w) > 0]
-    n_draws = max(len(valid_positions) // error_period, 1)
+    n_draws = max(len(valid_positions) // typo_error_period, 1)
     positions = random.sample(valid_positions, n_draws)
 
     for p in positions:

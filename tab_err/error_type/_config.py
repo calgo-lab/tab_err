@@ -14,9 +14,9 @@ class ErrorTypeConfig:
     Args:
         encoding_sender: When creating Mojibake, used to encode strings to bytes.
         encoding_receiver: When creating Mojibake, used to decode bytes back to strings.
-        keyboard_layout: When using Typo, the keyboard layout used by the typer.
-        error_period: When using Typo, the period at which the error occurs.
-        na_value: Token used to indicate missing values in Pandas.
+        typo_keyboard_layout: When using Typo, the keyboard layout used by the typer.
+        typo_error_period: When using Typo, the period at which the error occurs.
+        missing_value: Token used to indicate missing values in Pandas.
         mislabel_weighing: Weight of the distribution that mislables are drawn from. Either "uniform", "frequency" or "custom".
         mistype_dtype: dtype of the column that is incorrectly typed. One of "object", "string", "int64", "Int64", "float64", "Float64".
         wrong_unit_scaling: Function that scales a value from one unit to another.
@@ -28,6 +28,7 @@ class ErrorTypeConfig:
         replace_what: String that the Replace Error Type replaces with replace_with.
         replace_with: String that the Replace Error Type uses to replace replace_what with. Defaults to "".
         add_delta_value: Value that is added to the value by the AddDelta Error Type.
+        outlier_coin_flip_threshold: Coin flip determines the direction (positive, negative) of the outlier.
         outlier_coefficient: Coefficient that determines the magnitude of the outliers for the Outlier Error Type.
         outlier_noise_coeff: Coefficient that influences the standard deviation of the noise added to the outliers for the Outlier Error Type.
     """
@@ -35,10 +36,10 @@ class ErrorTypeConfig:
     encoding_sender: str | None = None
     encoding_receiver: str | None = None
 
-    keyboard_layout: str = "ansi-qwerty"
-    error_period: int = 10
+    typo_keyboard_layout: str = "ansi-qwerty"
+    typo_error_period: int = 10
 
-    na_value: str | None = None
+    missing_value: str | None = None
 
     mislabel_weighing: str = "uniform"
     mislabel_weights: dict[Any, float] | None = None
