@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "tab_err"
-version = "0.1.0"
+version = "0.1.1"
 description = "Fully-controllable error generation for tabular data."
 authors = [
     "Philipp Jung <philippjung@posteo.de>",
