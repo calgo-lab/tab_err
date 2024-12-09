@@ -40,7 +40,8 @@ class CategorySwap(ErrorType):
                 se_sample = series.loc[series != old_label]
                 return se_sample.sample(1, replace=True).to_numpy()[0]
         else:
-            # TODO(anyone): raising exception
+            msg = "Invalid value for parameter 'config.mislabel_weighing'. Allowed values are: 'uniform', 'frequency'."
+            raise ValueError(msg)
             pass
 
         series_mask = get_column(error_mask, column)
