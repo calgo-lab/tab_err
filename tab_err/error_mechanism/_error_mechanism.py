@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 class ErrorMechanism(ABC):
     def __init__(self: ErrorMechanism, condition_to_column: int | str | None = None, seed: int | None = None) -> None:
         if not (isinstance(seed, int) or seed is None):
-            msg = "'seed' need to be int or None."
+            msg = "'seed' needs to be int or None."
             raise TypeError(msg)
 
         self.condition_to_column = condition_to_column
