@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from error_generation.error_type import ErrorType
-from error_generation.utils import get_column
+from tab_err._utils import get_column
+
+from ._error_type import ErrorType
 
 if TYPE_CHECKING:
     import pandas as pd
@@ -17,12 +18,12 @@ class Mistype(ErrorType):
     """
 
     @staticmethod
-    def _check_type(table: pd.DataFrame, column: int | str) -> None:
+    def _check_type(data: pd.DataFrame, column: int | str) -> None:
         # all dtypes are supported
         pass
 
-    def _apply(self: Mistype, table: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
-        series = get_column(table, column).copy()
+    def _apply(self: Mistype, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
+        series = get_column(data, column).copy()
 
         if self.config.mistype_dtype is not None:
             supported_dtypes = ["object", "string", "int64", "Int64", "float64", "Float64"]
@@ -48,7 +49,9 @@ class Mistype(ErrorType):
                 target_dtype = "Int64"
             elif current_dtype == "bool":
                 target_dtype = "int64"
-            # PJ: not sure about this logic, there might be a better way to do this.
+            # NOTE(PJ): not sure about this logic, there might be a better way to do this.
+
+        # TODO(anyone): target_dtype possible unbound
 
         series = series.astype("object")
         series_mask = get_column(error_mask, column)

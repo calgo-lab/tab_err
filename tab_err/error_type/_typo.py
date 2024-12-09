@@ -5,65 +5,66 @@ from typing import TYPE_CHECKING
 
 from pandas.api.types import is_string_dtype
 
-from error_generation.error_type import ErrorType
-from error_generation.utils import get_column
+from tab_err._utils import get_column
+
+from ._error_type import ErrorType
 
 if TYPE_CHECKING:
     import pandas as pd
 
 
-class Butterfinger(ErrorType):
+class Typo(ErrorType):
     """Inserts realistic typos into a column containing strings.
 
-    Butterfinger imitates a typist who misses the correct key. For a given keyboard-layout and key, Butterfinger maps
+    Typo imitates a typist who misses the correct key. For a given keyboard-layout and key, Typo maps
     all keys that physically border the given key on the given layout. It assumes that all bordering keys are equally
     likely to be hit by the typist.
 
-    Butterfinger assumes that words are separated by whitespaces. Applied to a cell, the period with which Butterfinger
-    will corrupt words in that cell is controlled by the parameter `error_period`. By default, Butterfinger will insert
-    a typo into every 10th word. Butterfinger will always insert at least one typo into an affected cell.
+    Typo assumes that words are separated by whitespaces. Applied to a cell, the period with which Typo
+    will corrupt words in that cell is controlled by the parameter `typo_error_period`. By default, Typo will insert
+    a typo into every 10th word. Typo will always insert at least one typo into an affected cell.
     """
 
     @staticmethod
-    def _check_type(table: pd.DataFrame, column: int | str) -> None:
-        series = get_column(table, column)
+    def _check_type(data: pd.DataFrame, column: int | str) -> None:
+        series = get_column(data, column)
 
         if not is_string_dtype(series):
-            msg = f"Column {column} does not contain values of the string dtype. Cannot apply Butterfingers."
+            msg = f"Column {column} does not contain values of the string dtype. Cannot apply Typos."
             raise TypeError(msg)
 
-    def _apply(self: Butterfinger, table: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
-        """Apply butterfinger.
+    def _apply(self: Typo, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
+        """Apply typo.
 
-        table: the pandas dataframe to-be-corrupted
+        data: the pandas DataFrame to-be-corrupted
         error_mask: binary mask the marks the error positions
         column: column into which errors shall be inserted
-        error_period: specifies how frequent butterfinger corruptions are - see class description for details.
+        typo_error_period: specifies how frequent typo corruptions are - see class description for details.
         """
-        series = get_column(table, column).copy()
+        series = get_column(data, column).copy()
         series_mask = get_column(error_mask, column)
 
         def butterfn(x: str) -> str:
-            return butterfinger(x, self.config.error_period, self.config.keyboard_layout)
+            return typo(x, self.config.typo_error_period, self.config.typo_keyboard_layout)
 
         series.loc[series_mask] = series.loc[series_mask].apply(butterfn)
         return series
 
 
-def butterfinger(input_text: str, error_period: int = 10, layout: str = "ansi-qwerty") -> str:
+def typo(input_text: str, typo_error_period: int = 10, layout: str = "ansi-qwerty") -> str:
     """Inserts realistic typos into a string.
 
-    Butterfinger imitates a typist who misses the correct key. For a given keyboard-layout and key, Butterfinger maps
+    Typo imitates a typist who misses the correct key. For a given keyboard-layout and key, Typo maps
     all keys that physically border the given key on the given layout. It assumes that all bordering keys are equally
     likely to be hit by the typist.
 
-    Butterfinger assumes that words are separated by whitespaces. It will corrupt words in the input text with a period
-    controlled by the parameter `error_period`. By default, Butterfinger will insert a typo into every 10th word.
-    Butterfinger will always insert at least one typo into the input text.
+    Typo assumes that words are separated by whitespaces. It will corrupt words in the input text with a period
+    controlled by the parameter `typo_error_period`. By default, Typo will insert a typo into every 10th word.
+    Typo will always insert at least one typo into the input text.
 
     Args:
         input_text: the string to be corrupted
-        error_period: specifies how frequent butterfinger corruptions are - see class description for details.
+        typo_error_period: specifies how frequent typo corruptions are - see class description for details.
         layout: the keyboard layout to be used for the corruption. Currently, only "ansi-qwerty" is supported.
 
     Returns:
@@ -122,15 +123,15 @@ def butterfinger(input_text: str, error_period: int = 10, layout: str = "ansi-qw
         message = f"Unsupported keyboard layout {layout}."
         raise ValueError(message)
 
-    if error_period < 1:
-        message = "error_period smaller than 1 is invalid, as multiple errors per word are not supported."
+    if typo_error_period < 1:
+        message = "typo_error_period smaller than 1 is invalid, as multiple errors per word are not supported."
         raise ValueError(message)
 
     splits = input_text.split(" ")
 
     # draw only from splits that have a content
     valid_positions = [i for i, w in enumerate(splits) if len(w) > 0]
-    n_draws = max(len(valid_positions) // error_period, 1)
+    n_draws = max(len(valid_positions) // typo_error_period, 1)
     positions = random.sample(valid_positions, n_draws)
 
     for p in positions:

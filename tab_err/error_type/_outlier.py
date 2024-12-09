@@ -5,8 +5,9 @@ from typing import TYPE_CHECKING
 import numpy as np
 from pandas.api.types import is_integer_dtype, is_numeric_dtype
 
-from error_generation.error_type import ErrorType
-from error_generation.utils import get_column
+from tab_err._utils import get_column
+
+from ._error_type import ErrorType
 
 if TYPE_CHECKING:
     import pandas as pd
@@ -30,16 +31,16 @@ class Outlier(ErrorType):
     """
 
     @staticmethod
-    def _check_type(table: pd.DataFrame, column: int | str) -> None:
-        series = get_column(table, column)
+    def _check_type(data: pd.DataFrame, column: int | str) -> None:
+        series = get_column(data, column)
 
         if not is_numeric_dtype(series):
             msg = f"Column {column} does not contain numeric values. Cannot apply outliers."
             raise TypeError(msg)
 
-    def _apply(self: Outlier, table: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
+    def _apply(self: Outlier, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
         # Get the column series and mask
-        series = get_column(table, column).copy()
+        series = get_column(data, column).copy()
         series_mask = get_column(error_mask, column)
 
         mean_value = series.mean()
@@ -50,7 +51,7 @@ class Outlier(ErrorType):
         upper_boundary = q3 + 1.5 * iqr
         lower_boundary = q1 - 1.5 * iqr
 
-        # Precompute the perturbations
+        # Pre-compute the perturbations
         perturbation_upper = self.config.outlier_coefficient * (upper_boundary - mean_value)
         perturbation_lower = self.config.outlier_coefficient * (mean_value - lower_boundary)
 
@@ -63,24 +64,20 @@ class Outlier(ErrorType):
         mask_upper = (series > mean_value) & series_mask
         mask_equal = (series == mean_value) & series_mask
 
-        # Apply the constant perturbation to the respecitve mask
+        # Apply the constant perturbation to the respective mask
         series.loc[mask_lower] -= perturbation_lower
         series.loc[mask_upper] += perturbation_upper
 
-        # Random number generator for coin flip
-        rng = np.random.default_rng()
-        coin_flip_threshold = 0.5
-
         # Handle the mean values with a coin flip
-        coin_flips = rng.random(mask_equal.sum())
-        series.loc[mask_equal] += np.where(coin_flips > coin_flip_threshold, perturbation_upper, -perturbation_lower)
+        coin_flips = self._random_generator.random(mask_equal.sum())
+        series.loc[mask_equal] += np.where(coin_flips > self.config.outlier_coin_flip_threshold, perturbation_upper, -perturbation_lower)
 
         # Apply Gaussian noise to simulate the increase in measurement error of the outliers
         noise_std = self.config.outlier_noise_coeff * iqr
 
         if is_integer_dtype(series):  # round float to int when series is int
-            series.loc[series_mask] += np.rint(rng.normal(loc=0, scale=noise_std, size=series_mask.sum()))
+            series.loc[series_mask] += np.rint(self._random_generator.normal(loc=0, scale=noise_std, size=series_mask.sum()))
         else:
-            series.loc[series_mask] += rng.normal(loc=0, scale=noise_std, size=series_mask.sum())
+            series.loc[series_mask] += self._random_generator.normal(loc=0, scale=noise_std, size=series_mask.sum())
 
         return series
