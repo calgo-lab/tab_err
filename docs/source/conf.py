@@ -7,8 +7,8 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "tab_err"
-copyright = "2025, Philipp Jung and Sebastian Sebastian Jäger"
-author = "Philipp Jung and Sebastian Sebastian Jäger"
+copyright = "2025, Philipp Jung and Sebastian Jäger"
+author = "Philipp Jung and Sebastian Jäger"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
