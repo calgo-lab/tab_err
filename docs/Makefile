@@ -13,10 +13,7 @@ help:
 
 .PHONY: help Makefile
 
-doc-requirements:
-	sphinx-apidoc -f -o "$(SOURCEDIR)"/api ../tab_err
-
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
-%: doc-requirements Makefile
+ %: Makefile
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)

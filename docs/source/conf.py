@@ -21,10 +21,17 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path("..", "tab_err").resolve()))
 
-extensions = ["sphinx.ext.autodoc", "sphinx.ext.napoleon", "myst_parser"]
+extensions = ["autoapi.extension", "sphinx.ext.napoleon", "myst_parser"]
 
 templates_path = ["_templates"]
 exclude_patterns = []
+
+# -- Options for autoapi -------------------------------------------------------
+autoapi_type = "python"
+autoapi_dirs = ["../../tab_err/"]
+autoapi_keep_files = True
+autoapi_root = "api"
+autoapi_member_order = "groupwise"
 
 
 # -- Options for HTML output -------------------------------------------------
