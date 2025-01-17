@@ -39,3 +39,18 @@ autoapi_member_order = "groupwise"
 
 html_theme = "pydata_sphinx_theme"
 html_static_path = ["_static"]
+html_theme_options = {
+    "github_url": "https://github.com/calgo-lab/tab_err",
+    "use_edit_page_button": True,
+    "show_toc_level": 2,
+    "secondary_sidebar_items": {
+        "**": ["page-toc", "edit-this-page"],
+    }
+}
+
+html_context = {
+    "github_user": "calgo-lab",
+    "github_repo": "tab_err",
+    "github_version": "main",
+    "doc_path": "docs/source",
+}
