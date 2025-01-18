@@ -32,7 +32,14 @@ autoapi_dirs = ["../../tab_err/"]
 autoapi_keep_files = True
 autoapi_root = "api"
 autoapi_member_order = "groupwise"
-
+autoapi_options = [
+    "members",
+    "inherited-members",
+    "undoc-members",
+    "show-inheritance",
+    "show-module-summary",
+     "imported-members",
+]
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
@@ -45,7 +52,7 @@ html_theme_options = {
     "show_toc_level": 2,
     "secondary_sidebar_items": {
         "**": ["page-toc", "edit-this-page"],
-    }
+    },
 }
 
 html_context = {
