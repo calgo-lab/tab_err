@@ -1,3 +1,8 @@
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path("..", "tab_err").resolve()))
+
 # Configuration file for the Sphinx documentation builder.
 #
 # For the full list of built-in configuration values, see the documentation:
@@ -13,18 +18,9 @@ author = "Philipp Jung and Sebastian Jäger"
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-# If extensions (or modules to document with autodoc) are in another directory,
-# add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
-import sys
-from pathlib import Path
-
-sys.path.insert(0, str(Path("..", "tab_err").resolve()))
-
 extensions = ["autoapi.extension", "sphinx.ext.napoleon", "myst_parser"]
-
-templates_path = ["_templates"]
-exclude_patterns = []
+templates_path: list[str] = ["_templates"]
+exclude_patterns: list[str] = []
 
 # -- Options for autoapi -------------------------------------------------------
 autoapi_type = "python"
@@ -38,7 +34,7 @@ autoapi_options = [
     "undoc-members",
     "show-inheritance",
     "show-module-summary",
-     "imported-members",
+    "imported-members",
 ]
 
 # -- Options for HTML output -------------------------------------------------

@@ -31,14 +31,12 @@ build-backend = "poetry.core.masonry.api"
 python_version = "3.9"
 disallow_untyped_defs = true
 ignore_missing_imports = true
-exclude = ["docs"]
 
 [tool.ruff]
 line-length = 160
 target-version = "py39"
 fix = true
 extend-include = ["*.ipynb"]
-extend-exclude = ["docs"]
 
 [tool.ruff.lint]
 select = [
@@ -58,6 +56,10 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 "**/__init__.py" = [
     "F401", # Unused imports in __init__ files can make sense
+]
+"docs/source/conf.py" = [
+    "A001",   # Allow missing __init__.py for docs
+    "INP001", # Allow builtin shadowing for docs
 ]
 
 [tool.ruff.lint.pydocstyle]
