@@ -27,39 +27,11 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       #----------------------------------------------
-      #        -----  install poetry  -----
-      #----------------------------------------------
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
-        with:
-          virtualenvs-create: true
-          virtualenvs-in-project: true
-
-      #----------------------------------------------
-      #      install or use cached dependencies
-      #----------------------------------------------
-      - name: Load cached venv
-        id: cached-poetry-dependencies
-        uses: actions/cache@v3
-        with:
-          path: .venv
-          key: venv-${{ runner.os }}-python-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
-      - name: Install dependencies
-        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install --no-interaction --no-root
-
-      # always install current root package
-      - name: Install library
-        run: poetry install --no-interaction
-
-      #----------------------------------------------
       #            -----  run ruff   -----
       #----------------------------------------------
-      - name: Run Ruff Check
-        run: |
-          source $VENV
-          ruff check --output-format=github .
-      - name: Run Ruff Format Check
-        run: |
-          source $VENV
-          ruff format --check .
+      - name: Lint and check format with ruff
+        uses: astral-sh/ruff-action@v3
+        with:
+          version-file: "pyproject.toml"
+      - run: ruff check --output-format=github
+      - run: ruff format --check

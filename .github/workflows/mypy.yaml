@@ -46,11 +46,13 @@ jobs:
           key: venv-${{ runner.os }}-python-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install --no-interaction --no-root
+        run: |
+          poetry install --no-interaction --no-root --all-extras --without dev
+          pip install "mypy>=1.14.1"
 
       # always install current root package
       - name: Install library
-        run: poetry install --no-interaction
+        run: poetry install --no-interaction --all-extras --without dev
 
       #----------------------------------------------
       #  -----  setup matchers & run mypy   -----
