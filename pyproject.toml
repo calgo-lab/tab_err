@@ -1,5 +1,12 @@
 [project]
 dynamic = ["classifiers"]
+name = "tab_err"
+description = "Fully-controllable error generation for tabular data."
+authors = [
+    { name = "Philipp Jung", email = "philippjung@posteo.de" },
+    { name = "Sebastian Jäger", email = "tab_err@sebastian-jaeger.me" },
+]
+license = "Apache License 2.0"
 
 [project.urls]
 homepage = "https://tab-err.readthedocs.io/latest/"
@@ -8,14 +15,7 @@ documentation = "https://tab-err.readthedocs.io/latest/"
 "Bug Tracker" = "https://github.com/calgo-lab/tab_err/issues"
 
 [tool.poetry]
-name = "tab_err"
 version = "0.1.1"
-description = "Fully-controllable error generation for tabular data."
-authors = [
-    { name = "Philipp Jung", email = "philippjung@posteo.de" },
-    { name = "Sebastian Jäger", email = "tab_err@sebastian-jaeger.me" },
-]
-license = "Apache License 2.0"
 readme = "README.md"
 keywords = ["tabular-data", "data-quality", "error-modelling", "data-errors"]
 classifiers = [
