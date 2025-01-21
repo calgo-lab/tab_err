@@ -42,7 +42,6 @@ class CategorySwap(ErrorType):
         else:
             msg = "Invalid value for parameter 'config.mislabel_weighing'. Allowed values are: 'uniform', 'frequency'."
             raise ValueError(msg)
-            pass
 
         series_mask = get_column(error_mask, column)
         series.loc[series_mask] = series.loc[series_mask].apply(sample_label)

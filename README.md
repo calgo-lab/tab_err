@@ -8,5 +8,5 @@ The building blocks are `ErrorMechanism`s, `ErrorType`s, and `ErrorModel`s.
 `ErrorMechanism` defines where the incorrect cells are and model realistic dependency structures and `ErrorType` describes in which way the value is incorrect.
 Together they build a `ErrorModel` that can be used to perturb existing data with realistic errors.
 
-This repository offers three (soon) APIs, low-level, mid-level and high-level.
+This repository offers (soon) three APIs, low-level, mid-level and high-level.
 For details and examples please check out our [Getting Started Notebook](1-Getting-Started.ipynb).

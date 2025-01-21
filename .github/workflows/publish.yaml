@@ -46,7 +46,7 @@ jobs:
       #   install dependencies and build packages
       #----------------------------------------------
       - name: Install dependencies
-        run: poetry install --sync --no-interaction
+        run: poetry install --sync --no-interaction --without dev --all-extras
       - name: Package project
         run: poetry build
 
