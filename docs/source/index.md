@@ -12,10 +12,22 @@ Together they build a [`ErrorModel`](api/tab_err/index) that can be used to pert
 
 For details and examples please check out our [Getting Started Notebook](https://github.com/calgo-lab/tab_err/blob/main/examples/1-Getting-Started.ipynb).
 
+## Where to get it
+
+The source code is currently hosted on GitHub at:
+<https://github.com/calgo-lab/tab_err>
+
+Binary installers for the latest released version are available at the [Python
+Package Index (PyPI)](https://pypi.org/project/tab-err).
+
+````sh
+pip install tab-err
+`
+
 ## API References
 
 ```{toctree}
 :maxdepth: 4
 
 API References <api/index>
-```
+````

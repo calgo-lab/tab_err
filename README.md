@@ -9,4 +9,19 @@ The building blocks are `ErrorMechanism`s, `ErrorType`s, and `ErrorModel`s.
 Together they build a `ErrorModel` that can be used to perturb existing data with realistic errors.
 
 This repository offers (soon) three APIs, low-level, mid-level and high-level.
-For details and examples please check out our [Getting Started Notebook](1-Getting-Started.ipynb).
+
+## Examples
+
+For details and examples please check out our [Getting Started Notebook](https://github.com/calgo-lab/tab_err/blob/main/examples/1-Getting-Started.ipynb).
+
+## Where to get it
+
+The source code is currently hosted on GitHub at:
+<https://github.com/calgo-lab/tab_err>
+
+Binary installers for the latest released version are available at the [Python
+Package Index (PyPI)](https://pypi.org/project/tab-err).
+
+```sh
+pip install tab-err
+```
