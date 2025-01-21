@@ -20,9 +20,9 @@ The source code is currently hosted on GitHub at:
 Binary installers for the latest released version are available at the [Python
 Package Index (PyPI)](https://pypi.org/project/tab-err).
 
-````sh
+```sh
 pip install tab-err
-`
+```
 
 ## API References
 
@@ -30,4 +30,4 @@ pip install tab-err
 :maxdepth: 4
 
 API References <api/index>
-````
+```
