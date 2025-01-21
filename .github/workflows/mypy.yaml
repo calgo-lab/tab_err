@@ -48,7 +48,6 @@ jobs:
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: |
           poetry install --no-interaction --no-root --all-extras --without dev
-          pip install "mypy>=1.14.1"
 
       # always install current root package
       - name: Install library
@@ -66,5 +65,6 @@ jobs:
         # NOTE: tomli is sometimes missing, install it explicitly
         run: |
           source $VENV
+          pip install "mypy>=1.14.1"
           pip install tomli
           mypy --show-column-numbers .
