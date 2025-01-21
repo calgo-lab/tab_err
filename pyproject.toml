@@ -15,7 +15,7 @@ documentation = "https://tab-err.readthedocs.io/latest/"
 "Bug Tracker" = "https://github.com/calgo-lab/tab_err/issues"
 
 [tool.poetry]
-version = "0.1.1"
+version = "0.1.2"
 readme = "README.md"
 keywords = ["tabular-data", "data-quality", "error-modelling", "data-errors"]
 classifiers = [
