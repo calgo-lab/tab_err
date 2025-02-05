@@ -11,19 +11,25 @@ if TYPE_CHECKING:
 
 
 def create_errors(
-    data: pd.DataFrame, column: str | int, error_rate: float, error_mechanism: ErrorMechanism, error_type: ErrorType
+    data: pd.DataFrame, 
+    column: str | int, 
+    error_rate: float, 
+    error_mechanism: ErrorMechanism, 
+    error_type: ErrorType
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Creates errors in a given column of a pandas DataFrame.
 
     Args:
-        data: The pandas DataFrame to create errors in.
-        column: The column to create errors in.
-        error_rate: The rate at which errors will be created.
-        error_mechanism: The mechanism, controls the error distribution.
-        error_type: The type of the error that will be distributed.
+        data (pd.DataFrame): The pandas DataFrame to create errors in.
+        column (str | int): The column to create errors in.
+        error_rate (float): The rate at which errors will be created.
+        error_mechanism (ErrorMechanism): The mechanism, controls the error distribution.
+        error_type (ErrorType): The type of the error that will be distributed.
 
     Returns:
-        A tuple of a copy of the data with errors, and the error mask.
+        tuple[pd.DataFrame, pd.DataFrame]:
+            - The first element is a copy of 'data' with errors.
+            - The second element is the associated error mask.
     """
     data_copy = data.copy()
 

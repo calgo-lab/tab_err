@@ -12,9 +12,29 @@ if TYPE_CHECKING:
 
 
 class ErrorMechanism(ABC):
-    def __init__(self: ErrorMechanism, condition_to_column: int | str | None = None, seed: int | None = None) -> None:
+    """Error Mechanism Abstract Base Class"""
+    
+    def __init__(
+        self: ErrorMechanism, 
+        condition_to_column: int | str | None = None, 
+        seed: int | None = None
+    ) -> None:
+        """Initialization method of the Error Mechanism class; defines the general initialization for ErrorMechanism objects.
+
+        Args:
+            condition_to_column (int | str | None, optional): For EAR class implementation, determines which column the errors are derived from. Defaults to None.
+            seed (int | None, optional): Random seed. Defaults to None.
+
+        Attributes:
+            condition_to_column (int | str | None, optional): For EAR class implementation, determines which column the errors are derived from. Defaults to None.
+            _seed (int | None, optional): Random seed. Defaults to None.
+            _random_generator (np.random.Generator): The random error generator for choosing entries at which to generate an error.
+            
+        Raises:
+            TypeError: Raised if the seed is not int or None.
+        """
         if not (isinstance(seed, int) or seed is None):
-            msg = "'seed' needs to be int or None."
+            msg = f"'seed' needs to be int or None but was {type(seed)}."
             raise TypeError(msg)
 
         self.condition_to_column = condition_to_column
@@ -25,11 +45,28 @@ class ErrorMechanism(ABC):
     def sample(
         self: ErrorMechanism,
         data: pd.DataFrame,
-        column: int | str,
+        column: str | int,
         error_rate: float,
         error_mask: pd.DataFrame | None = None,
     ) -> pd.DataFrame:
-        # TODO(seja): Docs
+        """Returns an error mask for locations to introduce errors in a pandas DataFrame. 
+        Does error checking for the abstract method '_sample'. 
+        Assigns the _random_generator attribute.
+
+        Args:
+            data (pd.DataFrame): DataFrame containing the column to add errors to
+            column (str | int): The column of 'data' to create an error mask for
+            error_rate (float): Percentage of rows to be affected by errors in range [0,1].
+            error_mask (pd.DataFrame | None, optional): An existing error mask to add more errors to in the case of the mid-/high-level APIs. Defaults to None.
+
+        Raises:
+            ValueError: If error rate is out of the [0,1] interval, a ValueError is thrown
+            TypeError: If the 'data' argument is not a pandas dataframe or the data is empty, a TypeError is thrown
+            ValueError: If required and there are not 2 columns in the 'data' argument, a ValueError is thrown. 
+
+        Returns:
+            pd.DataFrame: Updated dataframe with the generated error mask
+        """
         if error_rate < 0 or error_rate > 1:
             error_rate_msg = "'error_rate' need to be float: 0 <= error_rate <= 1."
             raise ValueError(error_rate_msg)
@@ -54,6 +91,23 @@ class ErrorMechanism(ABC):
         return self._sample(data, column, error_rate, error_mask)
 
     @abstractmethod
-    def _sample(self: ErrorMechanism, data: pd.DataFrame, column: str | int, error_rate: float, error_mask: pd.DataFrame) -> pd.DataFrame:
-        # TODO(seja): Docs
+    def _sample(
+        self: ErrorMechanism, 
+        data: pd.DataFrame, 
+        column: str | int, 
+        error_rate: float, 
+        error_mask: pd.DataFrame
+    ) -> pd.DataFrame:
+        """Abstract method for the creation of an error mask over a given Pandas DataFrame.
+
+        Args:
+            self (ErrorMechanism): _description_
+            data (pd.DataFrame): DataFrame containing the column to add errors to
+            column (int | str): The column of 'data' to create an error mask for
+            error_rate (float): Proportion of rows to be affected by errors; in range [0,1]
+            error_mask (pd.DataFrame): A Pandas DataFrame with the same index & columns as 'data' that will be modified and returned
+
+        Returns:
+            pd.DataFrame: A Pandas DataFrame with True values at entries where an error should be introduced, False otherwise
+        """
         pass

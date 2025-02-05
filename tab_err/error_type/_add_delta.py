@@ -18,7 +18,25 @@ class AddDelta(ErrorType):
         # all data types are fine
         pass
 
-    def _apply(self: AddDelta, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
+    def _apply(
+        self: AddDelta, 
+        data: pd.DataFrame, 
+        error_mask: pd.DataFrame, 
+        column: int | str
+    ) -> pd.Series:
+        """_summary_
+
+        Args:
+            data (pd.DataFrame): _description_
+            error_mask (pd.DataFrame): _description_
+            column (int | str): _description_
+
+        Raises:
+            ValueError: _description_
+
+        Returns:
+            pd.Series: _description_
+        """
         # cast to object because our operation potentially changes the type of a column.
         series = get_column(data, column).copy().astype("object")
         series_mask = get_column(error_mask, column)

@@ -13,10 +13,25 @@ if TYPE_CHECKING:
 
 
 class ErrorType(ABC):
-    # TODO(seja): Docs
-    def __init__(self: ErrorType, config: ErrorTypeConfig | dict | None = None, seed: int | None = None) -> None:
+    """Error Type Abstract Base Class"""
+
+    def __init__(
+        self: ErrorType,
+        config: ErrorTypeConfig | dict | None = None,
+        seed: int | None = None
+    ) -> None:
+        """Initialization method of ErrorType class
+
+        Args:
+            config (ErrorTypeConfig | dict | None, optional): _description_. Defaults to None.
+            seed (int | None, optional): Random seed for random number generator. Defaults to None.
+
+        Raises:
+            TypeError: If the type of seed is not int or None, a TypeError is raised.
+            TypeError: If the type of config is not ErrorTypeConfig, dict, or None, a TypeError is raised.
+        """
         if not (isinstance(seed, int) or seed is None):
-            msg = "'seed' need to be int or None."
+            msg = f"'seed' needs to be int or None but was {type(seed)}."
             raise TypeError(msg)
 
         if config is None:
@@ -29,15 +44,29 @@ class ErrorType(ABC):
             self.config = config
 
         else:
-            msg = "config must be of type ErrorTypeConfig or dict"
+            msg = f"config must be of type ErrorTypeConfig or dict but was {type(config)}"
             raise TypeError(msg)
 
         self._seed = seed
         self._random_generator: np.random.Generator
 
     # TODO(seja): check data.shape == error_mask.shape
-    def apply(self: ErrorType, data: pd.DataFrame, error_mask: pd.DataFrame, column: str | int) -> pd.Series:
-        # TODO(seja): Docs
+    def apply(
+        self: ErrorType,
+        data: pd.DataFrame,
+        error_mask: pd.DataFrame,
+        column: str | int
+    ) -> pd.Series:
+        """Applies an ErrorType to a column of 'data'. Does type and shape checking and creates a random number generator.
+
+        Args:
+            data (pd.DataFrame): The Pandas DataFrame containing the column where errors are to be introduced.
+            error_mask (pd.DataFrame): The Pandas DataFrame containing the error mask for 'column'.
+            column (str | int): The index in the 'data' and 'error_mask' DataFrames where errors are to be introduced.
+
+        Returns:
+            pd.Series: The data column, 'column', after errors of ErrorType at the locations specified by 'error_mask' are introduced.
+        """
         self._check_type(data, column)
 
         self._random_generator = seed_randomness(self._seed)
@@ -54,7 +83,22 @@ class ErrorType(ABC):
     # TODO(seja): def _apply(data: pd.DataFrame, error_mask: pd.DataFrame) -> pd.DataFrame:
     # Assumes 'data' has valid columns. Simply applies error_type to those cells where error_mask is True.
     # Returns changed data
-    def _apply(self: ErrorType, data: pd.DataFrame, error_mask: pd.DataFrame, column: str | int) -> pd.Series:
+    def _apply(
+        self: ErrorType,
+        data: pd.DataFrame,
+        error_mask: pd.DataFrame,
+        column: str | int
+    ) -> pd.Series:
+        """Abstract method for the application of an ErrorType to the cells in 'data' where 'error_mask' is True.
+
+        Args:
+            data (pd.DataFrame): The Pandas DataFrame containing the column where errors are to be introduced.
+            error_mask (pd.DataFrame): The Pandas DataFrame containing the error mask for 'column'.
+            column (str | int): The index in the 'data' and 'error_mask' DataFrames where errors are to be introduced.
+
+        Returns:
+            pd.Series: The data column, 'column', after errors of ErrorType at the locations specified by 'error_mask' are introduced.
+        """
         pass
 
     def to_dict(self: ErrorType) -> dict[str, Any]:
