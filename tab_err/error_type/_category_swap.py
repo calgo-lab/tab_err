@@ -14,6 +14,16 @@ class CategorySwap(ErrorType):
 
     @staticmethod
     def _check_type(data: pd.DataFrame, column: int | str) -> None:
+        """Checks that the data type is Categorical and the number of categories is at least two in the column to be modified.
+
+        Args:
+            data (pd.DataFrame): DataFrame containing the column to add errors to.
+            column (int | str): The column of 'data' to create an error mask for.
+
+        Raises:
+            TypeError: If the column does not contain Categorical dtype values, a TypeError is thrown.
+            ValueError: If there are less than two categories in the column, a ValueError will be thrown.
+        """
         series = get_column(data, column)
 
         if not isinstance(series.dtype, pd.CategoricalDtype):
@@ -22,10 +32,23 @@ class CategorySwap(ErrorType):
             raise TypeError(msg)
 
         if len(series.cat.categories) <= 1:
-            msg = f"Column {column} contains {len(series.cat.categories)} categories. Require at least 2 categories to insert mislabels.."
+            msg = f"Column {column} contains {len(series.cat.categories)} categories. Require at least 2 categories to insert mislabels."
             raise ValueError(msg)
 
     def _apply(self: CategorySwap, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
+        """Applies the CategorySwap ErrorType to a column of data.
+
+        Args:
+            data (pd.DataFrame): DataFrame containing the column to add errors to.
+            error_mask (pd.DataFrame): A Pandas DataFrame with the same index & columns as 'data' that will be modified and returned.
+            column (int | str): The column of 'data' to create an error mask for.
+
+        Raises:
+            ValueError: If the value for parameter 'config.mislabel_weighing' is invalid (not 'uniform' or 'frequency'), a ValueError will be thrown.
+
+        Returns:
+            pd.Series: The data column, 'column', after CategorySwap errors at the locations specified by 'error_mask' are introduced.
+        """
         series = get_column(data, column).copy()
 
         if self.config.mislabel_weighing == "uniform":

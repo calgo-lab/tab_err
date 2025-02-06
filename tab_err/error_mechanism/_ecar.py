@@ -12,17 +12,21 @@ if TYPE_CHECKING:
 
 
 class ECAR(ErrorMechanism):
-    """ErrorMechanism subclass implementing the 'Erroneous Completely At Random' error mechanism. Errors are assumed to be completely independent of the data distribution"""
-    
+    """ErrorMechanism subclass implementing the 'Erroneous Completely At Random' error mechanism.
+
+    Description:
+        Errors are assumed to be completely independent of the data distribution
+    """
+
     def _sample(
         self: ECAR,
-        data: pd.DataFrame,
+        data: pd.DataFrame,  # noqa: ARG002
         column: str | int,
         error_rate: float,
         error_mask: pd.DataFrame
-    ) -> pd.DataFrame:  # noqa: ARG002
+    ) -> pd.DataFrame:
         """Creates an error mask according to the 'Erroneous Completely At Random' error mechanism.
-        
+
         Description:
             Sells are chosen uniform randomly by a NumPy random number generator
 

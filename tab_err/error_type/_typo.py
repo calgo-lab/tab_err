@@ -34,12 +34,16 @@ class Typo(ErrorType):
             raise TypeError(msg)
 
     def _apply(self: Typo, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
-        """Apply typo.
+        """Applies the Typo ErrorType to a column of data.
 
-        data: the pandas DataFrame to-be-corrupted
-        error_mask: binary mask the marks the error positions
-        column: column into which errors shall be inserted
+        Args:
+            data (pd.DataFrame): DataFrame containing the column to add errors to.
+            error_mask (pd.DataFrame): A Pandas DataFrame with the same index & columns as 'data' that will be modified and returned.
+            column (int | str): The column of 'data' to create an error mask for.
         typo_error_period: specifies how frequent typo corruptions are - see class description for details.
+
+        Returns:
+            pd.Series: The data column, 'column', after Typo errors at the locations specified by 'error_mask' are introduced.
         """
         series = get_column(data, column).copy()
         series_mask = get_column(error_mask, column)
@@ -63,12 +67,12 @@ def typo(input_text: str, typo_error_period: int = 10, layout: str = "ansi-qwert
     Typo will always insert at least one typo into the input text.
 
     Args:
-        input_text: the string to be corrupted
-        typo_error_period: specifies how frequent typo corruptions are - see class description for details.
-        layout: the keyboard layout to be used for the corruption. Currently, only "ansi-qwerty" is supported.
+        input_text (str): the string to be corrupted
+        typo_error_period (int, optional): specifies how frequent typo corruptions are - see class description for details. Defaults to '10'.
+        layout (str): the keyboard layout to be used for the corruption. Currently, only "ansi-qwerty" is supported. Defaults to 'ansi-qwerty'
 
     Returns:
-        the corrupted string
+        str: The corrupted string.
     """
     if layout == "ansi-qwerty":
         neighbors = {

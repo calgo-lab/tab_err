@@ -35,7 +35,26 @@ class Permutate(ErrorType):
             msg = f"Column {column} does not contain values of the string dtype. Cannot Permutate values."
             raise TypeError(msg)
 
-    def _apply(self: Permutate, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
+    def _apply(
+        self: Permutate,
+        data: pd.DataFrame,
+        error_mask: pd.DataFrame,
+        column: int | str
+    ) -> pd.Series:
+        """Applies the Permutate ErrorType to a column of data.
+
+        Args:
+            data (pd.DataFrame): DataFrame containing the column to add errors to.
+            error_mask (pd.DataFrame): A Pandas DataFrame with the same index & columns as 'data' that will be modified and returned.
+            column (int | str): The column of 'data' to create an error mask for.
+
+        Raises:
+            ValueError: If the column conatins values not supported by the seperator, a ValueError will be thrown.
+            ValueError: If a fixed_permutation_pattern is selected and all values are not formatted the same way, a ValueError will be thrown.
+
+        Returns:
+            pd.Series: The data column, 'column', after Permutate errors at the locations specified by 'error_mask' are introduced.
+        """
         series = get_column(data, column).copy()
         series_mask = get_column(error_mask, column)
 

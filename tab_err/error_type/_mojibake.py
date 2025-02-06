@@ -24,7 +24,22 @@ class Mojibake(ErrorType):
             msg = f"Column {column} does not contain values of the string dtype. Cannot insert Mojibake."
             raise TypeError(msg)
 
-    def _apply(self: Mojibake, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
+    def _apply(
+        self: Mojibake,
+        data: pd.DataFrame,
+        error_mask: pd.DataFrame,
+        column: int | str
+    ) -> pd.Series:
+        """Applies the Mojibake ErrorType to a column of data.
+
+        Args:
+            data (pd.DataFrame): DataFrame containing the column to add errors to.
+            error_mask (pd.DataFrame): A Pandas DataFrame with the same index & columns as 'data' that will be modified and returned.
+            column (int | str): The column of 'data' to create an error mask for.
+
+        Returns:
+            pd.Series: The data column, 'column', after Mojibake errors at the locations specified by 'error_mask' are introduced.
+        """
         # Top 10 most used encodings on the internet
         # https://w3techs.com/technologies/overview/character_encoding
         top10 = {"utf_8", "iso-8859-1", "windows-1252", "windows-1251", "shift_jis", "euc_jp", "gb2312", "euc_kr", "windows-1250", "iso-8859-2"}

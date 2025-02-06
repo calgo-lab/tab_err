@@ -18,9 +18,9 @@ class MidLevelConfig:
     The mid_level API applies N pairs of (error_mechanism, error_type) to data. Consequently, the user
     is required to specify up to N pairs of error_mechanism, error_type per column when calling the mid_level
     API.
-    
+
     Attributes:
-        columns (dict[int | str, list[ErrorModel]]): --- ToDo <- figure out what this is
+        columns (dict[int | str, list[ErrorModel]]): A dictionary mapping from columns to a list of error mechanisms that should be applied
     """
 
     columns: dict[int | str, list[ErrorModel]]
@@ -35,10 +35,7 @@ class MidLevelConfig:
         return MidLevelConfig(**data)
 
 
-def create_errors(
-    data: pd.DataFrame,
-    config: MidLevelConfig | dict
-) -> tuple[pd.DataFrame, pd.DataFrame]:
+def create_errors(data: pd.DataFrame, config: MidLevelConfig | dict) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Creates errors in a given DataFrame, following a user-defined configuration.
 
     Args:

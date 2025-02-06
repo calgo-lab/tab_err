@@ -13,17 +13,13 @@ if TYPE_CHECKING:
 
 
 class ErrorType(ABC):
-    """Error Type Abstract Base Class"""
+    """Error Type Abstract Base Class."""
 
-    def __init__(
-        self: ErrorType,
-        config: ErrorTypeConfig | dict | None = None,
-        seed: int | None = None
-    ) -> None:
-        """Initialization method of ErrorType class
+    def __init__(self: ErrorType, config: ErrorTypeConfig | dict | None = None, seed: int | None = None) -> None:
+        """Initialization method of ErrorType class.
 
         Args:
-            config (ErrorTypeConfig | dict | None, optional): _description_. Defaults to None.
+            config (ErrorTypeConfig | dict | None, optional): Config denoting special values to be used in each ErrorType implementation. Defaults to None.
             seed (int | None, optional): Random seed for random number generator. Defaults to None.
 
         Raises:
@@ -51,12 +47,7 @@ class ErrorType(ABC):
         self._random_generator: np.random.Generator
 
     # TODO(seja): check data.shape == error_mask.shape
-    def apply(
-        self: ErrorType,
-        data: pd.DataFrame,
-        error_mask: pd.DataFrame,
-        column: str | int
-    ) -> pd.Series:
+    def apply(self: ErrorType, data: pd.DataFrame, error_mask: pd.DataFrame, column: str | int) -> pd.Series:
         """Applies an ErrorType to a column of 'data'. Does type and shape checking and creates a random number generator.
 
         Args:
@@ -83,12 +74,7 @@ class ErrorType(ABC):
     # TODO(seja): def _apply(data: pd.DataFrame, error_mask: pd.DataFrame) -> pd.DataFrame:
     # Assumes 'data' has valid columns. Simply applies error_type to those cells where error_mask is True.
     # Returns changed data
-    def _apply(
-        self: ErrorType,
-        data: pd.DataFrame,
-        error_mask: pd.DataFrame,
-        column: str | int
-    ) -> pd.Series:
+    def _apply(self: ErrorType, data: pd.DataFrame, error_mask: pd.DataFrame, column: str | int) -> pd.Series:
         """Abstract method for the application of an ErrorType to the cells in 'data' where 'error_mask' is True.
 
         Args:
@@ -99,7 +85,6 @@ class ErrorType(ABC):
         Returns:
             pd.Series: The data column, 'column', after errors of ErrorType at the locations specified by 'error_mask' are introduced.
         """
-        pass
 
     def to_dict(self: ErrorType) -> dict[str, Any]:
         """Serialized the ErrorType object into a dictionary.

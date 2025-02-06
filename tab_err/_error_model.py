@@ -25,11 +25,7 @@ class ErrorModel:
     error_type: ErrorType
     error_rate: float
 
-    def apply(
-        self: ErrorModel, 
-        data: pd.DataFrame, 
-        column: str | int
-    ) -> tuple[pd.DataFrame, pd.DataFrame]:
+    def apply(self: ErrorModel, data: pd.DataFrame, column: str | int) -> tuple[pd.DataFrame, pd.DataFrame]:
         """Applies the defined ErrorModel to the given column of a pandas DataFrame.
 
         Args:

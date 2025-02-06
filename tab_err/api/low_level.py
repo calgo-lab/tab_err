@@ -11,11 +11,7 @@ if TYPE_CHECKING:
 
 
 def create_errors(
-    data: pd.DataFrame, 
-    column: str | int, 
-    error_rate: float, 
-    error_mechanism: ErrorMechanism, 
-    error_type: ErrorType
+    data: pd.DataFrame, column: str | int, error_rate: float, error_mechanism: ErrorMechanism, error_type: ErrorType
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Creates errors in a given column of a pandas DataFrame.
 

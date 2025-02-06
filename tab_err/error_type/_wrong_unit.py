@@ -23,7 +23,25 @@ class WrongUnit(ErrorType):
             msg = f"Column {column} does not contain scalars. Cannot apply a wrong unit."
             raise TypeError(msg)
 
-    def _apply(self: WrongUnit, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
+    def _apply(
+        self: WrongUnit,
+        data: pd.DataFrame,
+        error_mask: pd.DataFrame,
+        column: int | str
+    ) -> pd.Series:
+        """Applies the WrongUnit ErrorType to a column of data.
+
+        Args:
+            data (pd.DataFrame): DataFrame containing the column to add errors to.
+            error_mask (pd.DataFrame): A Pandas DataFrame with the same index & columns as 'data' that will be modified and returned.
+            column (int | str): The column of 'data' to create an error mask for.
+
+        Raises:
+            ValueError: If wrong_unit_scaling is not defined in config, a ValueError will be thrown.
+
+        Returns:
+            pd.Series: The data column, 'column', after Replace errors at the locations specified by 'error_mask' are introduced.
+        """
         if self.config.wrong_unit_scaling is None:
             msg = f"Cannot apply wrong unit to column {column} because no scaling function wrong_unit_scaling was defined in the ErrorTypeConfig."
             raise ValueError(msg)

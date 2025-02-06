@@ -18,24 +18,19 @@ class AddDelta(ErrorType):
         # all data types are fine
         pass
 
-    def _apply(
-        self: AddDelta, 
-        data: pd.DataFrame, 
-        error_mask: pd.DataFrame, 
-        column: int | str
-    ) -> pd.Series:
-        """_summary_
+    def _apply(self: AddDelta, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
+        """Applies the AddDelta ErrorType to a column of data.
 
         Args:
-            data (pd.DataFrame): _description_
-            error_mask (pd.DataFrame): _description_
-            column (int | str): _description_
+            data (pd.DataFrame): DataFrame containing the column to add errors to.
+            error_mask (pd.DataFrame): A Pandas DataFrame with the same index & columns as 'data' that will be modified and returned.
+            column (int | str): The column of 'data' to create an error mask for.
 
         Raises:
-            ValueError: _description_
+            ValueError: If the add_delta_value is None, a ValueError will be thrown.
 
         Returns:
-            pd.Series: _description_
+            pd.Series: The data column, 'column', after AddDelta errors at the locations specified by 'error_mask' are introduced.
         """
         # cast to object because our operation potentially changes the type of a column.
         series = get_column(data, column).copy().astype("object")
