@@ -26,7 +26,8 @@ class ErrorTypeConfig:
 
         mislabel_weights (dict[Any, float] | None): _description_. Defaults to None.
 
-        mistype_dtype (str | None): dtype of the column that is incorrectly typed. One of "object", "string", "int64", "Int64", "float64", "Float64". Defaults to None.
+        mistype_dtype (str | None): dtype of the column that is incorrectly typed. One of "object", "string", "int64", "Int64", "float64", "Float64".
+            Defaults to None.
 
         wrong_unit_scaling (Callable | None): Function that scales a value from one unit to another. Defaults to None.
 
@@ -34,10 +35,11 @@ class ErrorTypeConfig:
 
         permutation_automation_pattern (str): Permutations either all follow the same pattern (fixed) or not (random). Defaults to "random"
 
-        permutation_pattern (list[int] | None): Manually specify the pattern which the permutations follow. Overwrite automation patterns if set. Defaults to None.
+        permutation_pattern (list[int] | None): Manually specify the pattern which the permutations follow. Overwrite automation patterns if set.
+            Defaults to None.
 
-        extraneous_value_template (str | None): Template string used to add extraneous data to the value. The position of the value is indicated by the template string
-            '{value}'. Defaults to None.
+        extraneous_value_template (str | None): Template string used to add extraneous data to the value. The position of the value is indicated by the template
+            string '{value}'. Defaults to None.
 
         replace_what (str | None): String that the Replace Error Type replaces with replace_with. Defaults to None.
 
@@ -49,7 +51,8 @@ class ErrorTypeConfig:
 
         outlier_coefficient (float): Coefficient that determines the magnitude of the outliers for the Outlier Error Type. Defaults to 1.0.
 
-        outlier_noise_coeff (float): Coefficient that influences the standard deviation of the noise added to the outliers for the Outlier Error Type. Defaults to 0.1.
+        outlier_noise_coeff (float): Coefficient that influences the standard deviation of the noise added to the outliers for the Outlier Error Type.
+            Defaults to 0.1.
     """
 
     encoding_sender: str | None = None
