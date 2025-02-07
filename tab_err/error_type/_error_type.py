@@ -46,7 +46,6 @@ class ErrorType(ABC):
         self._seed = seed
         self._random_generator: np.random.Generator
 
-    # TODO(seja): check data.shape == error_mask.shape
     def apply(self: ErrorType, data: pd.DataFrame, error_mask: pd.DataFrame, column: str | int) -> pd.Series:
         """Applies an ErrorType to a column of 'data'. Does type and shape checking and creates a random number generator.
 
@@ -55,10 +54,17 @@ class ErrorType(ABC):
             error_mask (pd.DataFrame): The Pandas DataFrame containing the error mask for 'column'.
             column (str | int): The index in the 'data' and 'error_mask' DataFrames where errors are to be introduced.
 
+        Raises:
+            ValueError: If the shape of data and the shape of error_mask are not equal, a ValueError is thrown.
+
         Returns:
             pd.Series: The data column, 'column', after errors of ErrorType at the locations specified by 'error_mask' are introduced.
         """
         self._check_type(data, column)
+
+        if data.shape != error_mask.shape:
+            msg = f"The shape of 'data': {data.shape} was different from the shape of 'error_mask': {error_mask.shape}. They should be the same."
+            raise ValueError(msg)
 
         self._random_generator = seed_randomness(self._seed)
         return self._apply(data, error_mask, column)
