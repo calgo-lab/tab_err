@@ -23,7 +23,7 @@ class ECAR(ErrorMechanism):
         data: pd.DataFrame,  # noqa: ARG002
         column: str | int,
         error_rate: float,
-        error_mask: pd.DataFrame
+        error_mask: pd.DataFrame,
     ) -> pd.DataFrame:
         """Creates an error mask according to the 'Erroneous Completely At Random' error mechanism.
 

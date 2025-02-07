@@ -24,12 +24,7 @@ class Mojibake(ErrorType):
             msg = f"Column {column} does not contain values of the string dtype. Cannot insert Mojibake."
             raise TypeError(msg)
 
-    def _apply(
-        self: Mojibake,
-        data: pd.DataFrame,
-        error_mask: pd.DataFrame,
-        column: int | str
-    ) -> pd.Series:
+    def _apply(self: Mojibake, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
         """Applies the Mojibake ErrorType to a column of data.
 
         Args:

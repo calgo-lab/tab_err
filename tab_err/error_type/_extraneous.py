@@ -18,11 +18,7 @@ class Extraneous(ErrorType):
         # all data types are fine
         pass
 
-    def _apply(self: Extraneous,
-               data: pd.DataFrame,
-               error_mask: pd.DataFrame,
-               column: int | str
-    ) -> pd.Series:
+    def _apply(self: Extraneous, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
         """Applies the Extraneous ErrorType to a column of data.
 
         Args:

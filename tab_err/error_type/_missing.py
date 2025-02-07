@@ -24,12 +24,7 @@ class MissingValue(ErrorType):
         # all dtypes are supported
         pass
 
-    def _apply(
-        self: MissingValue,
-        data: pd.DataFrame,
-        error_mask: pd.DataFrame,
-        column: int | str
-    ) -> pd.Series:
+    def _apply(self: MissingValue, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
         """Applies the MissingValue ErrorType to a column of data.
 
         Args:

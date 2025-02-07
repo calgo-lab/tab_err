@@ -23,12 +23,7 @@ class WrongUnit(ErrorType):
             msg = f"Column {column} does not contain scalars. Cannot apply a wrong unit."
             raise TypeError(msg)
 
-    def _apply(
-        self: WrongUnit,
-        data: pd.DataFrame,
-        error_mask: pd.DataFrame,
-        column: int | str
-    ) -> pd.Series:
+    def _apply(self: WrongUnit, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
         """Applies the WrongUnit ErrorType to a column of data.
 
         Args:
