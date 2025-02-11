@@ -83,12 +83,12 @@ class Permutate(ErrorType):
                 raise ValueError(msg)
 
         if self.config.permutation_pattern is not None:  # Permutation of each entry from pattern.
-            _check_column_format_consistency()
+            _check_column_format_consistency(separator_counts, column)
             new_pattern = self.config.permutation_pattern
             series.loc[series_mask] = series.loc[series_mask].apply(self._fixed_pattern_function, args=(new_pattern,))
 
         elif self.config.permutation_automation_pattern == "fixed":  # Fixed permutation -- random once, applied to all.
-            _check_column_format_consistency()
+            _check_column_format_consistency(separator_counts, column)
             new_pattern = _generate_shuffle_pattern(separator_counts[0])
             series.loc[series_mask] = series.loc[series_mask].apply(self._fixed_pattern_function, args=(new_pattern,))
 
