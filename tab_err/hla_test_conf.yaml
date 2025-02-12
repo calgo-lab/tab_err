@@ -1,0 +1,21 @@
+typist:
+  error-mechanisms:
+    EAR:
+      conditioning-column: "rating"
+    ENAR:
+  error-types:
+    MissingValue:
+    Extraneous:
+      extraneous_value_template: ".{value}"
+  total-error-rate: 0.5
+  num-error-models: 3
+rating:
+  error-mechanisms:
+    EAR:
+      conditioning-column: "book_title"
+  error-types:
+    MissingValue:
+    WrongUnit:
+      wrong_unit_scaling: "lambda x: x * 10"
+  total-error-rate: 0.5
+  num-error-models: 3
