@@ -15,7 +15,7 @@ rating:
       conditioning-column: "book_title"
   error-types:
     MissingValue:
-    WrongUnit:
-      wrong_unit_scaling: "lambda x: x * 10"
-  total-error-rate: 0.5
-  num-error-models: 3
+    AddDelta:
+      add_delta_value: 1.0
+  total-error-rate: 0.9
+  num-error-models: 2

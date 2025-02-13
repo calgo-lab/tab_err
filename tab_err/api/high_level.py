@@ -289,7 +289,7 @@ def create_errors_from_config(
     print(type([x for x in mid_level_config.columns][0]))
 
     # Apply errors
-    dirty_data, error_mask = mid_level.create_errors(data_copy, mid_level_config.columns)
+    dirty_data, error_mask = mid_level.create_errors(data_copy, mid_level_config)
 
     return dirty_data, error_mask
 
