@@ -20,7 +20,7 @@ class MidLevelConfig:
     API.
 
     Attributes:
-        columns (dict[int | str, list[ErrorModel]]): A dictionary mapping from columns to a list of error mechanisms that should be applied
+        columns (dict[int | str, list[ErrorModel]]): A dictionary mapping from columns to a list of `ErrorModel`s that should be applied
     """
 
     columns: dict[int | str, list[ErrorModel]]
@@ -46,6 +46,9 @@ def create_errors(data: pd.DataFrame, config: MidLevelConfig | dict) -> tuple[pd
         tuple[pd.DataFrame, pd.DataFrame]:
             - The first element is a copy of 'data' with errors.
             - The second element is the associated error mask.
+
+    Raises:
+        TypeError: If `config` has incorrect type.
     """
     if isinstance(config, dict):
         _config = MidLevelConfig(config)
