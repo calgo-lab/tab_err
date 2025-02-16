@@ -35,6 +35,18 @@ class CategorySwap(ErrorType):
             msg = f"Column {column} contains {len(series.cat.categories)} categories. Require at least 2 categories to insert mislabels."
             raise ValueError(msg)
 
+    @staticmethod
+    def _get_valid_columns(data, preserve_dtypes = True) -> list[str | int]:
+        """If there are more than two columns, checks which columns are categorical and returns the indices of those."""
+        valid_columns = []
+        for col_name in data.columns:
+            series = get_column(data, col_name)
+
+            if isinstance(series.dtype, pd.CategoricalDtype) and len(series.cat.categories) > 1:
+                valid_columns.append(col_name)
+        return valid_columns
+
+
     def _apply(self: CategorySwap, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
         """Applies the CategorySwap ErrorType to a column of data.
 
@@ -49,6 +61,7 @@ class CategorySwap(ErrorType):
         Returns:
             pd.Series: The data column, 'column', after CategorySwap errors at the locations specified by 'error_mask' are introduced.
         """
+        self._check_type(data, column)
         series = get_column(data, column).copy()
 
         if self.config.mislabel_weighing == "uniform":
