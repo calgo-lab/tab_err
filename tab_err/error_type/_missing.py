@@ -26,7 +26,7 @@ class MissingValue(ErrorType):
 
     def _get_valid_columns(self:MissingValue, data: pd.DataFrame, preserve_dtypes = True) -> list[str | int]:
         """If the config mising value is None, returns all columns. Otherwise, only the columns with the same type."""
-        return list(data.columns) if self.config.missing_value is None else data.select_dtypes(include=["object", "string"]).columns
+        return data.columns.to_list() if self.config.missing_value is None else data.select_dtypes(include=["object", "string"]).columns.to_list()
 
     def _apply(self: MissingValue, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
         """Applies the MissingValue ErrorType to a column of data.

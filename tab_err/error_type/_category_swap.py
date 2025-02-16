@@ -61,7 +61,6 @@ class CategorySwap(ErrorType):
         Returns:
             pd.Series: The data column, 'column', after CategorySwap errors at the locations specified by 'error_mask' are introduced.
         """
-        self._check_type(data, column)
         series = get_column(data, column).copy()
 
         if self.config.mislabel_weighing == "uniform":
