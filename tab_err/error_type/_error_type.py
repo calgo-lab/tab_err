@@ -76,7 +76,6 @@ class ErrorType(ABC):
 
     # TODO(nich): def _get_valid_columns(data: pd.DataFrame, preserve_dtypes: bool = True) -> list[str | int]:
     # supposed to check for which columns this error type can be applied and returns those.
-    @staticmethod
     @abstractmethod
     def _get_valid_columns(data: pd.DataFrame, preserve_dtypes: bool = True) -> list[str | int]:
         """Finds the valid columns to which the error type can be applied."""
