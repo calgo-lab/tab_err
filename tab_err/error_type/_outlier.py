@@ -39,7 +39,7 @@ class Outlier(ErrorType):
             raise TypeError(msg)
 
     def _get_valid_columns(self:Outlier, data: pd.DataFrame, preserve_dtypes = True) -> list[str | int]:
-        """Returns all column names with a numeric dtype."""
+        """Returns all column names with numeric dtype elements."""
         return data.select_dtypes(include=["number"]).columns.tolist()
 
     def _apply(self: Outlier, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:

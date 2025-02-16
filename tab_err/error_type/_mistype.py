@@ -22,6 +22,10 @@ class Mistype(ErrorType):
         # all dtypes are supported
         pass
 
+    def _get_valid_columns(self:Mistype, data: pd.DataFrame, preserve_dtypes = True) -> list[str | int]:
+        """Returns all column names since all dtypes are supported."""
+        return data.columns.tolist()
+
     def _apply(self: Mistype, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
         """Applies the Mistype ErrorType to a column of data.
 

@@ -41,6 +41,10 @@ class Permutate(ErrorType):
             msg = f"Column {column} does not contain values of the string dtype. Cannot Permutate values."
             raise TypeError(msg)
 
+    def _get_valid_columns(self:Permutate, data: pd.DataFrame, preserve_dtypes = True) -> list[str | int]:
+        """Returns column names with string dtype elements."""
+        return data.select_dtypes(include=["string"]).columns.to_list()
+
     def _random_pattern_function(self: Permutate, old_string: str) -> str:
         """Generates a random permutation of 'old_string' elements split on the 'permutation_separator'."""
         old_list = old_string.split(self.config.permutation_separator)
