@@ -23,7 +23,7 @@ class WrongUnit(ErrorType):
             msg = f"Column {column} does not contain scalars. Cannot apply a wrong unit."
             raise TypeError(msg)
 
-    def _get_valid_columns(self:WrongUnit, data: pd.DataFrame, preserve_dtypes = True) -> list[str | int]:
+    def get_valid_columns(self:WrongUnit, data: pd.DataFrame, preserve_dtypes = True) -> list[str | int]:
         """Returns all column names with numeric dtype elements."""
         return data.select_dtypes(include=["number"]).columns.tolist()
 

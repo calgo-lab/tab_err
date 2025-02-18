@@ -22,7 +22,7 @@ class Mistype(ErrorType):
         # all dtypes are supported
         pass
 
-    def _get_valid_columns(self:Mistype, data: pd.DataFrame, preserve_dtypes = True) -> list[str | int]:
+    def get_valid_columns(self:Mistype, data: pd.DataFrame, preserve_dtypes = True) -> list[str | int]:
         """Returns all column names since all dtypes are supported."""
         return data.columns.tolist()
 

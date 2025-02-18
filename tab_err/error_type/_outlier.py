@@ -38,7 +38,7 @@ class Outlier(ErrorType):
             msg = f"Column {column} does not contain numeric values. Cannot apply outliers."
             raise TypeError(msg)
 
-    def _get_valid_columns(self:Outlier, data: pd.DataFrame, preserve_dtypes = True) -> list[str | int]:
+    def get_valid_columns(self:Outlier, data: pd.DataFrame, preserve_dtypes = True) -> list[str | int]:
         """Returns all column names with numeric dtype elements."""
         return data.select_dtypes(include=["number"]).columns.tolist()
 

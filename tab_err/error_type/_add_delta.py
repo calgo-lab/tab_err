@@ -18,7 +18,7 @@ class AddDelta(ErrorType):
         # all data types are fine
         pass
 
-    def _get_valid_columns(self:AddDelta, data: pd.DataFrame, preserve_dtypes = True) -> list[str | int]:
+    def get_valid_columns(self:AddDelta, data: pd.DataFrame, preserve_dtypes = True) -> list[str | int]:
         """Returns all column names since all dtypes are supported."""
         return data.columns.tolist()
 
