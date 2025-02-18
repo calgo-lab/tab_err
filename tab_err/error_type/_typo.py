@@ -33,7 +33,7 @@ class Typo(ErrorType):
             msg = f"Column {column} does not contain values of the string dtype. Cannot apply Typos."
             raise TypeError(msg)
 
-    def get_valid_columns(self:Typo, data: pd.DataFrame, preserve_dtypes = True) -> list[str | int]:
+    def _get_valid_columns(self:Typo, data: pd.DataFrame, preserve_dtypes = True) -> list[str | int]:
         """Returns column names with string dtype elements."""
         return data.select_dtypes(include=["string"]).columns.to_list()
 

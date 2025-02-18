@@ -22,7 +22,7 @@ class Mistype(ErrorType):
         # all dtypes are supported
         pass
 
-    def get_valid_columns(self:Mistype, data: pd.DataFrame, preserve_dtypes = True) -> list[str | int]:
+    def _get_valid_columns(self:Mistype, data: pd.DataFrame, preserve_dtypes = True) -> list[str | int]:
         """Returns all column names since all dtypes are supported."""
         return data.columns.tolist()
 
@@ -49,6 +49,7 @@ class Mistype(ErrorType):
             if self.config.mistype_dtype not in supported_dtypes:
                 msg = f"Unsupported user-specified dtype {self.config.mistype_dtype}. Supported dtypes as {supported_dtypes}."
                 raise TypeError(msg)
+
             target_dtype = self.config.mistype_dtype
         else:  # no user-specified dtype, use heuristict to infer one
             current_dtype = series.dtype

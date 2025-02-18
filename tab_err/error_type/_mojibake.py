@@ -24,7 +24,7 @@ class Mojibake(ErrorType):
             msg = f"Column {column} does not contain values of the string dtype. Cannot insert Mojibake."
             raise TypeError(msg)
 
-    def get_valid_columns(self:Mojibake, data: pd.DataFrame, preserve_dtypes = True) -> list[str | int]:
+    def _get_valid_columns(self:Mojibake, data: pd.DataFrame, preserve_dtypes = True) -> list[str | int]:
         """Returns all column names with string dtype elements."""
         return data.select_dtypes(include=["string"]).columns.to_list()
 
@@ -61,6 +61,7 @@ class Mojibake(ErrorType):
         encoding_sender = self.config.encoding_sender
         encoding_receiver = self.config.encoding_receiver
 
+        # TODO(nich): Deal with the cases of just one being None/one being specified
         if encoding_sender is None or encoding_receiver is None:
             encoding_sender = random.choice(list(top10))
             encoding_receiver = random.choice(list(encodings[encoding_sender]))
