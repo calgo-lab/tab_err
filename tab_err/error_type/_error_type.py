@@ -61,7 +61,7 @@ class ErrorType(ABC):
             pd.Series: The data column, 'column', after errors of ErrorType at the locations specified by 'error_mask' are introduced.
         """
         self._check_type(data, column)
-
+        print(f"In error_type.apply() the datatype of {column} is {data[column].dtype}. The type being applied is {self}")
         if data.shape != error_mask.shape:
             msg = f"The shape of 'data': {data.shape} was different from the shape of 'error_mask': {error_mask.shape}. They should be the same."
             raise ValueError(msg)

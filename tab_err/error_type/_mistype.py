@@ -42,6 +42,8 @@ class Mistype(ErrorType):
             pd.Series: The data column, 'column', after Mistype errors at the locations specified by 'error_mask' are introduced.
         """
         series = get_column(data, column).copy()
+        print("Data types of the dataframe: ", data.dtypes)
+        print("Column: ", column, "\nData type of the column: ", series.dtype)
 
         if self.config.mistype_dtype is not None:
             supported_dtypes = ["object", "string", "int64", "Int64", "float64", "Float64"]

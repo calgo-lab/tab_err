@@ -19,8 +19,8 @@ class AddDelta(ErrorType):
         pass
 
     def _get_valid_columns(self:AddDelta, data: pd.DataFrame, preserve_dtypes = True) -> list[str | int]:
-        """Returns all column names since all dtypes are supported."""
-        return data.columns.tolist()
+        """Returns all column names with numeric dtype elements. Necessary for high level API."""
+        return data.select_dtypes(include=["number"]).columns.tolist()
 
     def _apply(self: AddDelta, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
         """Applies the AddDelta ErrorType to a column of data.

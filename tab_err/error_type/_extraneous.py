@@ -19,8 +19,8 @@ class Extraneous(ErrorType):
         pass
 
     def _get_valid_columns(self:Extraneous, data: pd.DataFrame, preserve_dtypes = True) -> list[str | int]:
-        """Returns all column names since all dtypes are supported."""
-        return data.columns.tolist()
+        """Returns all column names with string dtype elements. Necessary for high level API."""
+        return data.select_dtypes(include=["string"]).columns.to_list()
 
     def _apply(self: Extraneous, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
         """Applies the Extraneous ErrorType to a column of data.
