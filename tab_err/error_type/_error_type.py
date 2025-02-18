@@ -69,7 +69,7 @@ class ErrorType(ABC):
         self._random_generator = seed_randomness(self._seed)
         return self._apply(data, error_mask, column)
 
-    def _get_valid_columns(self: ErrorType, data: pd.DataFrame, preserve_dtypes: bool = True) -> list[str | int]:
+    def get_valid_columns(self: ErrorType, data: pd.DataFrame, preserve_dtypes: bool = True) -> list[str | int]:
         """Finds the valid columns to which the error type can be applied. Wrapper around _get_valid_columns."""
         return self._get_valid_columns(data, preserve_dtypes)
 

@@ -23,8 +23,8 @@ class Mistype(ErrorType):
         pass
 
     def _get_valid_columns(self:Mistype, data: pd.DataFrame, preserve_dtypes = True) -> list[str | int]:
-        """Returns all column names since all dtypes are supported."""
-        return data.columns.tolist()
+        """Returns all column names of columns with dtypes other than object. This is necessary for the high level API."""
+        return [col_name for col_name in data.columns.tolist() if data[col_name].dtype != "object"]
 
     def _apply(self: Mistype, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
         """Applies the Mistype ErrorType to a column of data.

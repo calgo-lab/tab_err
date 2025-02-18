@@ -18,21 +18,20 @@ def build_column_type_dictionary(data: pd.DataFrame) -> dict[int | str, list[Err
     """
     # What default values should we pass into add delta, extraneous, replace, wrong unit?
     all_error_types =[
-        error_type.AddDelta(),  # Need default value
+        error_type.AddDelta({"add_delta_value": 0.1}),  # Need default value
         error_type.CategorySwap(),
-        error_type.Extraneous(),  # Need default value
+        error_type.Extraneous({"extraneous_value_template": ".{value}"}),  # Need default value
         error_type.MissingValue(),
         error_type.Mistype(),
         error_type.Mojibake(),
         error_type.Outlier(),
         error_type.Permutate(),
-        error_type.Replace(),  # Need default value
+        error_type.Replace({"replace_what": "y", "replace_with": "z"}),  # Need default value
         error_type.Typo(),
-        error_type.WrongUnit()  # Need default value
+        error_type.WrongUnit({"wrong_unit_scaling": lambda x: 10.0*x})  # Need default value
     ]
 
     return {column:[valid_error_type for valid_error_type in all_error_types if column in valid_error_type.get_valid_columns(data)] for column in data.columns}
-
 
 def build_column_mechanism_dictionary(data: pd.DataFrame) -> dict[int | str, list[ErrorMechanism]]:
     """Builds a dictionary mapping from column names to the list of valid error mechanisms to apply to that column.
@@ -43,12 +42,14 @@ def build_column_mechanism_dictionary(data: pd.DataFrame) -> dict[int | str, lis
     Returns:
         dict[int | str, list[ErrorMechanism]]: A dictionary mapping from column names to the list of valid error mechanisms to apply to that column.
     """
+    columns_mechanisms = {}
     base_error_mechanisms = [error_mechanism.ENAR(), error_mechanism.ECAR()]
 
-    return {column: base_error_mechanisms.extend([error_mechanism.EAR(condition_to_column=other_column)
-                                                  for other_column in data.columns if other_column != column])
-            for column in data.columns}
+    for column in data.columns:
+        columns_mechanisms[column] = base_error_mechanisms + [error_mechanism.EAR(condition_to_column=other_column)
+                                                              for other_column in data.columns if other_column != column]
 
+    return columns_mechanisms
 
 def build_column_number_of_models_dictionary(
     data: pd.DataFrame,
@@ -86,7 +87,7 @@ def build_column_error_rate_dictionary(
     return {column: max_error_rate/col_num_models[column] for column in data.columns}
 
 def create_errors(data: pd.DataFrame, max_error_rate: float) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Creates errors in a given DataFrame, *approximately* max_error_rate.
+    """Creates errors in a given DataFrame, at a rate of *approximately* max_error_rate.
 
     Args:
         data (pd.DataFrame): The pandas DataFrame to create errors in.
@@ -97,7 +98,7 @@ def create_errors(data: pd.DataFrame, max_error_rate: float) -> tuple[pd.DataFra
             - The first element is a copy of 'data' with errors.
             - The second element is the associated error mask.
     """
-    # Error checking -- error type is valid, dataframe is not empty, etc
+    # Input Checking
     if len(data) == 0:
         msg = "Cannot create errors in an empty DataFrame."
         raise ValueError(msg)
@@ -106,13 +107,15 @@ def create_errors(data: pd.DataFrame, max_error_rate: float) -> tuple[pd.DataFra
         msg = f"max_error_rate must be between 0 and 1, but was {max_error_rate}."
         raise ValueError(msg)
 
-    # Create set up data
+    # Set Up Data
     data_copy = data.copy()
     error_mask = pd.DataFrame(data=False, index=data.index, columns=data.columns)
 
     # Build Dictionaries
     col_type = build_column_type_dictionary(data)
     col_mechs = build_column_mechanism_dictionary(data)
+    print("Column-type dict: ", col_type)
+    print("Column-mech dict: ", col_mechs)
     col_num_models = build_column_number_of_models_dictionary(data, col_type, col_mechs)
     col_error_rates = build_column_error_rate_dictionary(data, max_error_rate, col_num_models)
 
@@ -130,7 +133,6 @@ def create_errors(data: pd.DataFrame, max_error_rate: float) -> tuple[pd.DataFra
         }
     )
 
-    # Create Errors
+    # Create Errors & Return
     dirty_data, error_mask = mid_level.create_errors(data_copy, config)
-
     return dirty_data, error_mask
