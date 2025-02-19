@@ -22,7 +22,6 @@ def build_column_type_dictionary(data: pd.DataFrame) -> dict[int | str, list[Err
         error_type.CategorySwap(),
         error_type.Extraneous({"extraneous_value_template": ".{value}"}),  # Need default value
         # error_type.MissingValue(),  # Need to update the code, adding nans for numeric types when the missing value is None
-        # error_type.Mistype(),
         error_type.Mojibake(),
         # error_type.Outlier(),
         # error_type.Permutate(),  # Need default value
@@ -118,6 +117,9 @@ def create_errors(data: pd.DataFrame, max_error_rate: float) -> tuple[pd.DataFra
     print("Column-mech dict: ", col_mechs)
     col_num_models = build_column_number_of_models_dictionary(data, col_type, col_mechs)
     col_error_rates = build_column_error_rate_dictionary(data, max_error_rate, col_num_models)
+    
+    # Catch the low error rate (shown on paper) -- warn 
+    # NOTE: Could be good to prune models from this
 
     # Build MidLevel Config
     config = MidLevelConfig(
