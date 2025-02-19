@@ -20,16 +20,16 @@ def build_column_type_dictionary(data: pd.DataFrame) -> dict[int | str, list[Err
     """
     # What default values should we pass into add delta, extraneous, replace, wrong unit?
     all_error_types =[
-        error_type.AddDelta({"add_delta_value": 0.1}),  # Need default value  -- the cast within the _apply method is problematic because having an object dtype for other errortypes doesn't work. -- should cast back after application?
+        error_type.AddDelta({"add_delta_value": 0.1}),  # Need default value
         error_type.CategorySwap(),
         error_type.Extraneous({"extraneous_value_template": ".{value}"}),  # Need default value
-        # error_type.MissingValue(),  # Need to update the code, adding nans for numeric types when the missing value is None
         error_type.Mojibake(),
         error_type.Outlier(),
-        # error_type.Permutate(),  # Need default value
+        # error_type.Permutate(), - # Need default value
         error_type.Replace({"replace_what": "y", "replace_with": "z"}),  # Need default value  -- change default behavior in replace to be randomly sampling a character from the string to be affected.
         error_type.Typo(),
-        error_type.WrongUnit({"wrong_unit_scaling": lambda x: 10.0*x})  # Need default value
+        error_type.WrongUnit({"wrong_unit_scaling": lambda x: 10.0*x}),  # Need default value
+        error_type.MissingValue()  # Need to update the code, adding nans for numeric types when the missing value is None
     ]
 
     return {column:[valid_error_type for valid_error_type in all_error_types if column in valid_error_type.get_valid_columns(data)] for column in data.columns}
@@ -93,8 +93,8 @@ def build_column_error_rate_dictionary(
         column_error_rates_dictionary[column] = column_error_rate
 
         if column_error_rate*n_rows < 1:  # This value is calculated and rounded to 0 in the sample function of the error mechanism subclasses "n_errors"
-            msg = f"With an error rate for the column ({column}) of: {column_error_rate} and a length of: {n_rows}, 0 Errors will be introduced."
-            warnings.warn(msg, stacklevel=1)
+            msg = f"With an error rate for the column ({column}) of: {column_error_rate} and a length of: {n_rows}, 0 errors will be introduced."
+            warnings.warn(msg, stacklevel=2)
 
     return column_error_rates_dictionary
 
@@ -126,10 +126,13 @@ def create_errors(data: pd.DataFrame, max_error_rate: float) -> tuple[pd.DataFra
     # Build Dictionaries
     col_type = build_column_type_dictionary(data)
     col_mechs = build_column_mechanism_dictionary(data)
-    print("Column-type dict: ", col_type)
-    print("Column-mech dict: ", col_mechs)
     col_num_models = build_column_number_of_models_dictionary(data, col_type, col_mechs)
     col_error_rates = build_column_error_rate_dictionary(data, max_error_rate, col_num_models)
+
+    print("Column-type dict: ", col_type)
+    print("Column-mech dict: ", col_mechs)
+    print("Column-num_models dict: ", col_num_models)
+    print("Column-error_rates dict: ", col_error_rates)
 
     # NOTE: Could be good to prune models from this
     # Build MidLevel Config

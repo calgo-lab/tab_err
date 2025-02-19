@@ -1,13 +1,11 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+import pandas as pd
+from pandas.api.types import is_string_dtype
 
 from tab_err._utils import get_column
 
 from ._error_type import ErrorType
-
-if TYPE_CHECKING:
-    import pandas as pd
 
 
 class MissingValue(ErrorType):
@@ -39,8 +37,13 @@ class MissingValue(ErrorType):
         Returns:
             pd.Series: The data column, 'column', after MissingValue errors at the locations specified by 'error_mask' are introduced.
         """
-        # TODO(nich): add a functionality to add a nan if the datatype is numeric and none is in the config -- string otherwise
         series = get_column(data, column).copy()
         series_mask = get_column(error_mask, column)
-        series[series_mask] = self.config.missing_value
+
+        if is_string_dtype(series):  # Strings are finicky
+            series[series_mask] = pd.NA
+            series = series.astype(str)
+        else:
+            series[series_mask] = self.config.missing_value
+
         return series
