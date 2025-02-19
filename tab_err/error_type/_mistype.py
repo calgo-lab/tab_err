@@ -23,6 +23,20 @@ class Mistype(ErrorType):
         pass
 
     def _apply(self: Mistype, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
+        """Applies the Mistype ErrorType to a column of data.
+
+        Args:
+            data (pd.DataFrame): DataFrame containing the column to add errors to.
+            error_mask (pd.DataFrame): A Pandas DataFrame with the same index & columns as 'data' that will be modified and returned.
+            column (int | str): The column of 'data' to create an error mask for.
+
+        Raises:
+            TypeError: If the type supplied by the user in the config is not supported, a TypeError will be thrown.
+            TypeError: If no type is supplied by the user in the config, and the series' datatype is 'object', a TypeError will be thrown.
+
+        Returns:
+            pd.Series: The data column, 'column', after Mistype errors at the locations specified by 'error_mask' are introduced.
+        """
         series = get_column(data, column).copy()
 
         if self.config.mistype_dtype is not None:

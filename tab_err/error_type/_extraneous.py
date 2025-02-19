@@ -19,6 +19,20 @@ class Extraneous(ErrorType):
         pass
 
     def _apply(self: Extraneous, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
+        """Applies the Extraneous ErrorType to a column of data.
+
+        Args:
+            data (pd.DataFrame): DataFrame containing the column to add errors to.
+            error_mask (pd.DataFrame): A Pandas DataFrame with the same index & columns as 'data' that will be modified and returned.
+            column (int | str): The column of 'data' to create an error mask for.
+
+        Raises:
+            ValueError: If extraneous_value_template is not configured, a ValueError will be thrown.
+            ValueError: If extraneous_value_template does not contain the placeholder value, a ValueError will be thrown.
+
+        Returns:
+            pd.Series: The data column, 'column', after Extraneous errors at the locations specified by 'error_mask' are introduced.
+        """
         # cast to object because our operation potentially changes the type of a column.
         series = get_column(data, column).copy().astype("object")
         series_mask = get_column(error_mask, column)

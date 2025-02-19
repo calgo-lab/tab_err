@@ -25,6 +25,16 @@ class MissingValue(ErrorType):
         pass
 
     def _apply(self: MissingValue, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
+        """Applies the MissingValue ErrorType to a column of data.
+
+        Args:
+            data (pd.DataFrame): DataFrame containing the column to add errors to.
+            error_mask (pd.DataFrame): A Pandas DataFrame with the same index & columns as 'data' that will be modified and returned.
+            column (int | str): The column of 'data' to create an error mask for.
+
+        Returns:
+            pd.Series: The data column, 'column', after MissingValue errors at the locations specified by 'error_mask' are introduced.
+        """
         series = get_column(data, column).copy()
         series_mask = get_column(error_mask, column)
         series[series_mask] = self.config.missing_value

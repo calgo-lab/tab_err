@@ -15,9 +15,12 @@ if TYPE_CHECKING:
 class MidLevelConfig:
     """Configuration of the mid_level API.
 
-    The mid_level API applies N pairs of (error_mechanism, error_type) to a data. In consequence, the user
+    The mid_level API applies N pairs of (error_mechanism, error_type) to data. Consequently, the user
     is required to specify up to N pairs of error_mechanism, error_type per column when calling the mid_level
     API.
+
+    Attributes:
+        columns (dict[int | str, list[ErrorModel]]): A dictionary mapping from columns to a list of `ErrorModel`s that should be applied
     """
 
     columns: dict[int | str, list[ErrorModel]]
@@ -36,11 +39,16 @@ def create_errors(data: pd.DataFrame, config: MidLevelConfig | dict) -> tuple[pd
     """Creates errors in a given DataFrame, following a user-defined configuration.
 
     Args:
-        data: The pandas DataFrame to create errors in.
-        config: The configuration for the error generation process.
+        data (pd.DataFrame): The pandas DataFrame to create errors in.
+        config (MidLevelConfig | dict): The configuration for the error generation process.
 
     Returns:
-        A tuple of a copy of the data with errors, and the error mask.
+        tuple[pd.DataFrame, pd.DataFrame]:
+            - The first element is a copy of 'data' with errors.
+            - The second element is the associated error mask.
+
+    Raises:
+        TypeError: If `config` has incorrect type.
     """
     if isinstance(config, dict):
         _config = MidLevelConfig(config)
@@ -49,8 +57,8 @@ def create_errors(data: pd.DataFrame, config: MidLevelConfig | dict) -> tuple[pd
         _config = config
 
     else:
-        pass
-        # TODO(anyone): raise execption
+        msg = f"The type of 'config' must be either MidLevelConfig or dict but was {type(config)}."
+        raise TypeError(msg)
 
     data_dirty = data.copy()
     error_mask = pd.DataFrame(data=False, index=data.index, columns=data.columns)
