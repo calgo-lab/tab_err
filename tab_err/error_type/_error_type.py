@@ -54,9 +54,12 @@ class ErrorType(ABC):
             error_mask (pd.DataFrame): The Pandas DataFrame containing the error mask for 'column'.
             column (str | int): The index in the 'data' and 'error_mask' DataFrames where errors are to be introduced.
 
+<<<<<<< HEAD
         Raises:
             ValueError: If the shape of data and the shape of error_mask are not equal, a ValueError is thrown.
 
+=======
+>>>>>>> main
         Returns:
             pd.Series: The data column, 'column', after errors of ErrorType at the locations specified by 'error_mask' are introduced.
         """

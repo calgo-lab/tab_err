@@ -95,10 +95,19 @@ class ErrorMechanism(ABC):
 
         Args:
             data (pd.DataFrame): DataFrame containing the column to add errors to
+<<<<<<< HEAD
             column (str | int): The column of 'data' to create an error mask for
             error_rate (float): Proportion of rows to be affected by errors; in range [0,1]
             error_mask (pd.DataFrame): A Pandas DataFrame with the same index & columns as 'data' that will be modified and returned
 
         Returns:
             pd.DataFrame: A Pandas DataFrame with True values at entries where an error should be introduced, False otherwise
+=======
+            column (str | int): The column of `data` to create an error mask for
+            error_rate (float): Proportion of rows to be affected by errors; in range [0,1]
+            error_mask (pd.DataFrame): A Pandas `DataFrame` with the same index & columns as `data` that will be modified and returned
+
+        Returns:
+            pd.DataFrame: A Pandas `DataFrame` with `True` values at entries where an error should be introduced, `False` otherwise
+>>>>>>> main
         """
