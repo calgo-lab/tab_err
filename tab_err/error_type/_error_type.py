@@ -54,17 +54,10 @@ class ErrorType(ABC):
             error_mask (pd.DataFrame): The Pandas DataFrame containing the error mask for 'column'.
             column (str | int): The index in the 'data' and 'error_mask' DataFrames where errors are to be introduced.
 
-<<<<<<< HEAD
-        Raises:
-            ValueError: If the shape of data and the shape of error_mask are not equal, a ValueError is thrown.
-
-=======
->>>>>>> main
         Returns:
             pd.Series: The data column, 'column', after errors of ErrorType at the locations specified by 'error_mask' are introduced.
         """
         self._check_type(data, column)
-        print(f"In error_type.apply() the datatype of {column} is {data[column].dtype}. The type being applied is {self}")
         if data.shape != error_mask.shape:
             msg = f"The shape of 'data': {data.shape} was different from the shape of 'error_mask': {error_mask.shape}. They should be the same."
             raise ValueError(msg)
@@ -72,19 +65,19 @@ class ErrorType(ABC):
         self._random_generator = seed_randomness(self._seed)
         return self._apply(data, error_mask, column)
 
-    def get_valid_columns(self: ErrorType, data: pd.DataFrame, preserve_dtypes: bool = True) -> list[str | int]:
+    def get_valid_columns(self: ErrorType, data: pd.DataFrame) -> list[str | int]:
         """Finds the valid columns to which the error type can be applied. Wrapper around _get_valid_columns."""
-        return self._get_valid_columns(data, preserve_dtypes)
+        return self._get_valid_columns(data)
 
     @staticmethod
     @abstractmethod
     def _check_type(data: pd.DataFrame, column: str | int) -> None:
         pass
 
-    # TODO(nich): def _get_valid_columns(data: pd.DataFrame, preserve_dtypes: bool = True) -> list[str | int]:
+    # TODO(nich): def _get_valid_columns(data: pd.DataFrame) -> list[str | int]:
     # supposed to check for which columns this error type can be applied and returns those.
     @abstractmethod
-    def _get_valid_columns(self: ErrorType, data: pd.DataFrame, preserve_dtypes: bool = True) -> list[str | int]:
+    def _get_valid_columns(self: ErrorType, data: pd.DataFrame) -> list[str | int]:
         """Finds the valid columns to which the error type can be applied."""
 
     @abstractmethod

@@ -24,7 +24,7 @@ class MissingValue(ErrorType):
         # all dtypes are supported
         pass
 
-    def _get_valid_columns(self:MissingValue, data: pd.DataFrame, preserve_dtypes = True) -> list[str | int]:
+    def _get_valid_columns(self:MissingValue, data: pd.DataFrame) -> list[str | int]:
         """If the config mising value is None, returns all columns. Otherwise, only the columns with the same type."""
         return data.columns.to_list() if self.config.missing_value is None else data.select_dtypes(include=["object", "string"]).columns.to_list()
 
@@ -39,10 +39,7 @@ class MissingValue(ErrorType):
         Returns:
             pd.Series: The data column, 'column', after MissingValue errors at the locations specified by 'error_mask' are introduced.
         """
-<<<<<<< HEAD
         # TODO(nich): add a functionality to add a nan if the datatype is numeric and none is in the config -- string otherwise
-=======
->>>>>>> main
         series = get_column(data, column).copy()
         series_mask = get_column(error_mask, column)
         series[series_mask] = self.config.missing_value

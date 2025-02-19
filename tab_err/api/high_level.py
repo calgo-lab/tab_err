@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import warnings
+
 import pandas as pd
 
 from tab_err import ErrorMechanism, ErrorType, error_mechanism, error_type
@@ -18,14 +20,14 @@ def build_column_type_dictionary(data: pd.DataFrame) -> dict[int | str, list[Err
     """
     # What default values should we pass into add delta, extraneous, replace, wrong unit?
     all_error_types =[
-        # error_type.AddDelta({"add_delta_value": 0.1}),  # Need default value  -- the cast within the _apply method is problematic because having an object dtype for other errortypes doesn't work. -- should cast back after application?
+        error_type.AddDelta({"add_delta_value": 0.1}),  # Need default value  -- the cast within the _apply method is problematic because having an object dtype for other errortypes doesn't work. -- should cast back after application?
         error_type.CategorySwap(),
         error_type.Extraneous({"extraneous_value_template": ".{value}"}),  # Need default value
         # error_type.MissingValue(),  # Need to update the code, adding nans for numeric types when the missing value is None
         error_type.Mojibake(),
-        # error_type.Outlier(),
+        error_type.Outlier(),
         # error_type.Permutate(),  # Need default value
-        error_type.Replace({"replace_what": "y", "replace_with": "z"}),  # Need default value
+        error_type.Replace({"replace_what": "y", "replace_with": "z"}),  # Need default value  -- change default behavior in replace to be randomly sampling a character from the string to be affected.
         error_type.Typo(),
         error_type.WrongUnit({"wrong_unit_scaling": lambda x: 10.0*x})  # Need default value
     ]
@@ -83,7 +85,18 @@ def build_column_error_rate_dictionary(
         dict[int | str, float]: A dictionary mapping from column names to the error rate to apply to that column,
             based on the number of error models to be applied.
     """
-    return {column: max_error_rate/col_num_models[column] for column in data.columns}
+    column_error_rates_dictionary = {}
+
+    for column in data.columns:
+        column_error_rate = max_error_rate/col_num_models[column]
+        n_rows = len(data[column])
+        column_error_rates_dictionary[column] = column_error_rate
+
+        if column_error_rate*n_rows < 1:  # This value is calculated and rounded to 0 in the sample function of the error mechanism subclasses "n_errors"
+            msg = f"With an error rate for the column ({column}) of: {column_error_rate} and a length of: {n_rows}, 0 Errors will be introduced."
+            warnings.warn(msg, stacklevel=1)
+
+    return column_error_rates_dictionary
 
 def create_errors(data: pd.DataFrame, max_error_rate: float) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Creates errors in a given DataFrame, at a rate of *approximately* max_error_rate.
@@ -117,10 +130,8 @@ def create_errors(data: pd.DataFrame, max_error_rate: float) -> tuple[pd.DataFra
     print("Column-mech dict: ", col_mechs)
     col_num_models = build_column_number_of_models_dictionary(data, col_type, col_mechs)
     col_error_rates = build_column_error_rate_dictionary(data, max_error_rate, col_num_models)
-    
-    # Catch the low error rate (shown on paper) -- warn 
-    # NOTE: Could be good to prune models from this
 
+    # NOTE: Could be good to prune models from this
     # Build MidLevel Config
     config = MidLevelConfig(
         {

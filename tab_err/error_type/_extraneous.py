@@ -18,9 +18,9 @@ class Extraneous(ErrorType):
         # all data types are fine
         pass
 
-    def _get_valid_columns(self:Extraneous, data: pd.DataFrame, preserve_dtypes = True) -> list[str | int]:
+    def _get_valid_columns(self:Extraneous, data: pd.DataFrame) -> list[str | int]:
         """Returns all column names with string dtype elements. Necessary for high level API."""
-        return data.select_dtypes(include=["string"]).columns.to_list()
+        return data.select_dtypes(include=["string", "object"]).columns.to_list()
 
     def _apply(self: Extraneous, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
         """Applies the Extraneous ErrorType to a column of data.
@@ -37,8 +37,7 @@ class Extraneous(ErrorType):
         Returns:
             pd.Series: The data column, 'column', after Extraneous errors at the locations specified by 'error_mask' are introduced.
         """
-        # cast to object because our operation potentially changes the type of a column.
-        series = get_column(data, column).copy().astype("object")
+        series = get_column(data, column).copy()
         series_mask = get_column(error_mask, column)
 
         if self.config.extraneous_value_template is None:

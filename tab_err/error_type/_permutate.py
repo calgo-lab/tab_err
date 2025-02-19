@@ -41,12 +41,12 @@ class Permutate(ErrorType):
             msg = f"Column {column} does not contain values of the string dtype. Cannot Permutate values."
             raise TypeError(msg)
 
-    def _get_valid_columns(self:Permutate, data: pd.DataFrame, preserve_dtypes = True) -> list[str | int]:
+    def _get_valid_columns(self:Permutate, data: pd.DataFrame) -> list[str | int]:
         """Returns column names with string dtype elements."""
-        return data.select_dtypes(include=["string"]).columns.to_list()
+        return data.select_dtypes(include=["string","object"]).columns.to_list()
 
     def _random_pattern_function(self: Permutate, old_string: str) -> str:
-        """Generates a random permutation of 'old_string' elements split on the 'permutation_separator'."""
+        """Generates a random permutation of `old_string` elements split on the `permutation_separator`."""
         old_list = old_string.split(self.config.permutation_separator)
         new = old_list
         while new == old_list:  # Ensure the sample is different from original
@@ -55,14 +55,14 @@ class Permutate(ErrorType):
         return self.config.permutation_separator.join(new)
 
     def _fixed_pattern_function(self: Permutate, old_string: str, new_pattern: list[int]) -> str:
-        """Generates a permutation of 'old_string' elements split on the 'permutation_separator' given a permutation specified by 'new_pattern'."""
+        """Generates a permutation of `old_string` elements split on the `permutation_separator` given a permutation specified by `new_pattern`."""
         string_as_part_lists = old_string.split(self.config.permutation_separator)
         new_string_as_part_list = [string_as_part_lists[index] for index in new_pattern]
 
         return self.config.permutation_separator.join(new_string_as_part_list)
 
     def _apply(self: Permutate, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
-        """Applies the Permutate ErrorType to a column of data.
+        """Applies the `Permutate` `ErrorType` to a column of data.
 
         Args:
             data (pd.DataFrame): DataFrame containing the column to add errors to.

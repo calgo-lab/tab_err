@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 
 class Mistype(ErrorType):
-    """Insert incorrectly typed values into a column.
+    """Insert incorrectly typed values into a column. Note that the dtype of the column is changed by this operation.
 
     - String / Object is the dead end of typing
     In an effort to keep the code relatively simple, we cast the corrupted column to an Object Dtype.
@@ -22,12 +22,12 @@ class Mistype(ErrorType):
         # all dtypes are supported
         pass
 
-    def _get_valid_columns(self:Mistype, data: pd.DataFrame, preserve_dtypes = True) -> list[str | int]:
+    def _get_valid_columns(self:Mistype, data: pd.DataFrame) -> list[str | int]:
         """Returns all column names of columns with dtypes other than object. This is necessary for the high level API."""
         return [col_name for col_name in data.columns.tolist() if data[col_name].dtype != "object"]
 
     def _apply(self: Mistype, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
-        """Applies the Mistype ErrorType to a column of data.
+        """Applies the Mistype ErrorType to a column of data. Note that the dtype of the column is changed by this operation.
 
         Args:
             data (pd.DataFrame): DataFrame containing the column to add errors to.
@@ -42,8 +42,6 @@ class Mistype(ErrorType):
             pd.Series: The data column, 'column', after Mistype errors at the locations specified by 'error_mask' are introduced.
         """
         series = get_column(data, column).copy()
-        print("Data types of the dataframe: ", data.dtypes)
-        print("Column: ", column, "\nData type of the column: ", series.dtype)
 
         if self.config.mistype_dtype is not None:
             supported_dtypes = ["object", "string", "int64", "Int64", "float64", "Float64"]

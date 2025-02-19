@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from pandas.api.types import is_numeric_dtype
+
 from tab_err._utils import get_column
 
 from ._error_type import ErrorType
@@ -15,11 +17,14 @@ class AddDelta(ErrorType):
 
     @staticmethod
     def _check_type(data: pd.DataFrame, column: int | str) -> None:
-        # all data types are fine
-        pass
+        series = get_column(data, column)
 
-    def _get_valid_columns(self:AddDelta, data: pd.DataFrame, preserve_dtypes = True) -> list[str | int]:
-        """Returns all column names with numeric dtype elements. Necessary for high level API."""
+        if not is_numeric_dtype(series):
+            msg = f"Column {column} with dtype: {series.dtype} does not contain numeric values. Cannot apply AddDelta."
+            raise TypeError(msg)
+
+    def _get_valid_columns(self:AddDelta, data: pd.DataFrame) -> list[str | int]:
+        """Returns all column names with numeric dtype elements."""
         return data.select_dtypes(include=["number"]).columns.tolist()
 
     def _apply(self: AddDelta, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
@@ -36,8 +41,7 @@ class AddDelta(ErrorType):
         Returns:
             pd.Series: The data column, 'column', after AddDelta errors at the locations specified by 'error_mask' are introduced.
         """
-        # cast to object because our operation potentially changes the type of a column.
-        series = get_column(data, column).copy().astype("object")
+        series = get_column(data, column).copy()
         series_mask = get_column(error_mask, column)
 
         if self.config.add_delta_value is None:

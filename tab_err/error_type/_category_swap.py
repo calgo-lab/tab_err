@@ -35,7 +35,7 @@ class CategorySwap(ErrorType):
             msg = f"Column {column} contains {len(series.cat.categories)} categories. Require at least 2 categories to insert mislabels."
             raise ValueError(msg)
 
-    def _get_valid_columns(self: CategorySwap, data: pd.DataFrame, preserve_dtypes = True) -> list[str | int]:
+    def _get_valid_columns(self: CategorySwap, data: pd.DataFrame) -> list[str | int]:
         """Checks which columns are categorical and returns the indices of those with two or more categories."""
         valid_columns = []
         for col_name in data.columns:

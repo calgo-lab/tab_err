@@ -23,9 +23,9 @@ class Replace(ErrorType):
             msg = f"Column {column} does not contain values of the string dtype. Cannot Permutate values."
             raise TypeError(msg)
 
-    def _get_valid_columns(self:Replace, data: pd.DataFrame, preserve_dtypes = True) -> list[str | int]:
+    def _get_valid_columns(self:Replace, data: pd.DataFrame) -> list[str | int]:
         """Returns column names with string dtype elements."""
-        return data.select_dtypes(include=["string"]).columns.to_list()
+        return data.select_dtypes(include=["string", "object"]).columns.to_list()
 
     def _apply(self: Replace, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
         """Applies the Replace ErrorType to a column of data.
