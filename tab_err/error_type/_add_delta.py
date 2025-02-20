@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import warnings
 from typing import TYPE_CHECKING
 
 from pandas.api.types import is_numeric_dtype
@@ -45,8 +46,9 @@ class AddDelta(ErrorType):
         series_mask = get_column(error_mask, column)
 
         if self.config.add_delta_value is None:
-            msg = "No add_delta_value has been configured. Please add it to the ErrorTypeConfig."
-            raise ValueError(msg)
+            msg = f"self.config.add_delta_value is none, sampling a random delta value uniformly from the range of column: {column}"
+            warnings.warn(msg, stacklevel=2)
+            self.config.add_delta_value = (self._random_generator.choice(series) - series.mean())/series.std()  # Ensures a smaller value than uniform sampling
 
         series.loc[series_mask] = series.loc[series_mask].apply(lambda x: x + self.config.add_delta_value)
         return series
