@@ -3,7 +3,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import numpy as np
-from pandas.api.types import is_integer_dtype, is_numeric_dtype
+import pandas as pd
+from pandas.api.types import is_datetime64_dtype, is_integer_dtype, is_numeric_dtype
 
 from tab_err._utils import get_column
 
@@ -34,13 +35,13 @@ class Outlier(ErrorType):
     def _check_type(data: pd.DataFrame, column: int | str) -> None:
         series = get_column(data, column)
 
-        if not is_numeric_dtype(series):
-            msg = f"Column {column} with dtype: {series.dtype} does not contain numeric values. Cannot apply outliers."
+        if not (is_numeric_dtype(series) or is_datetime64_dtype(series)):
+            msg = f"Column {column} with dtype: {series.dtype} does not contain numeric or datetime64 values. Cannot apply outliers."
             raise TypeError(msg)
 
     def _get_valid_columns(self:Outlier, data: pd.DataFrame) -> list[str | int]:
         """Returns all column names with numeric dtype elements."""
-        return data.select_dtypes(include=["number"]).columns.tolist()
+        return data.select_dtypes(include=["number", "datetime64"]).columns.tolist()
 
     def _apply(self: Outlier, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
         """Applies the Outlier ErrorType to a column of data.
@@ -56,6 +57,12 @@ class Outlier(ErrorType):
         # Get the column series and mask
         series = get_column(data, column).copy()
         series_mask = get_column(error_mask, column)
+        was_datetime = False  # Default to false -- changes to code only occur if the series is datetime
+
+        if is_datetime64_dtype(series):  # Convert to int if datetime (ns since UNIX epoch)
+            series = series.astype("int64")
+            was_datetime = True
+
 
         mean_value = series.mean()
         q1 = series.quantile(0.25)
@@ -93,5 +100,8 @@ class Outlier(ErrorType):
             series.loc[series_mask] += np.rint(self._random_generator.normal(loc=0, scale=noise_std, size=series_mask.sum()))
         else:
             series.loc[series_mask] += self._random_generator.normal(loc=0, scale=noise_std, size=series_mask.sum())
+
+        if was_datetime:  # Handle datetime objects
+            series = pd.to_datetime(series)
 
         return series
