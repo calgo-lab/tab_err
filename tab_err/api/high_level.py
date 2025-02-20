@@ -20,7 +20,7 @@ def build_column_type_dictionary(data: pd.DataFrame) -> dict[int | str, list[Err
     """
     # What default values should we pass into add delta, extraneous, replace, wrong unit?
     all_error_types =[
-        error_type.AddDelta(),  # Need default value
+        error_type.AddDelta(),
         error_type.CategorySwap(),
         error_type.Extraneous({"extraneous_value_template": ".{value}"}),  # Need default value
         error_type.Mojibake(),
