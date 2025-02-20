@@ -23,11 +23,8 @@ def are_same_class(obj1: object, obj2: object) -> bool:
 
 
 def build_column_type_dictionary(
-    data: pd.DataFrame,
-    error_types_to_include: list[ErrorType] | None = None,
-    error_types_to_exclude: list[ErrorType] | None = None,
-    seed: int | None = None
-    ) -> dict[int | str, list[ErrorType]]:
+    data: pd.DataFrame, error_types_to_include: list[ErrorType] | None = None, error_types_to_exclude: list[ErrorType] | None = None, seed: int | None = None
+) -> dict[int | str, list[ErrorType]]:
     """Creates a dictionary mapping from column names to the list of valid error types to apply to that column.
 
     Args:
@@ -54,7 +51,7 @@ def build_column_type_dictionary(
         error_type.Replace(seed=seed),
         error_type.Typo(seed=seed),
         error_type.WrongUnit(seed=seed),
-        error_type.MissingValue(seed=seed)
+        error_type.MissingValue(seed=seed),
     ]
 
     if error_types_to_exclude is not None and error_types_to_include is not None:
@@ -68,17 +65,17 @@ def build_column_type_dictionary(
     # else: do nothing because the default behavior uses all error types
 
     if len(error_types_applied) == 0:
-            msg = "The list of error types to be applied cannot have length 0. Use the default or resturcture your input."
-            raise ValueError(msg)
+        msg = "The list of error types to be applied cannot have length 0. Use the default or resturcture your input."
+        raise ValueError(msg)
 
-    return {column:[valid_error_type for valid_error_type in error_types_applied if column in valid_error_type.get_valid_columns(data)]
-            for column in data.columns}
+    return {
+        column: [valid_error_type for valid_error_type in error_types_applied if column in valid_error_type.get_valid_columns(data)] for column in data.columns
+    }
+
 
 def build_column_mechanism_dictionary(
-    data: pd.DataFrame,
-    error_mechs_to_exclude: list[ErrorMechanism] | None = None,
-    seed: int | None = None
-    ) -> dict[int | str, list[ErrorMechanism]]:
+    data: pd.DataFrame, error_mechs_to_exclude: list[ErrorMechanism] | None = None, seed: int | None = None
+) -> dict[int | str, list[ErrorMechanism]]:
     """Builds a dictionary mapping from column names to the list of valid error mechanisms to apply to that column.
 
     Args:
@@ -94,8 +91,9 @@ def build_column_mechanism_dictionary(
 
     # Settle for less granularity and more user simplicty -- only allow exclusion of entire classes of error mechs:
     for column in data.columns:
-        column_wise_error_mechs = base_error_mechanisms + [error_mechanism.EAR(condition_to_column=other_column, seed=seed)
-                                                              for other_column in data.columns if other_column != column]
+        column_wise_error_mechs = base_error_mechanisms + [
+            error_mechanism.EAR(condition_to_column=other_column, seed=seed) for other_column in data.columns if other_column != column
+        ]
         # Prune error mechanisms
         if error_mechs_to_exclude is not None:
             column_wise_error_mechs = [kem for kem in column_wise_error_mechs if not any(are_same_class(kem, eem) for eem in error_mechs_to_exclude)]
@@ -103,11 +101,10 @@ def build_column_mechanism_dictionary(
         columns_mechanisms[column] = column_wise_error_mechs
     return columns_mechanisms
 
+
 def build_column_number_of_models_dictionary(
-    data: pd.DataFrame,
-    col_type: dict[int | str, list[ErrorType]],
-    col_mech: dict[int | str, list[ErrorMechanism]]
-    ) -> dict[int | str, int]:
+    data: pd.DataFrame, col_type: dict[int | str, list[ErrorType]], col_mech: dict[int | str, list[ErrorMechanism]]
+) -> dict[int | str, int]:
     """Builds a dictionary mapping from column names to the number of error models to apply to that column.
 
     Args:
@@ -118,13 +115,10 @@ def build_column_number_of_models_dictionary(
     Returns:
         dict[int | str, int]: A dictionary mapping from column names to the number of error models to apply to that column.
     """
-    return {column: len(col_type[column])*len(col_mech[column]) for column in data.columns}
+    return {column: len(col_type[column]) * len(col_mech[column]) for column in data.columns}
 
-def build_column_error_rate_dictionary(
-    data: pd.DataFrame,
-    max_error_rate: float,
-    col_num_models: dict[int | str, int]
-    ) -> dict[int | str, float]:
+
+def build_column_error_rate_dictionary(data: pd.DataFrame, max_error_rate: float, col_num_models: dict[int | str, int]) -> dict[int | str, float]:
     """Builds a dictionary mapping from column names to the error rate to apply to that column, based on the number of error models to be applied.
 
     Args:
@@ -140,11 +134,11 @@ def build_column_error_rate_dictionary(
 
     for column in data.columns:
         if col_num_models[column] > 0:  # Avoid zero division error
-            column_error_rate = max_error_rate/col_num_models[column]
+            column_error_rate = max_error_rate / col_num_models[column]
             n_rows = len(data[column])
             column_error_rates_dictionary[column] = column_error_rate
 
-            if column_error_rate*n_rows < 1:  # This value is calculated and rounded to 0 in the sample function of the error mechanism subclasses "n_errors"
+            if column_error_rate * n_rows < 1:  # This value is calculated and rounded to 0 in the sample function of the error mechanism subclasses "n_errors"
                 msg = f"With an error rate for the column ({column}) of: {column_error_rate} and a length of: {n_rows}, 0 errors will be introduced."
                 warnings.warn(msg, stacklevel=2)
         else:
@@ -153,14 +147,15 @@ def build_column_error_rate_dictionary(
 
     return column_error_rates_dictionary
 
+
 def create_errors(  # noqa: PLR0913
     data: pd.DataFrame,
     max_error_rate: float,
     error_types_to_include: list[ErrorType] | None = None,
     error_types_to_exclude: list[ErrorType] | None = None,
     error_mechs_to_exclude: list[ErrorMechanism] | None = None,
-    seed: int | None = None
-    ) -> tuple[pd.DataFrame, pd.DataFrame]:
+    seed: int | None = None,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Creates errors in a given DataFrame, at a rate of *approximately* max_error_rate.
 
     Args:
@@ -202,13 +197,7 @@ def create_errors(  # noqa: PLR0913
     # Build MidLevel Config
     config = MidLevelConfig(
         {
-            key:[
-                ErrorModel(
-                    error_mechanism=mech,
-                    error_type=etype,
-                    error_rate=col_error_rates[key]
-                ) for mech in col_mechs[key] for etype in col_type[key]
-            ]
+            key: [ErrorModel(error_mechanism=mech, error_type=etype, error_rate=col_error_rates[key]) for mech in col_mechs[key] for etype in col_type[key]]
             for key in data.columns
             if col_num_models[key] > 0
         }

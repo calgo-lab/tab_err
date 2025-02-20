@@ -34,7 +34,7 @@ class Outlier(ErrorType):
             msg = f"Column {column} with dtype: {series.dtype} does not contain numeric or datetime64 values. Cannot apply outliers."
             raise TypeError(msg)
 
-    def _get_valid_columns(self:Outlier, data: pd.DataFrame) -> list[str | int]:
+    def _get_valid_columns(self: Outlier, data: pd.DataFrame) -> list[str | int]:
         """Returns all column names with numeric dtype elements."""
         return data.select_dtypes(include=["number", "datetime64"]).columns.tolist()
 
@@ -57,7 +57,6 @@ class Outlier(ErrorType):
         if is_datetime64_dtype(series):  # Convert to int if datetime (ns since UNIX epoch) -- We need to add robustness against intmax/floatmax
             series = series.astype("int64")
             was_datetime = True
-
 
         mean_value = series.mean()
         q1 = series.quantile(0.25)

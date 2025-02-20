@@ -46,7 +46,6 @@ class CategorySwap(ErrorType):
 
         return valid_columns
 
-
     def _apply(self: CategorySwap, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
         """Applies the CategorySwap ErrorType to a column of data.
 

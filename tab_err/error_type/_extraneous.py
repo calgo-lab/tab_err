@@ -29,7 +29,7 @@ class Extraneous(ErrorType):
         # all data types are fine
         pass
 
-    def _get_valid_columns(self:Extraneous, data: pd.DataFrame) -> list[str | int]:
+    def _get_valid_columns(self: Extraneous, data: pd.DataFrame) -> list[str | int]:
         """Returns all column names with string dtype elements. Necessary for high level API."""
         return data.select_dtypes(include=["string", "object"]).columns.to_list()
 

@@ -22,7 +22,7 @@ class Mistype(ErrorType):
         # all dtypes are supported
         pass
 
-    def _get_valid_columns(self:Mistype, data: pd.DataFrame) -> list[str | int]:
+    def _get_valid_columns(self: Mistype, data: pd.DataFrame) -> list[str | int]:
         """Returns all column names of columns with dtypes other than object. This is necessary for the high level API."""
         return [col_name for col_name in data.columns.tolist() if data[col_name].dtype != "object"]
 
@@ -42,10 +42,9 @@ class Mistype(ErrorType):
             pd.Series: The data column, 'column', after Mistype errors at the locations specified by 'error_mask' are introduced.
         """
         series = get_column(data, column).copy()
+        supported_dtypes = ["object", "string", "int64", "Int64", "float64", "Float64"]
 
         if self.config.mistype_dtype is not None:
-            supported_dtypes = ["object", "string", "int64", "Int64", "float64", "Float64"]
-
             if self.config.mistype_dtype not in supported_dtypes:
                 msg = f"Unsupported user-specified dtype {self.config.mistype_dtype}. Supported dtypes as {supported_dtypes}."
                 raise TypeError(msg)

@@ -22,7 +22,7 @@ class MissingValue(ErrorType):
         # all dtypes are supported
         pass
 
-    def _get_valid_columns(self:MissingValue, data: pd.DataFrame) -> list[str | int]:
+    def _get_valid_columns(self: MissingValue, data: pd.DataFrame) -> list[str | int]:
         """If the config mising value is None, returns all columns. Otherwise, only the columns with the same type."""
         return data.columns.to_list() if self.config.missing_value is None else data.select_dtypes(include=["object", "string"]).columns.to_list()
 

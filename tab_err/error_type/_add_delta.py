@@ -21,7 +21,7 @@ class AddDelta(ErrorType):
             msg = f"Column {column} with dtype: {series.dtype} does not contain numeric or datetime64 values. Cannot apply AddDelta."
             raise TypeError(msg)
 
-    def _get_valid_columns(self:AddDelta, data: pd.DataFrame) -> list[str | int]:
+    def _get_valid_columns(self: AddDelta, data: pd.DataFrame) -> list[str | int]:
         """Returns all column names with numeric dtype elements."""
         return data.select_dtypes(include=["number", "datetime64"]).columns.tolist()
 
@@ -50,7 +50,9 @@ class AddDelta(ErrorType):
         if self.config.add_delta_value is None:
             msg = f"self.config.add_delta_value is none, sampling a random delta value uniformly from the range of column: {column}."
             warnings.warn(msg, stacklevel=2)
-            self.config.add_delta_value = (self._random_generator.choice(series) - series.mean())/series.std()  # Ensures a smaller value than uniform sampling
+            self.config.add_delta_value = (
+                self._random_generator.choice(series) - series.mean()
+            ) / series.std()  # Ensures a smaller value than uniform sampling
 
         series.loc[series_mask] = series.loc[series_mask].apply(lambda x: x + self.config.add_delta_value)
 

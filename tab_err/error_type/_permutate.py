@@ -23,12 +23,14 @@ def _generate_shuffle_pattern(format_len: int) -> list[int]:
 
     return new_pattern
 
+
 def _check_column_format_consistency(separator_counts: list[int], column: int | str) -> None:
     """Checks that each string in the column has the same number of separators, throws a ValueError if not."""
     if len(set(separator_counts)) > 1:
         msg = f"Column '{column}' cannot be permutated using a fixed permutation_automation_pattern: A fixed permutation_automation_pattern requires "
         msg += "all values to be formatted in the same way."
         raise ValueError(msg)
+
 
 class Permutate(ErrorType):
     """Permutates the parts of a compound value in a column."""
@@ -41,9 +43,9 @@ class Permutate(ErrorType):
             msg = f"Column {column} does not contain values of the string dtype. Cannot Permutate values."
             raise TypeError(msg)
 
-    def _get_valid_columns(self:Permutate, data: pd.DataFrame) -> list[str | int]:
+    def _get_valid_columns(self: Permutate, data: pd.DataFrame) -> list[str | int]:
         """Returns column names with string dtype elements."""
-        return data.select_dtypes(include=["string","object"]).columns.to_list()
+        return data.select_dtypes(include=["string", "object"]).columns.to_list()
 
     def _random_pattern_function(self: Permutate, old_string: str) -> str:
         """Generates a random permutation of `old_string` elements split on the `permutation_separator`."""

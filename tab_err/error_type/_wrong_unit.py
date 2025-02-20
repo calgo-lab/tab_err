@@ -24,7 +24,7 @@ class WrongUnit(ErrorType):
             msg = f"Column {column} with dtype: {series.dtype} does not contain scalars. Cannot apply a wrong unit."
             raise TypeError(msg)
 
-    def _get_valid_columns(self:WrongUnit, data: pd.DataFrame) -> list[str | int]:
+    def _get_valid_columns(self: WrongUnit, data: pd.DataFrame) -> list[str | int]:
         """Returns all column names with numeric dtype elements."""
         return data.select_dtypes(include=["number"]).columns.tolist()
 
@@ -42,7 +42,7 @@ class WrongUnit(ErrorType):
         if self.config.wrong_unit_scaling is None:
             msg = "No scaling function was supplied for WrongUnit, defaulting to multiplication by 10.0."
             warnings.warn(msg, stacklevel=2)
-            self.config.wrong_unit_scaling = lambda x: 10.0*x
+            self.config.wrong_unit_scaling = lambda x: 10.0 * x
 
         series = get_column(data, column).copy()
         series_mask = get_column(error_mask, column)
