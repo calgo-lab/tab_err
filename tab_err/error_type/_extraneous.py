@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import numpy as np, string
+import warnings
 from tab_err._utils import get_column
 
 from ._error_type import ErrorType
@@ -12,6 +14,15 @@ if TYPE_CHECKING:
 
 class Extraneous(ErrorType):
     """Adds Extraneous strings around the values in a column."""
+
+    def _generate_value_template_string(self: Extraneous, min_n: int = 0, max_n: int = 2) -> str:
+        """Generates the value template string. Prepends and appends a random number of characters to the {value} string."""
+        n1 = self._random_generator.integers(min_n + 1, max_n + 1)  # Random number of characters - guaranteed one
+        n2 = self._random_generator.integers(min_n, max_n + 1)  # Random number of characters
+        valid_chars = [char for char in string.punctuation if char not in "{}"]  # Exclude { and }
+        prepend = "".join(self._random_generator.choice(valid_chars, size=n1))
+        append = "".join(self._random_generator.choice(valid_chars, size=n2))
+        return prepend + r"{value}" + append
 
     @staticmethod
     def _check_type(data: pd.DataFrame, column: int | str) -> None:
@@ -41,8 +52,10 @@ class Extraneous(ErrorType):
         series_mask = get_column(error_mask, column)
 
         if self.config.extraneous_value_template is None:
-            msg = "No extraneous_value_template has been configured. Please add it to the ErrorTypeConfig."
-            raise ValueError(msg)
+            msg = "self.config.extraneous_value_template is not set. Choosing a random string to augment."
+            warnings.warn(msg, stacklevel=2)
+            self.config.extraneous_value_template = self._generate_value_template_string()
+
         if "{value}" not in self.config.extraneous_value_template:
             msg = f"The extraneous template {self.config.extraneous_value_template} does not contain the placeholder "
             msg += "{value}. Please add it for a valid format."

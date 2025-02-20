@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import warnings
 from typing import TYPE_CHECKING
 
 from pandas.api.types import is_numeric_dtype
@@ -42,8 +43,9 @@ class WrongUnit(ErrorType):
             pd.Series: The data column, 'column', after Replace errors at the locations specified by 'error_mask' are introduced.
         """
         if self.config.wrong_unit_scaling is None:
-            msg = f"Cannot apply wrong unit to column {column} because no scaling function wrong_unit_scaling was defined in the ErrorTypeConfig."
-            raise ValueError(msg)
+            msg = "No scaling function was supplied for WrongUnit, defaulting to multiplication by 10.0"
+            warnings.warn(msg, stacklevel=2)
+            self.config.wrong_unit_scaling = lambda x: 10.0*x
 
         series = get_column(data, column).copy()
         series_mask = get_column(error_mask, column)

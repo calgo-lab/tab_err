@@ -22,13 +22,13 @@ def build_column_type_dictionary(data: pd.DataFrame) -> dict[int | str, list[Err
     all_error_types =[
         error_type.AddDelta(),
         error_type.CategorySwap(),
-        error_type.Extraneous({"extraneous_value_template": ".{value}"}),  # Need default value
+        error_type.Extraneous(),  # Need default value
         error_type.Mojibake(),
         error_type.Outlier(),
         # error_type.Permutate(), - # Need default value
         error_type.Replace({"replace_what": "y", "replace_with": "z"}),  # Need default value  -- change default behavior in replace to be randomly sampling a character from the string to be affected.
         error_type.Typo(),
-        error_type.WrongUnit({"wrong_unit_scaling": lambda x: 10.0*x}),  # Need default value
+        error_type.WrongUnit(),  # Need default value
         error_type.MissingValue()  # Need to update the code, adding nans for numeric types when the missing value is None
     ]
 
