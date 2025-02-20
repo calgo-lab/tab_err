@@ -52,7 +52,7 @@ class AddDelta(ErrorType):
             was_datetime = True
 
         if self.config.add_delta_value is None:
-            msg = f"self.config.add_delta_value is none, sampling a random delta value uniformly from the range of column: {column}"
+            msg = f"self.config.add_delta_value is none, sampling a random delta value uniformly from the range of column: {column}."
             warnings.warn(msg, stacklevel=2)
             self.config.add_delta_value = (self._random_generator.choice(series) - series.mean())/series.std()  # Ensures a smaller value than uniform sampling
 

@@ -40,7 +40,7 @@ class WrongUnit(ErrorType):
             pd.Series: The data column, 'column', after Replace errors at the locations specified by 'error_mask' are introduced.
         """
         if self.config.wrong_unit_scaling is None:
-            msg = "No scaling function was supplied for WrongUnit, defaulting to multiplication by 10.0"
+            msg = "No scaling function was supplied for WrongUnit, defaulting to multiplication by 10.0."
             warnings.warn(msg, stacklevel=2)
             self.config.wrong_unit_scaling = lambda x: 10.0*x
 

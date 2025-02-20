@@ -51,7 +51,7 @@ class Extraneous(ErrorType):
         series_mask = get_column(error_mask, column)
 
         if self.config.extraneous_value_template is None:
-            msg = "self.config.extraneous_value_template is not set. Choosing a random string to augment."
+            msg = "self.config.extraneous_value_template is not set. Choosing a random string augmentation."
             warnings.warn(msg, stacklevel=2)
             self.config.extraneous_value_template = self._generate_value_template_string()
 

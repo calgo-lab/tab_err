@@ -40,7 +40,7 @@ class MissingValue(ErrorType):
         series = get_column(data, column).copy()
         series_mask = get_column(error_mask, column)
 
-        if is_string_dtype(series):  # Strings are finicky
+        if is_string_dtype(series) and self.config.missing_value is None:  # Strings are finicky
             series[series_mask] = pd.NA
             series = series.astype(str)
         else:

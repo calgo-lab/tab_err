@@ -43,7 +43,7 @@ class Replace(ErrorType):
         series_mask = get_column(error_mask, column)
 
         if self.config.replace_what is None:
-            msg = "The 'replace_what' parameter is not configured, defaulting to a random character from the given series."
+            msg = "The 'replace_what' parameter is not configured, defaulting to a random character from the given series. Replacements are not guaranteed."
             warnings.warn(msg, stacklevel=2)
             random_row = self._random_generator.choice(series.index)
             self.config.replace_what = self._random_generator.choice(list(series[random_row]))

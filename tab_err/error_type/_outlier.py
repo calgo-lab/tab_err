@@ -59,7 +59,7 @@ class Outlier(ErrorType):
         series_mask = get_column(error_mask, column)
         was_datetime = False  # Default to false -- changes to code only occur if the series is datetime
 
-        if is_datetime64_dtype(series):  # Convert to int if datetime (ns since UNIX epoch)
+        if is_datetime64_dtype(series):  # Convert to int if datetime (ns since UNIX epoch) -- We need to add robustness against intmax/floatmax
             series = series.astype("int64")
             was_datetime = True
 
