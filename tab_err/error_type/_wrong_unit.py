@@ -36,9 +36,6 @@ class WrongUnit(ErrorType):
             error_mask (pd.DataFrame): A Pandas DataFrame with the same index & columns as 'data' that will be modified and returned.
             column (int | str): The column of 'data' to create an error mask for.
 
-        Raises:
-            ValueError: If wrong_unit_scaling is not defined in config, a ValueError will be thrown.
-
         Returns:
             pd.Series: The data column, 'column', after Replace errors at the locations specified by 'error_mask' are introduced.
         """

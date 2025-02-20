@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+import string
+import warnings
 from typing import TYPE_CHECKING
 
-import numpy as np, string
-import warnings
 from tab_err._utils import get_column
 
 from ._error_type import ErrorType
@@ -42,7 +42,6 @@ class Extraneous(ErrorType):
             column (int | str): The column of 'data' to create an error mask for.
 
         Raises:
-            ValueError: If extraneous_value_template is not configured, a ValueError will be thrown.
             ValueError: If extraneous_value_template does not contain the placeholder value, a ValueError will be thrown.
 
         Returns:
