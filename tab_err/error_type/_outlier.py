@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import numpy as np
 import pandas as pd
 from pandas.api.types import is_datetime64_dtype, is_integer_dtype, is_numeric_dtype
@@ -9,9 +7,6 @@ from pandas.api.types import is_datetime64_dtype, is_integer_dtype, is_numeric_d
 from tab_err._utils import get_column
 
 from ._error_type import ErrorType
-
-if TYPE_CHECKING:
-    import pandas as pd
 
 
 class Outlier(ErrorType):
