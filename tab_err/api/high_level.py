@@ -6,10 +6,11 @@ import pandas as pd
 
 from tab_err import ErrorMechanism, ErrorType, error_mechanism, error_type
 from tab_err._error_model import ErrorModel
+from tab_err._utils import check_error_rate
 from tab_err.api import MidLevelConfig, mid_level
 
 
-def are_same_class(obj1: object, obj2: object) -> bool:
+def _are_same_class(obj1: object, obj2: object) -> bool:
     """Checks if two objects are of the same class.
 
     Args:
@@ -22,7 +23,7 @@ def are_same_class(obj1: object, obj2: object) -> bool:
     return isinstance(obj1, obj2.__class__) and isinstance(obj2, obj1.__class__)
 
 
-def build_column_type_dictionary(
+def _build_column_type_dictionary(
     data: pd.DataFrame, error_types_to_include: list[ErrorType] | None = None, error_types_to_exclude: list[ErrorType] | None = None, seed: int | None = None
 ) -> dict[int | str, list[ErrorType]]:
     """Creates a dictionary mapping from column names to the list of valid error types to apply to that column.
@@ -59,9 +60,14 @@ def build_column_type_dictionary(
         raise ValueError(msg)
 
     if error_types_to_exclude is None and error_types_to_include is not None:  # Include specified.
+        # TODO(nich): Check input
         error_types_applied = error_types_to_include
-    elif error_types_to_exclude is not None and error_types_to_include is None:  # Exclude specified. ket: kept error type, eet: excluded error type
-        error_types_applied = [ket for ket in error_types_applied if not any(are_same_class(ket, eet) for eet in error_types_to_exclude)]
+    elif error_types_to_exclude is not None and error_types_to_include is None:  # Exclude specified.
+        error_types_applied = [
+            kept_error_type
+            for kept_error_type in error_types_applied
+            if not any(_are_same_class(kept_error_type, excluded_error_type) for excluded_error_type in error_types_to_exclude)
+        ]
     # else: do nothing because the default behavior uses all error types
 
     if len(error_types_applied) == 0:
@@ -73,7 +79,7 @@ def build_column_type_dictionary(
     }
 
 
-def build_column_mechanism_dictionary(
+def _build_column_mechanism_dictionary(
     data: pd.DataFrame, error_mechs_to_exclude: list[ErrorMechanism] | None = None, seed: int | None = None
 ) -> dict[int | str, list[ErrorMechanism]]:
     """Builds a dictionary mapping from column names to the list of valid error mechanisms to apply to that column.
@@ -96,13 +102,17 @@ def build_column_mechanism_dictionary(
         ]
         # Prune error mechanisms
         if error_mechs_to_exclude is not None:
-            column_wise_error_mechs = [kem for kem in column_wise_error_mechs if not any(are_same_class(kem, eem) for eem in error_mechs_to_exclude)]
+            column_wise_error_mechs = [
+                kept_error_mechanism
+                for kept_error_mechanism in column_wise_error_mechs
+                if not any(_are_same_class(kept_error_mechanism, excluded_error_mechanism) for excluded_error_mechanism in error_mechs_to_exclude)
+            ]
 
         columns_mechanisms[column] = column_wise_error_mechs
     return columns_mechanisms
 
 
-def build_column_number_of_models_dictionary(
+def _build_column_number_of_models_dictionary(
     data: pd.DataFrame, col_type: dict[int | str, list[ErrorType]], col_mech: dict[int | str, list[ErrorMechanism]]
 ) -> dict[int | str, int]:
     """Builds a dictionary mapping from column names to the number of error models to apply to that column.
@@ -118,7 +128,7 @@ def build_column_number_of_models_dictionary(
     return {column: len(col_type[column]) * len(col_mech[column]) for column in data.columns}
 
 
-def build_column_error_rate_dictionary(data: pd.DataFrame, max_error_rate: float, col_num_models: dict[int | str, int]) -> dict[int | str, float]:
+def _build_column_error_rate_dictionary(data: pd.DataFrame, max_error_rate: float, col_num_models: dict[int | str, int]) -> dict[int | str, float]:
     """Builds a dictionary mapping from column names to the error rate to apply to that column, based on the number of error models to be applied.
 
     Args:
@@ -150,22 +160,22 @@ def build_column_error_rate_dictionary(data: pd.DataFrame, max_error_rate: float
 
 def create_errors(  # noqa: PLR0913
     data: pd.DataFrame,
-    max_error_rate: float,
+    error_rate: float,
     error_types_to_include: list[ErrorType] | None = None,
     error_types_to_exclude: list[ErrorType] | None = None,
-    error_mechs_to_exclude: list[ErrorMechanism] | None = None,
+    error_mechanisms_to_exclude: list[ErrorMechanism] | None = None,
     seed: int | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Creates errors in a given DataFrame, at a rate of *approximately* max_error_rate.
 
     Args:
         data (pd.DataFrame): The pandas DataFrame to create errors in.
-        max_error_rate (float): The maximum error rate to be introduced to each column in the DataFrame.
+        error_rate (float): The maximum error rate to be introduced to each column in the DataFrame.
         error_types_to_include (list[ErrorType] | None, optional): A list of the error types to be included when building error models. Defaults to None.
         error_types_to_exclude (list[ErrorType] | None, optional): A list of the error types to be excluded when building error models. Defaults to None.
             When both error_types_to_include and error_types_to_exclude are none, the maximum number of default error types will be used.
             At least one must be None or an error will occur.
-        error_mechs_to_exclude (list[ErrorMechanism] | None = None): A list of the error mechanisms to be excluded when building error models.
+        error_mechanisms_to_exclude (list[ErrorMechanism] | None = None): A list of the error mechanisms to be excluded when building error models.
             One of EAR, ENAR, ECAR. Defaults to None.
         seed (int | None, optional): Random seed. Defaults to None.
 
@@ -175,12 +185,9 @@ def create_errors(  # noqa: PLR0913
             - The second element is the associated error mask.
     """
     # Input Checking
+    check_error_rate(error_rate)
     if len(data) == 0:
         msg = "Cannot create errors in an empty DataFrame."
-        raise ValueError(msg)
-
-    if max_error_rate < 0.0 or max_error_rate > 1.0:
-        msg = f"max_error_rate must be between 0 and 1, but was {max_error_rate}."
         raise ValueError(msg)
 
     # Set Up Data
@@ -188,18 +195,22 @@ def create_errors(  # noqa: PLR0913
     error_mask = pd.DataFrame(data=False, index=data.index, columns=data.columns)
 
     # Build Dictionaries
-    col_type = build_column_type_dictionary(data, error_types_to_include, error_types_to_exclude, seed)
-    col_mechs = build_column_mechanism_dictionary(data, error_mechs_to_exclude, seed)
-    col_num_models = build_column_number_of_models_dictionary(data, col_type, col_mechs)
-    col_error_rates = build_column_error_rate_dictionary(data, max_error_rate, col_num_models)
+    col_type = _build_column_type_dictionary(data, error_types_to_include, error_types_to_exclude, seed)
+    col_mechanisms = _build_column_mechanism_dictionary(data, error_mechanisms_to_exclude, seed)
+    col_num_models = _build_column_number_of_models_dictionary(data, col_type, col_mechanisms)
+    col_error_rates = _build_column_error_rate_dictionary(data, error_rate, col_num_models)
 
-    # NOTE: Could be good to prune models from this MidLevelConfig
+    # NOTE: Could be good to prune models from this MidLevelConfig --> somewhere upstream though so that the per-model-error-rate stays high
     # Build MidLevel Config
     config = MidLevelConfig(
         {
-            key: [ErrorModel(error_mechanism=mech, error_type=etype, error_rate=col_error_rates[key]) for mech in col_mechs[key] for etype in col_type[key]]
-            for key in data.columns
-            if col_num_models[key] > 0
+            column: [
+                ErrorModel(error_mechanism=mech, error_type=etype, error_rate=col_error_rates[column])
+                for mech in col_mechanisms[column]
+                for etype in col_type[column]
+            ]
+            for column in data.columns
+            if col_num_models[column] > 0
         }
     )
 

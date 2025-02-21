@@ -47,3 +47,10 @@ def seed_randomness(seed: int | None) -> np.random.Generator:
         random_generator = np.random.default_rng()
 
     return random_generator
+
+
+def check_error_rate(error_rate: float) -> None:
+    """Check that the error rate falls in the valid range, raise a ValueError otherwise."""
+    if error_rate < 0.0 or error_rate > 1.0:
+        msg = f"The error rate is {error_rate} but must be between 0 and 1"
+        raise ValueError(msg)
