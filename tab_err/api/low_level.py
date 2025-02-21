@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from tab_err._utils import check_error_rate, set_column
+from tab_err._utils import check_data_emptiness, check_error_rate, set_column
 
 if TYPE_CHECKING:
     import pandas as pd
@@ -28,6 +28,7 @@ def create_errors(
             - The second element is the associated error mask.
     """
     check_error_rate(error_rate)
+    check_data_emptiness(data)
     data_copy = data.copy()
 
     error_mask = error_mechanism.sample(data_copy, column, error_rate, error_mask=None)

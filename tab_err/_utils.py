@@ -54,3 +54,10 @@ def check_error_rate(error_rate: float) -> None:
     if error_rate < 0.0 or error_rate > 1.0:
         msg = f"The error rate is {error_rate} but must be between 0 and 1"
         raise ValueError(msg)
+
+
+def check_data_emptiness(data: pd.DataFrame) -> None:
+    """Check that the dataset is not empty, raise a ValueError otherwise."""
+    if data.empty:
+        msg = "The dataframe is empty, cannot introduce errors."
+        raise ValueError(msg)

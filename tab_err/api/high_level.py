@@ -6,7 +6,7 @@ import pandas as pd
 
 from tab_err import ErrorMechanism, ErrorType, error_mechanism, error_type
 from tab_err._error_model import ErrorModel
-from tab_err._utils import check_error_rate
+from tab_err._utils import check_data_emptiness, check_error_rate
 from tab_err.api import MidLevelConfig, mid_level
 
 
@@ -112,6 +112,12 @@ def _build_column_mechanism_dictionary(
     return columns_mechanisms
 
 
+# if include not None and exclude not None -> valueError
+# if include None and exclude not None -> prune
+# if include not None and exclude None -> This is hairy, we have a dependency of Error Mechanisms on columns so potentially a more complicated structure
+# is needed.
+
+
 def _build_column_number_of_models_dictionary(
     data: pd.DataFrame, col_type: dict[int | str, list[ErrorType]], col_mech: dict[int | str, list[ErrorMechanism]]
 ) -> dict[int | str, int]:
@@ -186,9 +192,7 @@ def create_errors(  # noqa: PLR0913
     """
     # Input Checking
     check_error_rate(error_rate)
-    if len(data) == 0:
-        msg = "Cannot create errors in an empty DataFrame."
-        raise ValueError(msg)
+    check_data_emptiness(data)
 
     # Set Up Data
     data_copy = data.copy()
