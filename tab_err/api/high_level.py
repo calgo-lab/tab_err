@@ -23,6 +23,11 @@ def _are_same_class(obj1: object, obj2: object) -> bool:
     return isinstance(obj1, obj2.__class__) and isinstance(obj2, obj1.__class__)
 
 
+def _are_same_error_mechanism(error_mechanism1: ErrorMechanism, error_mechansim2: ErrorMechanism) -> bool:
+    """Checks if two objects are the same class and have the same class variables."""
+    return type(error_mechanism1) is type(error_mechansim2) and error_mechanism1.condition_to_column == error_mechansim2.condition_to_column
+
+
 def _build_column_type_dictionary(
     data: pd.DataFrame, error_types_to_include: list[ErrorType] | None = None, error_types_to_exclude: list[ErrorType] | None = None, seed: int | None = None
 ) -> dict[int | str, list[ErrorType]]:
@@ -60,7 +65,10 @@ def _build_column_type_dictionary(
         raise ValueError(msg)
 
     if error_types_to_exclude is None and error_types_to_include is not None:  # Include specified.
-        # TODO(nich): Check input
+        if not all(issubclass(type(cls), ErrorType) for cls in error_types_to_include):  # Check input
+            msg = "One of the elements of error_types_to_exclude is not a subclass of ErrorType."
+            raise ValueError(msg)
+
         error_types_applied = error_types_to_include
     elif error_types_to_exclude is not None and error_types_to_include is None:  # Exclude specified.
         error_types_applied = [
@@ -80,67 +88,86 @@ def _build_column_type_dictionary(
 
 
 def _build_column_mechanism_dictionary(
-    data: pd.DataFrame, error_mechs_to_exclude: list[ErrorMechanism] | None = None, seed: int | None = None
+    data: pd.DataFrame,
+    error_mechanisms_to_include: list[ErrorMechanism] | None = None,
+    error_mechanisms_to_exclude: list[ErrorMechanism] | None = None,
+    seed: int | None = None,
 ) -> dict[int | str, list[ErrorMechanism]]:
     """Builds a dictionary mapping from column names to the list of valid error mechanisms to apply to that column.
 
     Args:
         data (pd.DataFrame): The pandas DataFrame to create errors in.
-        error_mechs_to_exclude (list[ErrorMechanism] | None, optional): The error mechanisms (EAR, ECAR, ENAR) to exclude from the dictionary. Defaults to None.
+        error_mechanisms_to_include (list[ErrorMechanism] | None, optional): The error mechanisms (EAR, ECAR, ENAR) to include from the dictionary.
+            Defaults to None.
+        error_mechanisms_to_exclude (list[ErrorMechanism] | None, optional): The error mechanisms (EAR, ECAR, ENAR) to exclude from the dictionary.
+            Defaults to None.
         seed (int | None, optional): Random seed. Defaults to None.
 
     Returns:
         dict[int | str, list[ErrorMechanism]]: A dictionary mapping from column names to the list of valid error mechanisms to apply to that column.
     """
-    columns_mechanisms = {}
-    base_error_mechanisms = [error_mechanism.ENAR(seed=seed), error_mechanism.ECAR(seed=seed)]
+    if error_mechanisms_to_exclude is not None and error_mechanisms_to_include is not None:  # Overspecified
+        msg = "Possible conflict in error mechanisms to apply. Set at least on of: error_mechanisms_to_exclude or error_mechanisms_to_include to None."
+        raise ValueError(msg)
 
-    # Settle for less granularity and more user simplicty -- only allow exclusion of entire classes of error mechs:
-    for column in data.columns:
-        column_wise_error_mechs = base_error_mechanisms + [
-            error_mechanism.EAR(condition_to_column=other_column, seed=seed) for other_column in data.columns if other_column != column
-        ]
-        # Prune error mechanisms
-        if error_mechs_to_exclude is not None:
-            column_wise_error_mechs = [
-                kept_error_mechanism
-                for kept_error_mechanism in column_wise_error_mechs
-                if not any(_are_same_class(kept_error_mechanism, excluded_error_mechanism) for excluded_error_mechanism in error_mechs_to_exclude)
+    columns_mechanisms = {}
+
+    if error_mechanisms_to_include is not None and error_mechanisms_to_exclude is None:  # Include specified
+        if not all(issubclass(type(cls), ErrorMechanism) for cls in error_mechanisms_to_include):  # Check input
+            msg = "One of the elements of error_mechanisms_to_include is not a subclass of ErrorMechanism."
+            raise ValueError(msg)
+
+        for column in data.columns:  # Simply check that the conditioning column is different from the current
+            columns_mechanisms[column] = [
+                kept_error_mechanism for kept_error_mechanism in error_mechanisms_to_include if kept_error_mechanism.condition_to_column != column
             ]
 
-        columns_mechanisms[column] = column_wise_error_mechs
+    if error_mechanisms_to_include is None:  # Exclude or none specified (overlapping cases)
+        if error_mechanisms_to_exclude is not None and not all(issubclass(type(cls), ErrorMechanism) for cls in error_mechanisms_to_exclude):  # Check input
+            msg = "One of the elements of error_mechanisms_to_exclude is not a subclass of ErrorMechanism."
+            raise ValueError(msg)
+
+        for column in data.columns:
+            column_wise_error_mechs = [error_mechanism.ENAR(seed=seed), error_mechanism.ECAR(seed=seed)] + [
+                error_mechanism.EAR(condition_to_column=other_column, seed=seed) for other_column in data.columns if other_column != column
+            ]
+            # Prune error mechanisms
+            if error_mechanisms_to_exclude is not None:
+                column_wise_error_mechs = [
+                    kept_error_mechanism
+                    for kept_error_mechanism in column_wise_error_mechs
+                    if not any(
+                        _are_same_error_mechanism(kept_error_mechanism, excluded_error_mechanism) for excluded_error_mechanism in error_mechanisms_to_exclude
+                    )
+                ]
+            columns_mechanisms[column] = column_wise_error_mechs
+
     return columns_mechanisms
 
 
-# if include not None and exclude not None -> valueError
-# if include None and exclude not None -> prune
-# if include not None and exclude None -> This is hairy, we have a dependency of Error Mechanisms on columns so potentially a more complicated structure
-# is needed.
-
-
 def _build_column_number_of_models_dictionary(
-    data: pd.DataFrame, col_type: dict[int | str, list[ErrorType]], col_mech: dict[int | str, list[ErrorMechanism]]
+    data: pd.DataFrame, column_types: dict[int | str, list[ErrorType]], column_mechanisms: dict[int | str, list[ErrorMechanism]]
 ) -> dict[int | str, int]:
     """Builds a dictionary mapping from column names to the number of error models to apply to that column.
 
     Args:
         data (pd.DataFrame): The pandas DataFrame to create errors in.
-        col_type (dict[int | str, list[ErrorType]]): A dictionary mapping from column names to the list of valid error types to apply to that column.
-        col_mech (dict[int | str, list[ErrorMechanism]]): A dictionary mapping from column names to the list of valid error mechanisms to apply to that column.
+        column_types (dict[int | str, list[ErrorType]]): A dictionary mapping from column names to the list of valid error types to apply to that column.
+        column_mechanisms (dict[int | str, list[ErrorMechanism]]): A dictionary mapping from column names to the list of valid error mechanisms to apply.
 
     Returns:
         dict[int | str, int]: A dictionary mapping from column names to the number of error models to apply to that column.
     """
-    return {column: len(col_type[column]) * len(col_mech[column]) for column in data.columns}
+    return {column: len(column_types[column]) * len(column_mechanisms[column]) for column in data.columns}
 
 
-def _build_column_error_rate_dictionary(data: pd.DataFrame, max_error_rate: float, col_num_models: dict[int | str, int]) -> dict[int | str, float]:
+def _build_column_error_rate_dictionary(data: pd.DataFrame, error_rate: float, column_num_models: dict[int | str, int]) -> dict[int | str, float]:
     """Builds a dictionary mapping from column names to the error rate to apply to that column, based on the number of error models to be applied.
 
     Args:
         data (pd.DataFrame): The pandas DataFrame to create errors in.
-        max_error_rate (float): The maximum error rate to be introduced in the DataFrame.
-        col_num_models (dict[int  |  str, int]): A dictionary mapping from column names to the number of error models to apply to that column.
+        error_rate (float): The maximum error rate to be introduced in the DataFrame.
+        column_num_models (dict[int  |  str, int]): A dictionary mapping from column names to the number of error models to apply to that column.
 
     Returns:
         dict[int | str, float]: A dictionary mapping from column names to the error rate to apply to that column,
@@ -149,8 +176,8 @@ def _build_column_error_rate_dictionary(data: pd.DataFrame, max_error_rate: floa
     column_error_rates_dictionary = {}
 
     for column in data.columns:
-        if col_num_models[column] > 0:  # Avoid zero division error
-            column_error_rate = max_error_rate / col_num_models[column]
+        if column_num_models[column] > 0:  # Avoid zero division error
+            column_error_rate = error_rate / column_num_models[column]
             n_rows = len(data[column])
             column_error_rates_dictionary[column] = column_error_rate
 
@@ -169,6 +196,7 @@ def create_errors(  # noqa: PLR0913
     error_rate: float,
     error_types_to_include: list[ErrorType] | None = None,
     error_types_to_exclude: list[ErrorType] | None = None,
+    error_mechanisms_to_include: list[ErrorMechanism] | None = None,
     error_mechanisms_to_exclude: list[ErrorMechanism] | None = None,
     seed: int | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -181,8 +209,10 @@ def create_errors(  # noqa: PLR0913
         error_types_to_exclude (list[ErrorType] | None, optional): A list of the error types to be excluded when building error models. Defaults to None.
             When both error_types_to_include and error_types_to_exclude are none, the maximum number of default error types will be used.
             At least one must be None or an error will occur.
+        error_mechanisms_to_include (list[ErrorMechanism] | None = None): A list of the error mechanisms to be included when building error models.
+            Defaults to None.
         error_mechanisms_to_exclude (list[ErrorMechanism] | None = None): A list of the error mechanisms to be excluded when building error models.
-            One of EAR, ENAR, ECAR. Defaults to None.
+            Defaults to None.
         seed (int | None, optional): Random seed. Defaults to None.
 
     Returns:
@@ -199,10 +229,12 @@ def create_errors(  # noqa: PLR0913
     error_mask = pd.DataFrame(data=False, index=data.index, columns=data.columns)
 
     # Build Dictionaries
-    col_type = _build_column_type_dictionary(data, error_types_to_include, error_types_to_exclude, seed)
-    col_mechanisms = _build_column_mechanism_dictionary(data, error_mechanisms_to_exclude, seed)
-    col_num_models = _build_column_number_of_models_dictionary(data, col_type, col_mechanisms)
-    col_error_rates = _build_column_error_rate_dictionary(data, error_rate, col_num_models)
+    col_type = _build_column_type_dictionary(data=data, error_types_to_include=error_types_to_include, error_types_to_exclude=error_types_to_exclude, seed=seed)
+    col_mechanisms = _build_column_mechanism_dictionary(
+        data=data, error_mechanisms_to_include=error_mechanisms_to_include, error_mechanisms_to_exclude=error_mechanisms_to_exclude, seed=seed
+    )
+    col_num_models = _build_column_number_of_models_dictionary(data=data, column_types=col_type, column_mechanisms=col_mechanisms)
+    col_error_rates = _build_column_error_rate_dictionary(data=data, error_rate=error_rate, column_num_models=col_num_models)
 
     # NOTE: Could be good to prune models from this MidLevelConfig --> somewhere upstream though so that the per-model-error-rate stays high
     # Build MidLevel Config
