@@ -23,9 +23,12 @@ def _are_same_class(obj1: object, obj2: object) -> bool:
     return isinstance(obj1, obj2.__class__) and isinstance(obj2, obj1.__class__)
 
 
-def _are_same_error_mechanism(error_mechanism1: ErrorMechanism, error_mechansim2: ErrorMechanism) -> bool:
-    """Checks if two objects are the same class and have the same class variables."""
-    return type(error_mechanism1) is type(error_mechansim2) and error_mechanism1.condition_to_column == error_mechansim2.condition_to_column
+def _are_same_error_mechanism(error_mechanism1: ErrorMechanism, error_mechanism2: ErrorMechanism) -> bool:
+    """Checks if two error mechanisms are the same class and have the same class variables.
+
+    If the second error mechanism has a None value for the condition to column, they are deemed to be the same.
+    """
+    return type(error_mechanism1) is type(error_mechanism2) and ((error_mechanism1.condition_to_column == error_mechanism2.condition_to_column and error_mechanism2.condition_to_column is not None) or (error_mechanism2.condition_to_column is None))
 
 
 def _build_column_type_dictionary(
@@ -182,7 +185,7 @@ def _build_column_error_rate_dictionary(data: pd.DataFrame, error_rate: float, c
             column_error_rates_dictionary[column] = column_error_rate
 
             if column_error_rate * n_rows < 1:  # This value is calculated and rounded to 0 in the sample function of the error mechanism subclasses "n_errors"
-                msg = f"With an error rate for the column ({column}) of: {column_error_rate} and a length of: {n_rows}, 0 errors will be introduced."
+                msg = f"With an error rate for the column ({column}) of: {column_error_rate}, {column_num_models[column]} error models, and a length of: {n_rows}, 0 errors will be introduced. Try specifying error_types/ error_mechanisms to leave out"  # noqa: E501
                 warnings.warn(msg, stacklevel=2)
         else:
             msg = f"The column {column} has no valid error models. 0 errors will be introduced to this column"
@@ -228,6 +231,7 @@ def create_errors(  # noqa: PLR0913
     data_copy = data.copy()
     error_mask = pd.DataFrame(data=False, index=data.index, columns=data.columns)
 
+
     # Build Dictionaries
     col_type = _build_column_type_dictionary(data=data, error_types_to_include=error_types_to_include, error_types_to_exclude=error_types_to_exclude, seed=seed)
     col_mechanisms = _build_column_mechanism_dictionary(
@@ -235,6 +239,7 @@ def create_errors(  # noqa: PLR0913
     )
     col_num_models = _build_column_number_of_models_dictionary(data=data, column_types=col_type, column_mechanisms=col_mechanisms)
     col_error_rates = _build_column_error_rate_dictionary(data=data, error_rate=error_rate, column_num_models=col_num_models)
+
 
     # NOTE: Could be good to prune models from this MidLevelConfig --> somewhere upstream though so that the per-model-error-rate stays high
     # Build MidLevel Config
