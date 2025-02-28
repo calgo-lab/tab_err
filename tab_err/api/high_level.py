@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import random
 import warnings
 
 import pandas as pd
@@ -28,7 +29,10 @@ def _are_same_error_mechanism(error_mechanism1: ErrorMechanism, error_mechanism2
 
     If the second error mechanism has a None value for the condition to column, they are deemed to be the same.
     """
-    return type(error_mechanism1) is type(error_mechanism2) and ((error_mechanism1.condition_to_column == error_mechanism2.condition_to_column and error_mechanism2.condition_to_column is not None) or (error_mechanism2.condition_to_column is None))
+    return type(error_mechanism1) is type(error_mechanism2) and (
+        (error_mechanism1.condition_to_column == error_mechanism2.condition_to_column and error_mechanism2.condition_to_column is not None)
+        or (error_mechanism2.condition_to_column is None)
+    )
 
 
 def _build_column_type_dictionary(
@@ -161,42 +165,22 @@ def _build_column_number_of_models_dictionary(
     Returns:
         dict[int | str, int]: A dictionary mapping from column names to the number of error models to apply to that column.
     """
-    return {column: len(column_types[column]) * len(column_mechanisms[column]) for column in data.columns}
-
-
-def _build_column_error_rate_dictionary(data: pd.DataFrame, error_rate: float, column_num_models: dict[int | str, int]) -> dict[int | str, float]:
-    """Builds a dictionary mapping from column names to the error rate to apply to that column, based on the number of error models to be applied.
-
-    Args:
-        data (pd.DataFrame): The pandas DataFrame to create errors in.
-        error_rate (float): The maximum error rate to be introduced in the DataFrame.
-        column_num_models (dict[int  |  str, int]): A dictionary mapping from column names to the number of error models to apply to that column.
-
-    Returns:
-        dict[int | str, float]: A dictionary mapping from column names to the error rate to apply to that column,
-            based on the number of error models to be applied.
-    """
-    column_error_rates_dictionary = {}
+    column_num_models = {}
 
     for column in data.columns:
-        if column_num_models[column] > 0:  # Avoid zero division error
-            column_error_rate = error_rate / column_num_models[column]
-            n_rows = len(data[column])
-            column_error_rates_dictionary[column] = column_error_rate
+        column_num_models[column] = len(column_types[column]) * len(column_mechanisms[column])
 
-            if column_error_rate * n_rows < 1:  # This value is calculated and rounded to 0 in the sample function of the error mechanism subclasses "n_errors"
-                msg = f"With an error rate for the column ({column}) of: {column_error_rate}, {column_num_models[column]} error models, and a length of: {n_rows}, 0 errors will be introduced. Try specifying error_types/ error_mechanisms to leave out"  # noqa: E501
-                warnings.warn(msg, stacklevel=2)
-        else:
+        if column_num_models[column] == 0:
             msg = f"The column {column} has no valid error models. 0 errors will be introduced to this column"
             warnings.warn(msg, stacklevel=2)
 
-    return column_error_rates_dictionary
+    return column_num_models
 
 
 def create_errors(  # noqa: PLR0913
     data: pd.DataFrame,
     error_rate: float,
+    n_error_models_per_column: int = 1,
     error_types_to_include: list[ErrorType] | None = None,
     error_types_to_exclude: list[ErrorType] | None = None,
     error_mechanisms_to_include: list[ErrorMechanism] | None = None,
@@ -208,6 +192,7 @@ def create_errors(  # noqa: PLR0913
     Args:
         data (pd.DataFrame): The pandas DataFrame to create errors in.
         error_rate (float): The maximum error rate to be introduced to each column in the DataFrame.
+        n_error_models_per_column (int, optional): The number of valid error models to apply to each column. Defaults to 1.
         error_types_to_include (list[ErrorType] | None, optional): A list of the error types to be included when building error models. Defaults to None.
         error_types_to_exclude (list[ErrorType] | None, optional): A list of the error types to be excluded when building error models. Defaults to None.
             When both error_types_to_include and error_types_to_exclude are none, the maximum number of default error types will be used.
@@ -231,29 +216,33 @@ def create_errors(  # noqa: PLR0913
     data_copy = data.copy()
     error_mask = pd.DataFrame(data=False, index=data.index, columns=data.columns)
 
-
     # Build Dictionaries
     col_type = _build_column_type_dictionary(data=data, error_types_to_include=error_types_to_include, error_types_to_exclude=error_types_to_exclude, seed=seed)
     col_mechanisms = _build_column_mechanism_dictionary(
         data=data, error_mechanisms_to_include=error_mechanisms_to_include, error_mechanisms_to_exclude=error_mechanisms_to_exclude, seed=seed
     )
     col_num_models = _build_column_number_of_models_dictionary(data=data, column_types=col_type, column_mechanisms=col_mechanisms)
-    col_error_rates = _build_column_error_rate_dictionary(data=data, error_rate=error_rate, column_num_models=col_num_models)
 
+    if n_error_models_per_column > 0:
+        random.seed(seed)
+        error_rate = error_rate / n_error_models_per_column
+        config_dictionary: dict[str | int, list[ErrorModel]] = {
+            column: [] for column in data.columns if col_num_models[column] > 0
+        }  # Filter out those columns with no valid error models
 
-    # NOTE: Could be good to prune models from this MidLevelConfig --> somewhere upstream though so that the per-model-error-rate stays high
-    # Build MidLevel Config
-    config = MidLevelConfig(
-        {
-            column: [
-                ErrorModel(error_mechanism=mech, error_type=etype, error_rate=col_error_rates[column])
-                for mech in col_mechanisms[column]
-                for etype in col_type[column]
-            ]
-            for column in data.columns
-            if col_num_models[column] > 0
-        }
-    )
+        if error_rate * len(data) < 1:  # This value is calculated and rounded to 0 in the sample function of the error mechanism subclasses "n_errors"
+            msg = f"With a per-model error rate of: {error_rate} and {len(data)} rows, 0 errors will be introduced."
+            warnings.warn(msg, stacklevel=2)
+
+        for column, error_model_list in config_dictionary.items():
+            for _ in range(n_error_models_per_column):
+                error_model_list.append(
+                    ErrorModel(error_type=random.choice(col_type[column]), error_mechanism=random.choice(col_mechanisms[column]), error_rate=error_rate)
+                )
+        config = MidLevelConfig(config_dictionary)
+    else:  # n_error_models_per_column is 0 or less.
+        msg = f"n_error_models_per_column is: {n_error_models_per_column} and should be a positive integer"
+        raise ValueError(msg)
 
     # Create Errors & Return
     dirty_data, error_mask = mid_level.create_errors(data_copy, config)

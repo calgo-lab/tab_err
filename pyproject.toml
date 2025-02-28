@@ -37,7 +37,7 @@ python = "^3.9,<3.13"
 pandas = "^2.2.3"
 
 [tool.poetry.group.dev.dependencies]
-ruff = "^0.9.1"
+ruff = "^0.9.8"
 pre-commit = "^4.0.1"
 mypy = "^1.14.1"
 jupyterlab = "^4.3.2"
