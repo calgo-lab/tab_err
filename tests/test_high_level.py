@@ -42,8 +42,8 @@ def test_create_errors_basic(test_data: dict[str, pd.DataFrame]) -> None:
     assert data_10rows_3columns_error_mask.dtypes.apply(lambda dt: np.issubdtype(dt, np.bool_)).all()
 
     # Assert that the correct number of cells in the dataframes are actually different
-    assert pytest.approx(error_rate) == modified_data_4rows_5columns.ne(data_4rows_5columns_error_mask).to_numpy().mean()
-    assert pytest.approx(error_rate) == modified_data_10rows_3columns.ne(data_10rows_3columns_error_mask).to_numpy().mean()
+    assert pytest.approx(error_rate) == modified_data_4rows_5columns.ne(test_data["data_4rows_5columns"]).to_numpy().mean()
+    assert pytest.approx(error_rate) == modified_data_10rows_3columns.ne(test_data["data_10rows_3columns"]).to_numpy().mean()
 
     # Assert that the error masks have the correct proportion of True to False
     assert pytest.approx(error_rate) == data_4rows_5columns_error_mask.to_numpy().mean()
@@ -72,8 +72,8 @@ def test_create_errors_error_rates(test_data: dict[str, pd.DataFrame]) -> None:
         modified_data_10rows_3columns, data_10rows_3columns_error_mask = create_errors(test_data["data_10rows_3columns"], error_rate, seed=seed)
 
         # Assert that the proportion of different values is correct
-        assert error_rate == modified_data_10rows_3columns.ne(data_10rows_3columns_error_mask).to_numpy().mean()
-        assert error_rate == modified_data_100rows_3columns.ne(data_100rows_3columns_error_mask).to_numpy().mean()
+        assert error_rate == modified_data_100rows_3columns.ne(test_data["data_100rows_3columns"]).to_numpy().mean()
+        assert error_rate == modified_data_10rows_3columns.ne(test_data["data_10rows_3columns"]).to_numpy().mean()
 
         # Assert that the error masks have the correct proportion of True to False
         assert error_rate == data_100rows_3columns_error_mask.to_numpy().mean()
@@ -85,14 +85,14 @@ def test_create_errors_more_models(test_data: dict[str, pd.DataFrame]) -> None:
     error_rate = 1.0
     seed = 44
     n_error_models = 2
-    modified_data_100rows_3columns, data_100rows_3columns_error_mask = create_errors(
-        test_data["data_100rows_3columns"], error_rate, n_error_models_per_column=n_error_models, seed=seed
+    modified_data_4rows_5columns, data_4rows_5columns_error_mask = create_errors(
+        test_data["data_4rows_5columns"], error_rate, n_error_models_per_column=n_error_models, seed=seed
     )
     modified_data_10rows_3columns, data_10rows_3columns_error_mask = create_errors(
         test_data["data_10rows_3columns"], error_rate, n_error_models_per_column=n_error_models, seed=seed
     )
-    modified_data_4rows_5columns, data_4rows_5columns_error_mask = create_errors(
-        test_data["data_4rows_5columns"], error_rate, n_error_models_per_column=n_error_models, seed=seed
+    modified_data_100rows_3columns, data_100rows_3columns_error_mask = create_errors(
+        test_data["data_100rows_3columns"], error_rate, n_error_models_per_column=n_error_models, seed=seed
     )
 
     # Check that they are still dataframes
@@ -117,9 +117,9 @@ def test_create_errors_more_models(test_data: dict[str, pd.DataFrame]) -> None:
     assert data_100rows_3columns_error_mask.dtypes.apply(lambda dt: np.issubdtype(dt, np.bool_)).all()
 
     # Assert that the correct number of cells in the dataframes are actually different
-    assert pytest.approx(error_rate) == modified_data_4rows_5columns.ne(data_4rows_5columns_error_mask).to_numpy().mean()
-    assert pytest.approx(error_rate) == modified_data_10rows_3columns.ne(data_10rows_3columns_error_mask).to_numpy().mean()
-    assert pytest.approx(error_rate) == modified_data_100rows_3columns.ne(data_100rows_3columns_error_mask).to_numpy().mean()
+    assert pytest.approx(error_rate) == modified_data_4rows_5columns.ne(test_data["data_4rows_5columns"]).to_numpy().mean()
+    assert pytest.approx(error_rate) == modified_data_10rows_3columns.ne(test_data["data_10rows_3columns"]).to_numpy().mean()
+    assert pytest.approx(error_rate) == modified_data_100rows_3columns.ne(test_data["data_100rows_3columns"]).to_numpy().mean()
 
     # Assert that the error masks have the correct proportion of True to False
     assert pytest.approx(error_rate) == data_4rows_5columns_error_mask.to_numpy().mean()

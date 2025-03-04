@@ -28,8 +28,8 @@ def test_create_errors_error_rates(test_data: dict[str, pd.DataFrame]) -> None:
         )
 
         # Assert that the proportion of different values is correct
-        assert pytest.approx(error_rate / 3.0) == modified_data_10rows_3columns.ne(data_10rows_3columns_error_mask).to_numpy().mean()
-        assert pytest.approx(error_rate / 3.0) == modified_data_100rows_3columns.ne(data_100rows_3columns_error_mask).to_numpy().mean()
+        assert pytest.approx(error_rate / 3.0) == modified_data_100rows_3columns.ne(test_data["data_100rows_3columns"]).to_numpy().mean()
+        assert pytest.approx(error_rate / 3.0) == modified_data_10rows_3columns.ne(test_data["data_10rows_3columns"]).to_numpy().mean()
 
         # Assert that the error masks have the correct proportion of True to False -- Note only one column is errored
         assert pytest.approx(error_rate / 3.0) == data_100rows_3columns_error_mask.to_numpy().mean()
