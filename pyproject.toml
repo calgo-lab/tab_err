@@ -35,6 +35,7 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^3.9,<3.13"
 pandas = "^2.2.3"
+pytest = "^8.3.5"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.9.8"
@@ -74,6 +75,7 @@ ignore = [
     "D104",   # Do not document public packages
     "TD003",  # Allow TODOs without links
     "ISC003", # Do not implicietly concatenate strings
+    "S101",  # Allow testing methods
 ]
 
 [tool.ruff.lint.per-file-ignores]
