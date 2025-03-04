@@ -1,0 +1,46 @@
+name: Pytest
+
+on:
+  - pull_request
+
+jobs:
+  Test:
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      fail-fast: true
+      matrix:
+        os: ["ubuntu-latest", "macos-latest", "windows-latest"]
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      #----------------------------------------------
+      #       Check out repo and set up Python
+      #----------------------------------------------
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        id: setup-python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      #----------------------------------------------
+      #        Install Poetry and Dependencies
+      #----------------------------------------------
+      - name: Install Poetry
+        run: |
+          pip install poetry
+          poetry --version  # Verify installation
+
+      - name: Install dependencies with Poetry
+        run: poetry install --no-interaction --no-root  # Installs project dependencies
+
+      #----------------------------------------------
+      #            Run Pytest
+      #----------------------------------------------
+      - name: Run tests with pytest
+        run: poetry run pytest --maxfail=5 --disable-warnings --tb=short
