@@ -15,6 +15,9 @@ def test_data() -> dict[str, pd.DataFrame]:
             {"A": rng.integers(0, 100, 4), "B": rng.random(4), "C": rng.choice(["X", "Y", "Z"], 4), "D": rng.integers(0, 100, 4), "E": rng.random(4)}
         ),
         "data_100rows_3columns": pd.DataFrame({"A": rng.integers(0, 100, 100), "B": rng.random(100), "C": rng.choice(["X", "Y", "Z"], 100)}),
+        "data_10rows_3columns_with_datetime": pd.DataFrame(
+            {"A": rng.integers(0, 100, 10), "B": pd.date_range(start="2025-03-04", periods=10, freq="2h"), "C": rng.choice(["X", "Y", "Z"], 10)}
+        )
     }
 
 
@@ -70,14 +73,18 @@ def test_create_errors_error_rates(test_data: dict[str, pd.DataFrame]) -> None:
         error_rate = 0.1 * float(i)
         modified_data_100rows_3columns, data_100rows_3columns_error_mask = create_errors(test_data["data_100rows_3columns"], error_rate, seed=seed)
         modified_data_10rows_3columns, data_10rows_3columns_error_mask = create_errors(test_data["data_10rows_3columns"], error_rate, seed=seed)
+        modified_data_10rows_3columns_with_datetime, data_10rows_3columns_with_datetime_error_mask = create_errors(
+            test_data["data_10rows_3columns_with_datetime"], error_rate, seed=seed)
 
         # Assert that the proportion of different values is correct
         assert pytest.approx(error_rate) == modified_data_100rows_3columns.ne(test_data["data_100rows_3columns"]).to_numpy().mean()
         assert pytest.approx(error_rate) == modified_data_10rows_3columns.ne(test_data["data_10rows_3columns"]).to_numpy().mean()
+        assert pytest.approx(error_rate) == modified_data_10rows_3columns_with_datetime.ne(test_data["data_10rows_3columns_with_datetime"]).to_numpy().mean()
 
         # Assert that the error masks have the correct proportion of True to False
         assert pytest.approx(error_rate) == data_100rows_3columns_error_mask.to_numpy().mean()
         assert pytest.approx(error_rate) == data_10rows_3columns_error_mask.to_numpy().mean()
+        assert pytest.approx(error_rate) == data_10rows_3columns_with_datetime_error_mask.to_numpy().mean()
 
 
 def test_create_errors_more_models(test_data: dict[str, pd.DataFrame]) -> None:
