@@ -54,7 +54,6 @@ class AddDelta(ErrorType):
                 self._random_generator.choice(series) - series.mean()
             ) / series.std()  # Ensures a smaller value than uniform sampling
 
-        # -series.loc[series_mask] = series.loc[series_mask].apply(lambda x: x + self.config.add_delta_value)
         series = series.where(~series_mask, series + self.config.add_delta_value)  # Avoids in-place modification
 
         if was_datetime:  # Convert back to datetime if it was initially
