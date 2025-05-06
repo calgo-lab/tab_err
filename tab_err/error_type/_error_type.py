@@ -73,7 +73,12 @@ class ErrorType(ABC):
     @staticmethod
     @abstractmethod
     def _check_type(data: pd.DataFrame, column: str | int) -> None:
-        pass
+        """Static abstract method that checks if the given columns are valid for this 'ErrorType'.
+
+        Args:
+            data (pd.DataFrame): The Pandas DataFrame containing the column where errors are to be introduced.
+            column (str | int): The 'column' of 'data' where errors are to be introduced.
+        """
 
     # TODO(nich): def _get_valid_columns(data: pd.DataFrame) -> list[str | int]:
     # supposed to check for which columns this error type can be applied and returns those.
