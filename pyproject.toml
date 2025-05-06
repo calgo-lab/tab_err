@@ -35,14 +35,14 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^3.9,<3.13"
 pandas = "^2.2.3"
-pytest = "^8.3.5"
 
 [tool.poetry.group.dev.dependencies]
+pytest = "^8.3.5"
 ruff = "^0.9.8"
 pre-commit = "^4.0.1"
 mypy = "^1.14.1"
 jupyterlab = "^4.3.2"
-sphinx = { version = "^8.1.3", python = ">=3.10" }
+sphinx = { version = "^8.1.3", python = ">=3.11" }
 myst-parser = { version = "^4.0.0", python = ">=3.10" }
 pydata-sphinx-theme = "^0.16.1"
 sphinx-autoapi = "^3.5.0"
@@ -67,15 +67,15 @@ select = [
     "ALL", # Include all the rules, including new ones
 ]
 ignore = [
-    "FIX",    # Temporary developer notes should not break actions
+    "FIX", # Temporary developer notes should not break actions
     "COM812", # For compatibility with ruff-format
     "ISC001", # For compatibility with ruff-format
-    "S311",   # We do not require cryptographically-sound randomness
-    "D100",   # Do not document public modules
-    "D104",   # Do not document public packages
-    "TD003",  # Allow TODOs without links
+    "S311", # We do not require cryptographically-sound randomness
+    "D100", # Do not document public modules
+    "D104", # Do not document public packages
+    "TD003", # Allow TODOs without links
     "ISC003", # Do not implicietly concatenate strings
-    "S101",  # Allow testing methods
+    "S101", # Allow testing methods
 ]
 
 [tool.ruff.lint.per-file-ignores]
@@ -83,7 +83,7 @@ ignore = [
     "F401", # Unused imports in __init__ files can make sense
 ]
 "docs/source/conf.py" = [
-    "A001",   # Allow missing __init__.py for docs
+    "A001", # Allow missing __init__.py for docs
     "INP001", # Allow builtin shadowing for docs
 ]
 
