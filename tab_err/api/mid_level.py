@@ -66,11 +66,11 @@ def create_errors(data: pd.DataFrame, config: MidLevelConfig | dict) -> tuple[pd
 
     for column in _config.columns:
         for error_model in _config.columns[column]:
+            check_error_rate(error_model.error_rate)
+
             error_mechanism = error_model.error_mechanism
             error_type = error_model.error_type
             error_rate = error_model.error_rate
-
-            check_error_rate(error_rate)
 
             old_error_mask = error_mask.copy()
             error_mask = error_mechanism.sample(data, column, error_rate, error_mask)
