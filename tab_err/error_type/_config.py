@@ -79,7 +79,7 @@ class ErrorTypeConfig:
     replace_what: str | None = None
     replace_with: str = ""
 
-    add_delta_value: Any | None = None
+    add_delta_value: float | int | None = None
 
     outlier_coin_flip_threshold: float = 0.5
     outlier_coefficient: float = 1.0

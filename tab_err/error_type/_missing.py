@@ -1,13 +1,11 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+import pandas as pd
+from pandas.api.types import is_string_dtype
 
 from tab_err._utils import get_column
 
 from ._error_type import ErrorType
-
-if TYPE_CHECKING:
-    import pandas as pd
 
 
 class MissingValue(ErrorType):
@@ -24,6 +22,10 @@ class MissingValue(ErrorType):
         # all dtypes are supported
         pass
 
+    def _get_valid_columns(self: MissingValue, data: pd.DataFrame) -> list[str | int]:
+        """If the config mising value is None, returns all columns. Otherwise, only the columns with the same type."""
+        return data.columns.to_list() if self.config.missing_value is None else data.select_dtypes(include=["object", "string"]).columns.to_list()
+
     def _apply(self: MissingValue, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
         """Applies the MissingValue ErrorType to a column of data.
 
@@ -37,5 +39,11 @@ class MissingValue(ErrorType):
         """
         series = get_column(data, column).copy()
         series_mask = get_column(error_mask, column)
-        series[series_mask] = self.config.missing_value
+
+        if is_string_dtype(series) and self.config.missing_value is None:  # Strings are finicky
+            series[series_mask] = pd.NA
+            series = series.astype(str)
+        else:
+            series[series_mask] = self.config.missing_value
+
         return series

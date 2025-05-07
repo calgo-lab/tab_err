@@ -3,7 +3,7 @@ from __future__ import annotations
 import warnings
 from typing import TYPE_CHECKING
 
-from tab_err._utils import get_column
+from tab_err._utils import check_error_rate, get_column
 
 from ._error_mechanism import ErrorMechanism
 
@@ -42,6 +42,7 @@ class ECAR(ErrorMechanism):
         Returns:
             pd.DataFrame: A Pandas DataFrame with True values at entries where an error should be introduced, False otherwise
         """
+        check_error_rate(error_rate)
         se_mask = get_column(error_mask, column)
         se_mask_error_free = se_mask[~se_mask]
 

@@ -3,7 +3,7 @@ from __future__ import annotations
 import warnings
 from typing import TYPE_CHECKING
 
-from tab_err._utils import get_column, get_column_str
+from tab_err._utils import check_error_rate, get_column, get_column_str
 
 from ._error_mechanism import ErrorMechanism
 
@@ -40,6 +40,8 @@ class EAR(ErrorMechanism):
         Returns:
             pd.DataFrame: A Pandas `DataFrame` with `True` values at entries where an error should be introduced, `False` otherwise
         """
+        check_error_rate(error_rate)
+
         if len(data.columns) < 2:  # noqa: PLR2004
             msg = "The data into which error at random (EAR) are to be injected requires at least 2 columns."
             raise ValueError(msg)

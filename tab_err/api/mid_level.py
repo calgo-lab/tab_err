@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any
 
 import pandas as pd
 
-from tab_err._utils import set_column
+from tab_err._utils import check_data_emptiness, check_error_rate, set_column
 
 if TYPE_CHECKING:
     from tab_err._error_model import ErrorModel
@@ -50,6 +50,7 @@ def create_errors(data: pd.DataFrame, config: MidLevelConfig | dict) -> tuple[pd
     Raises:
         TypeError: If `config` has incorrect type.
     """
+    check_data_emptiness(data)
     if isinstance(config, dict):
         _config = MidLevelConfig(config)
 
@@ -65,6 +66,8 @@ def create_errors(data: pd.DataFrame, config: MidLevelConfig | dict) -> tuple[pd
 
     for column in _config.columns:
         for error_model in _config.columns[column]:
+            check_error_rate(error_model.error_rate)
+
             error_mechanism = error_model.error_mechanism
             error_type = error_model.error_type
             error_rate = error_model.error_rate

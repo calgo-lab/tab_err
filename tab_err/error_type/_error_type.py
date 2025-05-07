@@ -46,7 +46,6 @@ class ErrorType(ABC):
         self._seed = seed
         self._random_generator: np.random.Generator
 
-    # TODO(seja): check data.shape == error_mask.shape
     def apply(self: ErrorType, data: pd.DataFrame, error_mask: pd.DataFrame, column: str | int) -> pd.Series:
         """Applies an ErrorType to a column of 'data'. Does type and shape checking and creates a random number generator.
 
@@ -60,20 +59,32 @@ class ErrorType(ABC):
         """
         self._check_type(data, column)
 
+        if data.shape != error_mask.shape:
+            msg = f"The shape of 'data': {data.shape} was different from the shape of 'error_mask': {error_mask.shape}. They should be the same."
+            raise ValueError(msg)
+
         self._random_generator = seed_randomness(self._seed)
         return self._apply(data, error_mask, column)
 
+    def get_valid_columns(self: ErrorType, data: pd.DataFrame) -> list[str | int]:
+        """Finds the valid columns to which the error type can be applied. Wrapper around _get_valid_columns."""
+        return self._get_valid_columns(data)
+
     @staticmethod
     @abstractmethod
-    # TODO(seja): def _get_valid_columns(data: pd.DataFrame, preserve_dtypes: bool = True) -> list[Dtype]:
-    # supposed to check for which columns this type can be applied and returns those.
     def _check_type(data: pd.DataFrame, column: str | int) -> None:
-        pass
+        """Static abstract method that checks if the given columns are valid for this 'ErrorType'.
+
+        Args:
+            data (pd.DataFrame): The Pandas DataFrame containing the column where errors are to be introduced.
+            column (str | int): The 'column' of 'data' where errors are to be introduced.
+        """
 
     @abstractmethod
-    # TODO(seja): def _apply(data: pd.DataFrame, error_mask: pd.DataFrame) -> pd.DataFrame:
-    # Assumes 'data' has valid columns. Simply applies error_type to those cells where error_mask is True.
-    # Returns changed data
+    def _get_valid_columns(self: ErrorType, data: pd.DataFrame) -> list[str | int]:
+        """Finds the valid columns to which the error type can be applied."""
+
+    @abstractmethod
     def _apply(self: ErrorType, data: pd.DataFrame, error_mask: pd.DataFrame, column: str | int) -> pd.Series:
         """Abstract method for the application of an ErrorType to the cells in 'data' where 'error_mask' is True.
 

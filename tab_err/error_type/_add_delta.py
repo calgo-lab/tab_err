@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+import warnings
+
+import pandas as pd
+from pandas.api.types import is_datetime64_dtype, is_numeric_dtype
 
 from tab_err._utils import get_column
 
 from ._error_type import ErrorType
-
-if TYPE_CHECKING:
-    import pandas as pd
 
 
 class AddDelta(ErrorType):
@@ -15,8 +15,15 @@ class AddDelta(ErrorType):
 
     @staticmethod
     def _check_type(data: pd.DataFrame, column: int | str) -> None:
-        # all data types are fine
-        pass
+        series = get_column(data, column)
+
+        if not (is_numeric_dtype(series) or is_datetime64_dtype(series)):
+            msg = f"Column {column} with dtype: {series.dtype} does not contain numeric or datetime64 values. Cannot apply AddDelta."
+            raise TypeError(msg)
+
+    def _get_valid_columns(self: AddDelta, data: pd.DataFrame) -> list[str | int]:
+        """Returns all column names with numeric dtype elements."""
+        return data.select_dtypes(include=["number", "datetime64"]).columns.tolist()
 
     def _apply(self: AddDelta, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
         """Applies the AddDelta ErrorType to a column of data.
@@ -32,13 +39,24 @@ class AddDelta(ErrorType):
         Returns:
             pd.Series: The data column, 'column', after AddDelta errors at the locations specified by 'error_mask' are introduced.
         """
-        # cast to object because our operation potentially changes the type of a column.
-        series = get_column(data, column).copy().astype("object")
+        series = get_column(data, column).copy()
         series_mask = get_column(error_mask, column)
+        was_datetime = False  # Default was_datetime to false -- changes occur only in the special case of datetime
+
+        if is_datetime64_dtype(series):  # Convert to int (number of seconds) if datetime
+            series = series.astype("int64") // 10**9
+            was_datetime = True
 
         if self.config.add_delta_value is None:
-            msg = "No add_delta_value has been configured. Please add it to the ErrorTypeConfig."
-            raise ValueError(msg)
+            msg = f"self.config.add_delta_value is none, sampling a random delta value uniformly from the range of column: {column}."
+            warnings.warn(msg, stacklevel=2)
+            self.config.add_delta_value = (
+                self._random_generator.choice(series) - series.mean()
+            ) / series.std()  # Ensures a smaller value than uniform sampling
 
-        series.loc[series_mask] = series.loc[series_mask].apply(lambda x: x + self.config.add_delta_value)
+        series = series.where(~series_mask, series + self.config.add_delta_value)  # Avoids in-place modification
+
+        if was_datetime:  # Convert back to datetime if it was initially
+            series = pd.to_datetime(series, unit="s")
+
         return series
