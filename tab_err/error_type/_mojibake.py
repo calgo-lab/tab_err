@@ -61,7 +61,8 @@ class Mojibake(ErrorType):
         encoding_sender = self.config.encoding_sender
         encoding_receiver = self.config.encoding_receiver
 
-        # TODO(nich): Deal with the cases of just one being None/one being specified
+        # TODO(nich): Check validity of supplied combo
+        # TODO(nich): Choose valid combo if only one is None - don't ignore user choice
         if encoding_sender is None or encoding_receiver is None:
             encoding_sender = random.choice(list(top10))
             encoding_receiver = random.choice(list(encodings[encoding_sender]))
