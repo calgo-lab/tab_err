@@ -80,16 +80,11 @@ class ErrorType(ABC):
             column (str | int): The 'column' of 'data' where errors are to be introduced.
         """
 
-    # TODO(nich): def _get_valid_columns(data: pd.DataFrame) -> list[str | int]:
-    # supposed to check for which columns this error type can be applied and returns those.
     @abstractmethod
     def _get_valid_columns(self: ErrorType, data: pd.DataFrame) -> list[str | int]:
         """Finds the valid columns to which the error type can be applied."""
 
     @abstractmethod
-    # TODO(nich): def _apply(data: pd.DataFrame, error_mask: pd.DataFrame) -> pd.DataFrame:
-    # Assumes 'data' has valid columns. Simply applies error_type to those cells where error_mask is True.
-    # Returns changed data
     def _apply(self: ErrorType, data: pd.DataFrame, error_mask: pd.DataFrame, column: str | int) -> pd.Series:
         """Abstract method for the application of an ErrorType to the cells in 'data' where 'error_mask' is True.
 
