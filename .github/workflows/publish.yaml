@@ -37,18 +37,18 @@ jobs:
           python-version: "3.9"
 
       #----------------------------------------------
-      #        -----  install poetry  -----
+      #        -----  install uv  -----
       #----------------------------------------------
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.7.3"
 
       #----------------------------------------------
       #   install dependencies and build packages
       #----------------------------------------------
-      - name: Install dependencies
-        run: poetry install --sync --no-interaction --without dev --all-extras
       - name: Package project
-        run: poetry build
+        run: uv build
 
       #----------------------------------------------
       #               upload to PyPI

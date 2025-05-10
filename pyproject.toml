@@ -35,6 +35,10 @@ documentation = "https://tab-err.readthedocs.io/latest/"
 "Bug Tracker" = "https://github.com/calgo-lab/tab_err/issues"
 
 [dependency-groups]
+ci = [
+    "mypy>=1.15.0",
+    "tomli>=2.2.1",
+]
 dev = [
     "pytest>=8.3.5,<9.0.0",
     "ruff>=0.9.8",
