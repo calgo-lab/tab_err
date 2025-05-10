@@ -25,3 +25,10 @@ Package Index (PyPI)](https://pypi.org/project/tab-err).
 ```sh
 pip install tab-err
 ```
+
+## Contributing
+
+To develop `tab_err`, install the `uv` package manager.
+Run tests with `uv run pytest`.
+Develop features on feature branches and open pull requests once you're ready to contribute.
+Make sure that your code is tested, documented, and well described in the pull request.
