@@ -45,4 +45,5 @@ jobs:
           export TERM=xterm
       - name: Run mypy
         run: |
+          # NOTE: tomli is sometimes missing, using dedicated ci dependencies
           uv run --group ci mypy --show-column-numbers .
