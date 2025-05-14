@@ -1,6 +1,7 @@
-import pytest
 import numpy as np
 import pandas as pd
+import pytest
+
 
 @pytest.fixture
 def test_data() -> dict[str, pd.DataFrame]:
@@ -16,4 +17,3 @@ def test_data() -> dict[str, pd.DataFrame]:
             {"A": rng.integers(0, 100, 10), "B": pd.date_range(start="2025-03-04", periods=10, freq="2h"), "C": rng.choice(["X", "Y", "Z"], 10)}
         ),
     }
-

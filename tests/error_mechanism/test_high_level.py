@@ -6,6 +6,8 @@ from tab_err.api.high_level import create_errors
 
 
 class TestHighLevelAPI:
+    """Tests the high-level API."""
+
     def test_create_errors_basic(self, test_data: dict[str, pd.DataFrame]) -> None:
         """Test that create_errors returns two DataFrames with expected properties."""
         seed = 42
@@ -33,7 +35,6 @@ class TestHighLevelAPI:
         assert pytest.approx(error_rate) == data_4rows_5columns_error_mask.to_numpy().mean()
         assert pytest.approx(error_rate) == data_10rows_3columns_error_mask.to_numpy().mean()
 
-
     def test_create_errors_seed(self, test_data: dict[str, pd.DataFrame]) -> None:
         """Test that create_errors returns the same dataframe when a seed is used."""
         seed = 42
@@ -45,7 +46,6 @@ class TestHighLevelAPI:
         # Ensure same seed yields same dataframes
         pd.testing.assert_frame_equal(modified_data_1, modified_data_2)
         pd.testing.assert_frame_equal(error_mask_1, error_mask_2)
-
 
     def test_create_errors_error_rates(self, test_data: dict[str, pd.DataFrame]) -> None:
         """Test that create_errors returns two DataFrames with expected properties."""
@@ -62,7 +62,6 @@ class TestHighLevelAPI:
             assert pytest.approx(error_rate) == data_100rows_3columns_error_mask.to_numpy().mean()
             assert pytest.approx(error_rate) == data_10rows_3columns_error_mask.to_numpy().mean()
             assert pytest.approx(error_rate) == data_10rows_3columns_with_datetime_error_mask.to_numpy().mean()
-
 
     def test_create_errors_more_models(self, test_data: dict[str, pd.DataFrame]) -> None:
         """Test that when more error models are introduced, the create_errors method has expected DataFrame return."""
