@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
-from pandas.api.types import is_datetime64_dtype, is_integer_dtype, is_numeric_dtype
+from pandas.api.types import is_datetime64_dtype, is_numeric_dtype
 
 from tab_err._utils import get_column
 
@@ -10,20 +10,9 @@ from ._error_type import ErrorType
 
 
 class Outlier(ErrorType):
-    """Inserts outliers into a column by pushing data points outside the interquartile range (IQR) boundaries.
+    """Inserts outliers into a column by adding/subtracting (k * iqr + noise) to the median of the given column.
 
-    - Data points below the mean are pushed towards lower outliers, while those above the mean are pushed towards upper outliers.
-    - The `outlier_coefficient` controls how far values are pushed relative to the IQR. An `outlier_coefficient` of 1.0 means the
-    push is equal to half of the IQR, shifting the mean value exactly to the edge of the IQR. Values that deviate more from the
-    mean will be pushed beyond the IQR boundary. When `outlier_coefficient` is less than 1.0, values—including the mean—are pushed
-    less drastically, potentially keeping them within the IQR.
-    - The push is calculated as:
-        push = outlier_coefficient * |upper_boundary - mean_value|
-    - Values above the mean are pushed towards the upper boundary, and values below the mean are pushed towards the lower boundary.
-    If a value equals the mean, a coin flip decides whether it is pushed towards the upper or lower boundary.
-    - After this process, Gaussian noise is added to simulate measurement errors and make the outliers appear more realistic. The
-    amount of noise can be controlled via the `outlier_noise_coeff` parameter and is scaled with the IQR to ensure it is proportional
-    to the data's spread.
+    Determines if an outlier is above or below the median by tossing a coin for each row to be errored.
     """
 
     @staticmethod
@@ -58,44 +47,43 @@ class Outlier(ErrorType):
             series = series.astype("int64")
             was_datetime = True
 
-        mean_value = series.mean()
-        q1 = series.quantile(0.25)
-        q3 = series.quantile(0.75)
-        iqr = q3 - q1
+        # Set up the necessary values
+        median_value = series.median()
+        iqr = series.quantile(0.75) - series.quantile(0.25)
+        if iqr == 0:  # To not impute the median +/- noise
+            iqr = 1e-9
 
-        upper_boundary = q3 + 1.5 * iqr
-        lower_boundary = q1 - 1.5 * iqr
+        # Decide which outliers are above/below the median - at least one is above/below
+        coin_tosses = self._random_generator.random(series_mask.sum()) < self.config.outlier_coin_flip_threshold
+        if series_mask.sum() > 1:
+            if not coin_tosses.any():
+                coin_tosses[self._random_generator.integers(0, len(coin_tosses))] = True
+            elif coin_tosses.all():
+                coin_tosses[self._random_generator.integers(0, len(coin_tosses))] = False
 
-        # Pre-compute the perturbations
-        perturbation_upper = self.config.outlier_coefficient * (upper_boundary - mean_value)
-        perturbation_lower = self.config.outlier_coefficient * (mean_value - lower_boundary)
+        neg_outliers = series_mask.copy()
+        neg_outliers[series_mask] = coin_tosses
+        pos_outliers = series_mask & ~neg_outliers
 
-        if is_integer_dtype(series):  # round float to int when series is int
-            perturbation_upper = np.ceil(perturbation_upper)
-            perturbation_lower = np.floor(perturbation_lower)
+        neg_noise = (
+            self._random_generator.normal(loc=0, scale=self.config.outlier_noise_coeff * iqr, size=neg_outliers.sum())
+            if neg_outliers.sum() > 0
+            else np.array([])
+        )
+        pos_noise = (
+            self._random_generator.normal(loc=0, scale=self.config.outlier_noise_coeff * iqr, size=pos_outliers.sum())
+            if pos_outliers.sum() > 0
+            else np.array([])
+        )
 
-        # Get masks for the different outlier types depending on the mean
-        mask_lower = (series < mean_value) & series_mask
-        mask_upper = (series > mean_value) & series_mask
-        mask_equal = (series == mean_value) & series_mask
-
-        # Apply the constant perturbation to the respective mask
-        series.loc[mask_lower] -= perturbation_lower
-        series.loc[mask_upper] += perturbation_upper
-
-        # Handle the mean values with a coin flip
-        coin_flips = self._random_generator.random(mask_equal.sum())
-        series.loc[mask_equal] += np.where(coin_flips > self.config.outlier_coin_flip_threshold, perturbation_upper, -perturbation_lower)
-
-        # Apply Gaussian noise to simulate the increase in measurement error of the outliers
-        noise_std = self.config.outlier_noise_coeff * iqr
-
-        if is_integer_dtype(series):  # round float to int when series is int
-            series.loc[series_mask] += np.rint(self._random_generator.normal(loc=0, scale=noise_std, size=series_mask.sum()))
-        else:
-            series.loc[series_mask] += self._random_generator.normal(loc=0, scale=noise_std, size=series_mask.sum())
+        # Apply outliers
+        if neg_noise.size > 0:
+            series[neg_outliers] = median_value - (self.config.outlier_coefficient * iqr) - neg_noise
+        if pos_noise.size > 0:
+            series[pos_outliers] = median_value + (self.config.outlier_coefficient * iqr) + pos_noise
 
         if was_datetime:  # Handle datetime objects
+            series = series.clip(lower=pd.Timestamp.min.value, upper=pd.Timestamp.max.value)
             series = pd.to_datetime(series)
 
         return series

@@ -47,12 +47,13 @@ class ErrorTypeConfig:
 
         add_delta_value (Any | None): Value that is added to the value by the AddDelta Error Type. Defaults to None.
 
-        outlier_coin_flip_threshold (float): Coin flip determines the direction (positive, negative) of the outlier. Defaults to 0.5.
+        outlier_coin_flip_threshold (float): Probability of a negative outlier. Defaults to 0.5.
 
-        outlier_coefficient (float): Coefficient that determines the magnitude of the outliers for the Outlier Error Type. Defaults to 1.0.
+        outlier_coefficient (float): Coefficient that determines how many times the iqr should be added/subtracted from the median for the Outlier Error Type.
+            Defaults to 3.0.
 
-        outlier_noise_coeff (float): Coefficient that influences the standard deviation of the noise added to the outliers for the Outlier Error Type.
-            Defaults to 0.1.
+        outlier_noise_coeff (float): Coefficient that influences the standard deviation of the gaussian noise added/subtracted to the outliers for the
+        Outlier Error Type. Defaults to 0.1.
     """
 
     encoding_sender: str | None = None
@@ -82,7 +83,7 @@ class ErrorTypeConfig:
     add_delta_value: float | int | None = None
 
     outlier_coin_flip_threshold: float = 0.5
-    outlier_coefficient: float = 1.0
+    outlier_coefficient: float = 3.0
     outlier_noise_coeff: float = 0.1
 
     def to_dict(self: ErrorTypeConfig) -> dict[str, Any]:
