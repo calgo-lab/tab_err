@@ -53,7 +53,6 @@ class Outlier(ErrorType):
         if iqr == 0:  # To not impute the median +/- noise
             iqr = 1e-9
 
-
         # Decide which outliers are above/below the median - at least one is above/below
         coin_tosses = self._random_generator.random(series_mask.sum()) < self.config.outlier_coin_flip_threshold
         if series_mask.sum() > 1:
@@ -66,10 +65,16 @@ class Outlier(ErrorType):
         neg_outliers[series_mask] = coin_tosses
         pos_outliers = series_mask & ~neg_outliers
 
-        neg_noise = self._random_generator.normal(
-            loc=0, scale=self.config.outlier_noise_coeff*iqr, size=neg_outliers.sum()) if neg_outliers.sum() > 0 else np.array([])
-        pos_noise = self._random_generator.normal(
-            loc=0, scale=self.config.outlier_noise_coeff*iqr, size=pos_outliers.sum()) if pos_outliers.sum() > 0 else np.array([])
+        neg_noise = (
+            self._random_generator.normal(loc=0, scale=self.config.outlier_noise_coeff * iqr, size=neg_outliers.sum())
+            if neg_outliers.sum() > 0
+            else np.array([])
+        )
+        pos_noise = (
+            self._random_generator.normal(loc=0, scale=self.config.outlier_noise_coeff * iqr, size=pos_outliers.sum())
+            if pos_outliers.sum() > 0
+            else np.array([])
+        )
 
         # Apply outliers
         if neg_noise.size > 0:
