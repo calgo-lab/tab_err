@@ -135,6 +135,9 @@ def typo(input_text: str, typo_error_period: int = 10, layout: str = "ansi-qwert
         message = "typo_error_period smaller than 1 is invalid, as multiple errors per word are not supported."
         raise ValueError(message)
 
+    if input_text == "":  # return random char if empty string
+        return random.choice(list(neighbors.keys()))
+
     splits = input_text.split(" ")
 
     # draw only from splits that have a content
