@@ -112,9 +112,12 @@ def test_create_errors_more_models(test_data: dict[str, pd.DataFrame]) -> None:
     assert data_100rows_3columns_error_mask.shape == test_data["data_100rows_3columns"].shape
 
     # Assert the error masks contain only boolean values
-    assert data_4rows_5columns_error_mask.dtypes.apply(lambda dt: np.issubdtype(dt, np.bool_)).all()
-    assert data_10rows_3columns_error_mask.dtypes.apply(lambda dt: np.issubdtype(dt, np.bool_)).all()
-    assert data_100rows_3columns_error_mask.dtypes.apply(lambda dt: np.issubdtype(dt, np.bool_)).all()
+    def is_bool_dtype(dtype: pd.api.types.DtypeObj) -> bool:
+        return np.issubdtype(dtype, np.bool_)
+
+    assert data_4rows_5columns_error_mask.dtypes.apply(is_bool_dtype).all()
+    assert data_10rows_3columns_error_mask.dtypes.apply(is_bool_dtype).all()
+    assert data_100rows_3columns_error_mask.dtypes.apply(is_bool_dtype).all()
 
     # Assert that the error masks have the correct proportion of True to False
     assert pytest.approx(error_rate) == data_4rows_5columns_error_mask.to_numpy().mean()

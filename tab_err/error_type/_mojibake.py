@@ -68,7 +68,11 @@ class Mojibake(ErrorType):
             encoding_receiver = random.choice(list(encodings[encoding_sender]))
 
         series_mask = get_column(error_mask, column)
+
+        def reencode_value(x: str) -> str:  # Serializable -- Encoding settings are defined above.
+            return x.encode(encoding_sender, errors="ignore").decode(encoding_receiver, errors="ignore")
+
         series.loc[series_mask] = (
-            series.loc[series_mask].apply(lambda x: x.encode(encoding_sender, errors="ignore")).apply(lambda x: x.decode(encoding_receiver, errors="ignore"))
+            series.loc[series_mask].apply(reencode_value)
         )
         return series

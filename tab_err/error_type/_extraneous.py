@@ -60,5 +60,8 @@ class Extraneous(ErrorType):
             msg += "{value}. Please add it for a valid format."
             raise ValueError(msg)
 
-        series.loc[series_mask] = series.loc[series_mask].apply(lambda x: self.config.extraneous_value_template.format(value=x))
+        def format_extraneous_value(x: str) -> str:  # Pickleable
+            return self.config.extraneous_value_template.format(value=x)
+
+        series.loc[series_mask] = series.loc[series_mask].apply(format_extraneous_value)
         return series

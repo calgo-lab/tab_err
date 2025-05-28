@@ -48,5 +48,8 @@ class Replace(ErrorType):
             random_row = self._random_generator.choice(series.index)
             self.config.replace_what = self._random_generator.choice(list(series[random_row]))
 
-        series.loc[series_mask] = series.loc[series_mask].apply(lambda x: x.replace(self.config.replace_what, self.config.replace_with))
+        def replace_value(x: str) -> str:  # Serializable
+            return x.replace(self.config.replace_what, self.config.replace_with)
+
+        series.loc[series_mask] = series.loc[series_mask].apply(replace_value)
         return series
