@@ -41,7 +41,7 @@ def _are_same_error_mechanism(error_mechanism1: ErrorMechanism, error_mechanism2
 
 def _sample_random_int(random_generator: Generator) -> int:
     info = np.iinfo(np.int64)
-    return random_generator.integers(info.min, info.max, dtype=np.int64)
+    return int(random_generator.integers(info.min, info.max, dtype=np.int64))
 
 
 def _build_column_type_dictionary(
