@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any
 
-from tab_err._utils import seed_randomness
+from tab_err._utils import seed_randomness_and_get_generator
 
 from ._config import ErrorTypeConfig
 
@@ -63,7 +63,7 @@ class ErrorType(ABC):
             msg = f"The shape of 'data': {data.shape} was different from the shape of 'error_mask': {error_mask.shape}. They should be the same."
             raise ValueError(msg)
 
-        self._random_generator = seed_randomness(self._seed)
+        self._random_generator = seed_randomness_and_get_generator(self._seed)
         return self._apply(data, error_mask, column)
 
     def get_valid_columns(self: ErrorType, data: pd.DataFrame) -> list[str | int]:

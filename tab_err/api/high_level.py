@@ -7,7 +7,7 @@ import pandas as pd
 
 from tab_err import ErrorMechanism, ErrorType, error_mechanism, error_type
 from tab_err._error_model import ErrorModel
-from tab_err._utils import check_data_emptiness, check_error_rate, seed_randomness
+from tab_err._utils import check_data_emptiness, check_error_rate, seed_randomness_and_get_generator
 from tab_err.api import MidLevelConfig, mid_level
 
 
@@ -224,7 +224,7 @@ def create_errors(  # noqa: PLR0913
     col_num_models = _build_column_number_of_models_dictionary(data=data, column_types=col_type, column_mechanisms=col_mechanisms)
 
     if n_error_models_per_column > 0:
-        seed_randomness(seed=seed)
+        seed_randomness_and_get_generator(seed=seed)
         error_rate = error_rate / n_error_models_per_column
         config_dictionary: dict[str | int, list[ErrorModel]] = {
             column: [] for column in data.columns if col_num_models[column] > 0
