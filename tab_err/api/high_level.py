@@ -3,7 +3,6 @@ from __future__ import annotations
 import warnings
 from typing import TYPE_CHECKING
 
-import numpy as np
 import pandas as pd
 
 from tab_err import ErrorMechanism, ErrorType, error_mechanism, error_type
@@ -39,11 +38,6 @@ def _are_same_error_mechanism(error_mechanism1: ErrorMechanism, error_mechanism2
     )
 
 
-def _sample_random_int(random_generator: Generator) -> int:
-    info = np.iinfo(np.int64)
-    return int(random_generator.integers(info.min, info.max, dtype=np.int64))
-
-
 def _build_column_type_dictionary(
     data: pd.DataFrame,
     random_generator: Generator,
@@ -68,15 +62,15 @@ def _build_column_type_dictionary(
         dict[int | str, list[ErrorModel]]: A dictionary mapping from column names to the list of valid error types to apply to that column.
     """
     error_types_applied = [
-        error_type.AddDelta(seed=_sample_random_int(random_generator)),
-        error_type.CategorySwap(seed=_sample_random_int(random_generator)),
-        error_type.Extraneous(seed=_sample_random_int(random_generator)),
-        error_type.Mojibake(seed=_sample_random_int(random_generator)),
-        error_type.Outlier(seed=_sample_random_int(random_generator)),
-        error_type.Replace(seed=_sample_random_int(random_generator)),
-        error_type.Typo(seed=_sample_random_int(random_generator)),
-        error_type.WrongUnit(seed=_sample_random_int(random_generator)),
-        error_type.MissingValue(seed=_sample_random_int(random_generator)),
+        error_type.AddDelta(seed=random_generator.bit_generator.random_raw()),
+        error_type.CategorySwap(seed=random_generator.bit_generator.random_raw()),
+        error_type.Extraneous(seed=random_generator.bit_generator.random_raw()),
+        error_type.Mojibake(seed=random_generator.bit_generator.random_raw()),
+        error_type.Outlier(seed=random_generator.bit_generator.random_raw()),
+        error_type.Replace(seed=random_generator.bit_generator.random_raw()),
+        error_type.Typo(seed=random_generator.bit_generator.random_raw()),
+        error_type.WrongUnit(seed=random_generator.bit_generator.random_raw()),
+        error_type.MissingValue(seed=random_generator.bit_generator.random_raw()),
     ]
 
     if error_types_to_exclude is not None and error_types_to_include is not None:
@@ -148,10 +142,10 @@ def _build_column_mechanism_dictionary(
 
         for column in data.columns:
             column_wise_error_mechs = [
-                error_mechanism.ENAR(seed=_sample_random_int(random_generator)),
-                error_mechanism.ECAR(seed=_sample_random_int(random_generator)),
+                error_mechanism.ENAR(seed=random_generator.bit_generator.random_raw()),
+                error_mechanism.ECAR(seed=random_generator.bit_generator.random_raw()),
             ] + [
-                error_mechanism.EAR(condition_to_column=other_column, seed=_sample_random_int(random_generator))
+                error_mechanism.EAR(condition_to_column=other_column, seed=random_generator.bit_generator.random_raw())
                 for other_column in data.columns
                 if other_column != column
             ]
