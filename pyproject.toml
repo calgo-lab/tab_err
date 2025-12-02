@@ -48,6 +48,7 @@ dev = [
     "myst-parser>=4.0.0 ; python_version >= '3.10'",
     "pydata-sphinx-theme>=0.16.1,<0.17.0",
     "sphinx-autoapi>=3.5.0,<4.0.0",
+    "ty>=0.0.1a29",
 ]
 
 [build-system]
@@ -92,3 +93,6 @@ ignore = [
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
+
+[tool.ty.environment]
+python-version = "3.9"
