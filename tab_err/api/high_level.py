@@ -254,8 +254,9 @@ def create_errors(  # noqa: PLR0913
             for _ in range(n_error_models_per_column):
                 error_model_list.append(
                     ErrorModel(
-                        error_type=random_generator.choice(col_type[column]),
-                        error_mechanism=random_generator.choice(col_mechanisms[column]),
+                        # NOTE: in python 3.9 mypy fails here but tests work
+                        error_type=random_generator.choice(col_type[column]),  # type: ignore[arg-type]
+                        error_mechanism=random_generator.choice(col_mechanisms[column]),  # type: ignore[arg-type]
                         error_rate=error_rate,
                     )
                 )
