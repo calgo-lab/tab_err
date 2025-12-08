@@ -1,6 +1,6 @@
 [project]
 name = "tab_err"
-version = "0.2.0"
+version = "0.2.1"
 description = "Fully-controllable error generation for tabular data."
 readme = "README.md"
 authors = [
