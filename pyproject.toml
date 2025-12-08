@@ -78,7 +78,7 @@ ignore = [
     "D100", # Do not document public modules
     "D104", # Do not document public packages
     "TD003", # Allow TODOs without links
-    "ISC003", # Do not implicietly concatenate strings
+    "ISC003", # Do not implicitly concatenate strings
     "S101", # Allow testing methods
 ]
 
@@ -88,7 +88,7 @@ ignore = [
 ]
 "docs/source/conf.py" = [
     "A001", # Allow missing __init__.py for docs
-    "INP001", # Allow builtin shadowing for docs
+    "INP001", # Allow built in shadowing for docs
 ]
 
 [tool.ruff.lint.pydocstyle]
