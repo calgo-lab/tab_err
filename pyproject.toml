@@ -8,7 +8,7 @@ authors = [
     { name = "Sebastian Jäger", email = "tab_err@sebastian-jaeger.me" },
 ]
 license = { text = "Apache License 2.0" }
-keywords = ["tabular-data", "data-quality", "error-modelling", "data-errors"]
+keywords = ["tabular-data", "data-quality", "error-modeling", "data-errors"]
 classifiers = [
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
