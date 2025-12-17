@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 import pandas as pd
 
-from tab_err._utils import seed_randomness
+from tab_err._utils import seed_randomness_and_get_generator
 
 if TYPE_CHECKING:
     import numpy as np
@@ -86,7 +86,7 @@ class ErrorMechanism(ABC):
         if error_mask is None:  # initialize empty error_mask
             error_mask = pd.DataFrame(data=False, index=data.index, columns=data.columns)
 
-        self._random_generator = seed_randomness(self._seed)
+        self._random_generator = seed_randomness_and_get_generator(self._seed)
         return self._sample(data, column, error_rate, error_mask)
 
     @abstractmethod

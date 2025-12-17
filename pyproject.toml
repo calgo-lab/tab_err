@@ -1,6 +1,6 @@
 [project]
 name = "tab_err"
-version = "0.2.0"
+version = "0.2.1"
 description = "Fully-controllable error generation for tabular data."
 readme = "README.md"
 authors = [
@@ -8,7 +8,7 @@ authors = [
     { name = "Sebastian Jäger", email = "tab_err@sebastian-jaeger.me" },
 ]
 license = { text = "Apache License 2.0" }
-keywords = ["tabular-data", "data-quality", "error-modelling", "data-errors"]
+keywords = ["tabular-data", "data-quality", "error-modeling", "data-errors"]
 classifiers = [
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
@@ -25,7 +25,7 @@ classifiers = [
 
 requires-python = ">=3.9,<3.13"
 dependencies = [
-    "pandas>=2.2.3,<3.0.0",
+    "pandas>=2.3.0,<2.4.0",
 ]
 
 [project.urls]
@@ -48,6 +48,7 @@ dev = [
     "myst-parser>=4.0.0 ; python_version >= '3.10'",
     "pydata-sphinx-theme>=0.16.1,<0.17.0",
     "sphinx-autoapi>=3.5.0,<4.0.0",
+    "ty>=0.0.1a29",
 ]
 
 [build-system]
@@ -77,7 +78,7 @@ ignore = [
     "D100", # Do not document public modules
     "D104", # Do not document public packages
     "TD003", # Allow TODOs without links
-    "ISC003", # Do not implicietly concatenate strings
+    "ISC003", # Do not implicitly concatenate strings
     "S101", # Allow testing methods
 ]
 
@@ -87,8 +88,11 @@ ignore = [
 ]
 "docs/source/conf.py" = [
     "A001", # Allow missing __init__.py for docs
-    "INP001", # Allow builtin shadowing for docs
+    "INP001", # Allow built in shadowing for docs
 ]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
+
+[tool.ty.environment]
+python-version = "3.9"

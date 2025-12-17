@@ -1,14 +1,17 @@
 from __future__ import annotations
 
-import random
 import warnings
+from typing import TYPE_CHECKING
 
 import pandas as pd
 
 from tab_err import ErrorMechanism, ErrorType, error_mechanism, error_type
 from tab_err._error_model import ErrorModel
-from tab_err._utils import check_data_emptiness, check_error_rate, seed_randomness
+from tab_err._utils import check_data_emptiness, check_error_rate, seed_randomness_and_get_generator
 from tab_err.api import MidLevelConfig, mid_level
+
+if TYPE_CHECKING:
+    from numpy.random import Generator
 
 
 def _are_same_class(obj1: object, obj2: object) -> bool:
@@ -36,17 +39,20 @@ def _are_same_error_mechanism(error_mechanism1: ErrorMechanism, error_mechanism2
 
 
 def _build_column_type_dictionary(
-    data: pd.DataFrame, error_types_to_include: list[ErrorType] | None = None, error_types_to_exclude: list[ErrorType] | None = None, seed: int | None = None
+    data: pd.DataFrame,
+    random_generator: Generator,
+    error_types_to_include: list[ErrorType] | None = None,
+    error_types_to_exclude: list[ErrorType] | None = None,
 ) -> dict[int | str, list[ErrorType]]:
     """Creates a dictionary mapping from column names to the list of valid error types to apply to that column.
 
     Args:
         data (pd.DataFrame): The pandas DataFrame to create errors in.
+        random_generator (Generator): Random Generator. Defaults to None.
         error_types_to_include (list[ErrorType] | None, optional): A list of the error types to be included when building error models. Defaults to None.
         error_types_to_exclude (list[ErrorType] | None, optional): A list of the error types to be excluded when building error models. Defaults to None.
             When both error_types_to_include and error_types_to_exclude are none, the maximum number of default error types will be used.
             At least one must be None or an error will occur.
-        seed (int | None, optional): Random seed. Defaults to None.
 
     Raises:
         ValueError: If error_types_to_exclude is not None and error_types_to_include is not None, a ValueError is thrown.
@@ -56,15 +62,15 @@ def _build_column_type_dictionary(
         dict[int | str, list[ErrorModel]]: A dictionary mapping from column names to the list of valid error types to apply to that column.
     """
     error_types_applied = [
-        error_type.AddDelta(seed=seed),
-        error_type.CategorySwap(seed=seed),
-        error_type.Extraneous(seed=seed),
-        error_type.Mojibake(seed=seed),
-        error_type.Outlier(seed=seed),
-        error_type.Replace(seed=seed),
-        error_type.Typo(seed=seed),
-        error_type.WrongUnit(seed=seed),
-        error_type.MissingValue(seed=seed),
+        error_type.AddDelta(seed=random_generator.bit_generator.random_raw()),
+        error_type.CategorySwap(seed=random_generator.bit_generator.random_raw()),
+        error_type.Extraneous(seed=random_generator.bit_generator.random_raw()),
+        error_type.Mojibake(seed=random_generator.bit_generator.random_raw()),
+        error_type.Outlier(seed=random_generator.bit_generator.random_raw()),
+        error_type.Replace(seed=random_generator.bit_generator.random_raw()),
+        error_type.Typo(seed=random_generator.bit_generator.random_raw()),
+        error_type.WrongUnit(seed=random_generator.bit_generator.random_raw()),
+        error_type.MissingValue(seed=random_generator.bit_generator.random_raw()),
     ]
 
     if error_types_to_exclude is not None and error_types_to_include is not None:
@@ -96,19 +102,19 @@ def _build_column_type_dictionary(
 
 def _build_column_mechanism_dictionary(
     data: pd.DataFrame,
+    random_generator: Generator,
     error_mechanisms_to_include: list[ErrorMechanism] | None = None,
     error_mechanisms_to_exclude: list[ErrorMechanism] | None = None,
-    seed: int | None = None,
 ) -> dict[int | str, list[ErrorMechanism]]:
     """Builds a dictionary mapping from column names to the list of valid error mechanisms to apply to that column.
 
     Args:
         data (pd.DataFrame): The pandas DataFrame to create errors in.
+        random_generator (Generator): Random Generator. Defaults to None.
         error_mechanisms_to_include (list[ErrorMechanism] | None, optional): The error mechanisms (EAR, ECAR, ENAR) to include from the dictionary.
             Defaults to None.
         error_mechanisms_to_exclude (list[ErrorMechanism] | None, optional): The error mechanisms (EAR, ECAR, ENAR) to exclude from the dictionary.
             Defaults to None.
-        seed (int | None, optional): Random seed. Defaults to None.
 
     Returns:
         dict[int | str, list[ErrorMechanism]]: A dictionary mapping from column names to the list of valid error mechanisms to apply to that column.
@@ -135,8 +141,13 @@ def _build_column_mechanism_dictionary(
             raise ValueError(msg)
 
         for column in data.columns:
-            column_wise_error_mechs = [error_mechanism.ENAR(seed=seed), error_mechanism.ECAR(seed=seed)] + [
-                error_mechanism.EAR(condition_to_column=other_column, seed=seed) for other_column in data.columns if other_column != column
+            column_wise_error_mechs = [
+                error_mechanism.ENAR(seed=random_generator.bit_generator.random_raw()),
+                error_mechanism.ECAR(seed=random_generator.bit_generator.random_raw()),
+            ] + [
+                error_mechanism.EAR(condition_to_column=other_column, seed=random_generator.bit_generator.random_raw())
+                for other_column in data.columns
+                if other_column != column
             ]
             # Prune error mechanisms
             if error_mechanisms_to_exclude is not None:
@@ -208,6 +219,7 @@ def create_errors(  # noqa: PLR0913
             - The first element is a copy of 'data' with errors.
             - The second element is the associated error mask.
     """
+    random_generator = seed_randomness_and_get_generator(seed=seed)
     # Input Checking
     check_error_rate(error_rate)
     check_data_emptiness(data)
@@ -217,14 +229,18 @@ def create_errors(  # noqa: PLR0913
     error_mask = pd.DataFrame(data=False, index=data.index, columns=data.columns)
 
     # Build Dictionaries
-    col_type = _build_column_type_dictionary(data=data, error_types_to_include=error_types_to_include, error_types_to_exclude=error_types_to_exclude, seed=seed)
+    col_type = _build_column_type_dictionary(
+        data=data, random_generator=random_generator, error_types_to_include=error_types_to_include, error_types_to_exclude=error_types_to_exclude
+    )
     col_mechanisms = _build_column_mechanism_dictionary(
-        data=data, error_mechanisms_to_include=error_mechanisms_to_include, error_mechanisms_to_exclude=error_mechanisms_to_exclude, seed=seed
+        data=data,
+        random_generator=random_generator,
+        error_mechanisms_to_include=error_mechanisms_to_include,
+        error_mechanisms_to_exclude=error_mechanisms_to_exclude,
     )
     col_num_models = _build_column_number_of_models_dictionary(data=data, column_types=col_type, column_mechanisms=col_mechanisms)
 
     if n_error_models_per_column > 0:
-        seed_randomness(seed=seed)
         error_rate = error_rate / n_error_models_per_column
         config_dictionary: dict[str | int, list[ErrorModel]] = {
             column: [] for column in data.columns if col_num_models[column] > 0
@@ -237,7 +253,12 @@ def create_errors(  # noqa: PLR0913
         for column, error_model_list in config_dictionary.items():
             for _ in range(n_error_models_per_column):
                 error_model_list.append(
-                    ErrorModel(error_type=random.choice(col_type[column]), error_mechanism=random.choice(col_mechanisms[column]), error_rate=error_rate)
+                    ErrorModel(
+                        # NOTE: in python 3.9 mypy fails here but tests work
+                        error_type=random_generator.choice(col_type[column]),  # type: ignore[arg-type]
+                        error_mechanism=random_generator.choice(col_mechanisms[column]),  # type: ignore[arg-type]
+                        error_rate=error_rate,
+                    )
                 )
         config = MidLevelConfig(config_dictionary)
     else:  # n_error_models_per_column is 0 or less.

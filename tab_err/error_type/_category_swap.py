@@ -64,13 +64,13 @@ class CategorySwap(ErrorType):
 
         if self.config.mislabel_weighing == "uniform":
 
-            def sample_label(old_label: pd.Any) -> pd.Any:
+            def sample_label(old_label: pd.Series) -> pd.Series:
                 choices = [x for x in series.cat.categories.to_numpy() if x != old_label]
                 return random.choice(choices)
 
         elif self.config.mislabel_weighing == "frequency":
 
-            def sample_label(old_label: pd.Any) -> pd.Any:
+            def sample_label(old_label: pd.Series) -> pd.Series:
                 se_sample = series.loc[series != old_label]
                 return se_sample.sample(1, replace=True).to_numpy()[0]
         else:

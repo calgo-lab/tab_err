@@ -38,7 +38,7 @@ def get_column(data: pd.DataFrame, column: int | str) -> pd.Series:
     return data[get_column_str(data, column)]
 
 
-def seed_randomness(seed: int | None) -> np.random.Generator:
+def seed_randomness_and_get_generator(seed: int | None) -> np.random.Generator:
     if seed is not None:
         random.seed(seed)
         random_generator = np.random.default_rng(seed=seed)

@@ -52,11 +52,9 @@ class TestHighLevelAPI:
         seed = 42
         for i in range(11):
             error_rate = 0.1 * float(i)
-            modified_data_100rows_3columns, data_100rows_3columns_error_mask = create_errors(test_data["data_100rows_3columns"], error_rate, seed=seed)
-            modified_data_10rows_3columns, data_10rows_3columns_error_mask = create_errors(test_data["data_10rows_3columns"], error_rate, seed=seed)
-            modified_data_10rows_3columns_with_datetime, data_10rows_3columns_with_datetime_error_mask = create_errors(
-                test_data["data_10rows_3columns_with_datetime"], error_rate, seed=seed
-            )
+            _, data_100rows_3columns_error_mask = create_errors(test_data["data_100rows_3columns"], error_rate, seed=seed)
+            _, data_10rows_3columns_error_mask = create_errors(test_data["data_10rows_3columns"], error_rate, seed=seed)
+            _, data_10rows_3columns_with_datetime_error_mask = create_errors(test_data["data_10rows_3columns_with_datetime"], error_rate, seed=seed)
 
             # Assert that the error masks have the correct proportion of True to False
             assert pytest.approx(error_rate) == data_100rows_3columns_error_mask.to_numpy().mean()
