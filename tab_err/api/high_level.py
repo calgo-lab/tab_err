@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import pickle
 import warnings
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pandas as pd
@@ -197,6 +199,7 @@ def create_errors(  # noqa: PLR0913
     error_mechanisms_to_include: list[ErrorMechanism] | None = None,
     error_mechanisms_to_exclude: list[ErrorMechanism] | None = None,
     seed: int | None = None,
+    logging_path: str = ".",
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Creates errors in a given DataFrame, at a rate of *approximately* max_error_rate.
 
@@ -213,6 +216,7 @@ def create_errors(  # noqa: PLR0913
         error_mechanisms_to_exclude (list[ErrorMechanism] | None = None): A list of the error mechanisms to be excluded when building error models.
             Defaults to None.
         seed (int | None, optional): Random seed. Defaults to None.
+        logging_path (str): Path to log the column - error model dictionary. Defaults to "."
 
     Returns:
         tuple[pd.DataFrame, pd.DataFrame]:
@@ -264,6 +268,12 @@ def create_errors(  # noqa: PLR0913
     else:  # n_error_models_per_column is 0 or less.
         msg = f"n_error_models_per_column is: {n_error_models_per_column} and should be a positive integer"
         raise ValueError(msg)
+
+    # Create Path object
+    file_path = Path(logging_path) / "error_models.pkl"
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    with file_path.open("wb") as f:
+        pickle.dump(config, f)
 
     # Create Errors & Return
     dirty_data, error_mask = mid_level.create_errors(data_copy, config)
