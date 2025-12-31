@@ -96,7 +96,7 @@ Develop on feature branches and open pull requests when you're ready.
 Make sure that your changes are tested, documented, and clearly described in the pull request.
 
 ## Citation
-If you use `tab_err` for a scientific publication, we would appreciate your citation.
+If you use the error model that's underlying `tab_err` for a scientific publication, we would appreciate your citation.
 
 ```
 @article{10.1145/3774914,
