@@ -1,4 +1,5 @@
 # `tab_err`
+
 <h1 align="center">
   Inject Realistic Errors Into Tables
 </h1>
@@ -18,7 +19,6 @@
 [![pytest](https://github.com/calgo-lab/tab_err/actions/workflows/tests.yaml/badge.svg?branch=main)](https://github.com/calgo-lab/tab_err/actions/workflows/tests.yaml)
 [![Ruff](https://github.com/calgo-lab/tab_err/actions/workflows/ruff.yaml/badge.svg?branch=main)](https://github.com/calgo-lab/tab_err/actions/workflows/ruff.yaml)
 
-
 `tab_err` injects realistic errors into tabular data such as database tables and DataFrames.
 The library is developed and maintained by the [Cognitive Algorithms Lab](https://calgo-lab.de/) at BHT Berlin.
 
@@ -28,13 +28,15 @@ Researchers and data practitioners can generate errors in a controlled way, eval
 ## How it Works
 
 The library's building blocks are `ErrorMechanism`s, `ErrorType`s, and `ErrorModel`s.
-- An `ErrorMechanism` describes the error's distribution - that's *where* incorrect cells appear in the table.  We support *erroneous at random* (EAR), *erroneous not at random* (ENAR) and *erroneous completely at random* (ECAR).
-- An `ErrorType` describes *how* the value is wrong: a typo, an outlier, a category swap, and so on. Read the documentation for a [full list of supported error types](https://tab-err.readthedocs.io/latest/api/tab_err/error_type/index.html).
+
+- An `ErrorMechanism` describes the error's distribution - that's _where_ incorrect cells appear in the table. We support _erroneous at random_ (EAR), _erroneous not at random_ (ENAR) and _erroneous completely at random_ (ECAR).
+- An `ErrorType` describes _how_ the value is wrong: a typo, an outlier, a category swap, and so on. Read the documentation for a [full list of supported error types](https://tab-err.readthedocs.io/latest/api/tab_err/error_type/index.html).
 - An `ErrorModel` is a set of mechanisms and types to perturb existing data with realistic errors. It is shareable as metadata.
 
 `tab_err` is supported by a `pandas` backend.
 
 ## Examples
+
 ```python
 from sklearn.datasets import load_iris
 
@@ -77,7 +79,7 @@ For a detailed guide and more examples, see our [Getting Started Notebook](https
 
 ## Where to get it
 
-The source code is hosted on GitHub at <https://github.com/calgo-lab/tab_err>. 
+The source code is hosted on GitHub at <https://github.com/calgo-lab/tab_err>.
 Binary installers for the latest releases are available at the Python Package Index (PyPI) <https://pypi.org/project/tab-err>.
 
 ```sh
@@ -96,25 +98,26 @@ Develop on feature branches and open pull requests when you're ready.
 Make sure that your changes are tested, documented, and clearly described in the pull request.
 
 ## Citation
+
 If you use the error model that's underlying `tab_err` for a scientific publication, we would appreciate your citation.
 
-```
+```bib
 @article{10.1145/3774914,
-author = {Jung, Philipp and J\"{a}ger, Sebastian and Chandler, Nicholas and Biessmann, Felix},
-title = {Towards Realistic Error Models for Tabular Data},
-year = {2025},
-issue_date = {December 2025},
-publisher = {Association for Computing Machinery},
-address = {New York, NY, USA},
-volume = {17},
-number = {4},
-issn = {1936-1955},
-url = {https://doi.org/10.1145/3774914},
-doi = {10.1145/3774914},
-journal = {J. Data and Information Quality},
-month = dec,
-articleno = {28},
-numpages = {27},
-keywords = {Tabular data, data quality, data errors, data error generation, error model, realistic error model, error type}
+  author = {Jung, Philipp and J\"{a}ger, Sebastian and Chandler, Nicholas and Biessmann, Felix},
+  title = {Towards Realistic Error Models for Tabular Data},
+  year = {2025},
+  issue_date = {December 2025},
+  publisher = {Association for Computing Machinery},
+  address = {New York, NY, USA},
+  volume = {17},
+  number = {4},
+  issn = {1936-1955},
+  url = {https://doi.org/10.1145/3774914},
+  doi = {10.1145/3774914},
+  journal = {J. Data and Information Quality},
+  month = dec,
+  articleno = {28},
+  numpages = {27},
+  keywords = {Tabular data, data quality, data errors, data error generation, error model, realistic error model, error type}
 }
 ```

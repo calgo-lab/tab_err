@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import dataclasses
-from typing import Any, Callable
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 @dataclasses.dataclass
