@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-import pickle
 import warnings
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pandas as pd
