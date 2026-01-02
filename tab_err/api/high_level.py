@@ -199,7 +199,6 @@ def create_errors(  # noqa: PLR0913
     error_mechanisms_to_include: list[ErrorMechanism] | None = None,
     error_mechanisms_to_exclude: list[ErrorMechanism] | None = None,
     seed: int | None = None,
-    logging_path: str = ".",
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Creates errors in a given DataFrame, at a rate of *approximately* max_error_rate.
 
@@ -216,7 +215,7 @@ def create_errors(  # noqa: PLR0913
         error_mechanisms_to_exclude (list[ErrorMechanism] | None = None): A list of the error mechanisms to be excluded when building error models.
             Defaults to None.
         seed (int | None, optional): Random seed. Defaults to None.
-        logging_path (str): Path to log the column - error model dictionary. Defaults to "."
+
 
     Returns:
         tuple[pd.DataFrame, pd.DataFrame]:
@@ -269,12 +268,89 @@ def create_errors(  # noqa: PLR0913
         msg = f"n_error_models_per_column is: {n_error_models_per_column} and should be a positive integer"
         raise ValueError(msg)
 
-    # Create Path object
-    file_path = Path(logging_path) / "error_models.pkl"
-    file_path.parent.mkdir(parents=True, exist_ok=True)
-    with file_path.open("wb") as f:
-        pickle.dump(config, f)
-
     # Create Errors & Return
     dirty_data, error_mask = mid_level.create_errors(data_copy, config)
     return dirty_data, error_mask
+
+def create_errors_with_config(  # noqa: PLR0913
+    data: pd.DataFrame,
+    error_rate: float,
+    n_error_models_per_column: int = 1,
+    error_types_to_include: list[ErrorType] | None = None,
+    error_types_to_exclude: list[ErrorType] | None = None,
+    error_mechanisms_to_include: list[ErrorMechanism] | None = None,
+    error_mechanisms_to_exclude: list[ErrorMechanism] | None = None,
+    seed: int | None = None,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Creates errors in a given DataFrame, at a rate of *approximately* max_error_rate and returns the config used to do so.
+
+    Args:
+        data (pd.DataFrame): The pandas DataFrame to create errors in.
+        error_rate (float): The maximum error rate to be introduced to each column in the DataFrame.
+        n_error_models_per_column (int, optional): The number of valid error models to apply to each column. Defaults to 1.
+        error_types_to_include (list[ErrorType] | None, optional): A list of the error types to be included when building error models. Defaults to None.
+        error_types_to_exclude (list[ErrorType] | None, optional): A list of the error types to be excluded when building error models. Defaults to None.
+            When both error_types_to_include and error_types_to_exclude are none, the maximum number of default error types will be used.
+            At least one must be None or an error will occur.
+        error_mechanisms_to_include (list[ErrorMechanism] | None = None): A list of the error mechanisms to be included when building error models.
+            Defaults to None.
+        error_mechanisms_to_exclude (list[ErrorMechanism] | None = None): A list of the error mechanisms to be excluded when building error models.
+            Defaults to None.
+        seed (int | None, optional): Random seed. Defaults to None.
+
+
+    Returns:
+        tuple[pd.DataFrame, pd.DataFrame, dict[str | int, list[ErrorModel]]]:
+            - The first element is a copy of 'data' with errors.
+            - The second element is the associated error mask.
+            - The third element is the dictionary of columns to lists of error models applied.
+    """
+    random_generator = seed_randomness_and_get_generator(seed=seed)
+    # Input Checking
+    check_error_rate(error_rate)
+    check_data_emptiness(data)
+
+    # Set Up Data
+    data_copy = data.copy()
+    error_mask = pd.DataFrame(data=False, index=data.index, columns=data.columns)
+
+    # Build Dictionaries
+    col_type = _build_column_type_dictionary(
+        data=data, random_generator=random_generator, error_types_to_include=error_types_to_include, error_types_to_exclude=error_types_to_exclude
+    )
+    col_mechanisms = _build_column_mechanism_dictionary(
+        data=data,
+        random_generator=random_generator,
+        error_mechanisms_to_include=error_mechanisms_to_include,
+        error_mechanisms_to_exclude=error_mechanisms_to_exclude,
+    )
+    col_num_models = _build_column_number_of_models_dictionary(data=data, column_types=col_type, column_mechanisms=col_mechanisms)
+
+    if n_error_models_per_column > 0:
+        error_rate = error_rate / n_error_models_per_column
+        config_dictionary: dict[str | int, list[ErrorModel]] = {
+            column: [] for column in data.columns if col_num_models[column] > 0
+        }  # Filter out those columns with no valid error models
+
+        if error_rate * len(data) < 1:  # This value is calculated and rounded to 0 in the sample function of the error mechanism subclasses "n_errors"
+            msg = f"With a per-model error rate of: {error_rate} and {len(data)} rows, 0 errors will be introduced."
+            warnings.warn(msg, stacklevel=2)
+
+        for column, error_model_list in config_dictionary.items():
+            for _ in range(n_error_models_per_column):
+                error_model_list.append(
+                    ErrorModel(
+                        # NOTE: in python 3.9 mypy fails here but tests work
+                        error_type=random_generator.choice(col_type[column]),  # type: ignore[arg-type]
+                        error_mechanism=random_generator.choice(col_mechanisms[column]),  # type: ignore[arg-type]
+                        error_rate=error_rate,
+                    )
+                )
+        config = MidLevelConfig(config_dictionary)
+    else:  # n_error_models_per_column is 0 or less.
+        msg = f"n_error_models_per_column is: {n_error_models_per_column} and should be a positive integer"
+        raise ValueError(msg)
+
+    # Create Errors & Return
+    dirty_data, error_mask = mid_level.create_errors(data_copy, config)
+    return dirty_data, error_mask, config
