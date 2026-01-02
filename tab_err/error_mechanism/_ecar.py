@@ -60,3 +60,11 @@ class ECAR(ErrorMechanism):
         error_indices = self._random_generator.choice(se_mask_error_free.index, n_errors, replace=False)
         se_mask[error_indices] = True
         return error_mask
+
+    def __str__(self) -> str:
+        """Human-readable string."""
+        return f"ECAR(seed={getattr(self._random_generator, 'seed', None)})"
+
+    def __repr__(self) -> str:
+        """Detailed debug string."""
+        return f"<ECAR random_generator={self._random_generator}>"

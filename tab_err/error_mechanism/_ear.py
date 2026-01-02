@@ -79,3 +79,11 @@ class EAR(ErrorMechanism):
         se_mask.loc[selected_rows.index] = True
 
         return error_mask
+
+    def __str__(self) -> str:
+        """Return a human-readable string for the object."""
+        return f"EAR(condition_to_column={self.condition_to_column}, seed={getattr(self, '_random_generator', None)})"
+
+    def __repr__(self) -> str:
+        """Return a detailed string for debugging."""
+        return f"<EAR condition_to_column={self.condition_to_column}, random_generator={getattr(self, '_random_generator', None)}>"

@@ -66,3 +66,9 @@ class ENAR(ErrorMechanism):
         se_mask.loc[selected_rows.index] = True
 
         return error_mask
+
+    def __str__(self) -> str:
+        return f"ENAR(seed={getattr(self._random_generator, 'seed', None)})"
+
+    def __repr__(self) -> str:
+        return f"<ENAR random_generator={self._random_generator}>"
