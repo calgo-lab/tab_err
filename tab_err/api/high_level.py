@@ -270,6 +270,7 @@ def create_errors(  # noqa: PLR0913
     dirty_data, error_mask = mid_level.create_errors(data_copy, config)
     return dirty_data, error_mask
 
+
 def create_errors_with_config(  # noqa: PLR0913
     data: pd.DataFrame,
     error_rate: float,
@@ -279,7 +280,7 @@ def create_errors_with_config(  # noqa: PLR0913
     error_mechanisms_to_include: list[ErrorMechanism] | None = None,
     error_mechanisms_to_exclude: list[ErrorMechanism] | None = None,
     seed: int | None = None,
-) -> tuple[pd.DataFrame, pd.DataFrame]:
+) -> tuple[pd.DataFrame, pd.DataFrame, MidLevelConfig]:
     """Creates errors in a given DataFrame, at a rate of *approximately* max_error_rate and returns the config used to do so.
 
     Args:

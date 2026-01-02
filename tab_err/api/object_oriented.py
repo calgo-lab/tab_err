@@ -7,9 +7,8 @@ from typing import TYPE_CHECKING
 from tab_err.api.high_level import create_errors, create_errors_with_config
 
 if TYPE_CHECKING:
-    from typing import Self
-
     import pandas as pd
+    from typing_extensions import Self
 
     from tab_err import ErrorMechanism, ErrorType
     from tab_err.api import MidLevelConfig
