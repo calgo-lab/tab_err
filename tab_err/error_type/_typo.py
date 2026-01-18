@@ -1,16 +1,12 @@
 from __future__ import annotations
 
 import random
-from typing import TYPE_CHECKING
 
-from pandas.api.types import is_string_dtype
+import narwhals as nw
 
-from tab_err._utils import get_column
+from tab_err._utils import get_column, get_column_str, is_string_dtype, select_string_columns
 
 from ._error_type import ErrorType
-
-if TYPE_CHECKING:
-    import pandas as pd
 
 
 class Typo(ErrorType):
@@ -26,37 +22,45 @@ class Typo(ErrorType):
     """
 
     @staticmethod
-    def _check_type(data: pd.DataFrame, column: int | str) -> None:
+    def _check_type(data: nw.DataFrame, column: int | str) -> None:
         series = get_column(data, column)
 
         if not is_string_dtype(series):
             msg = f"Column {column} does not contain values of the string dtype. Cannot apply Typos."
             raise TypeError(msg)
 
-    def _get_valid_columns(self: Typo, data: pd.DataFrame) -> list[str | int]:
+    def _get_valid_columns(self: Typo, data: nw.DataFrame) -> list[str | int]:
         """Returns column names with string dtype elements."""
-        return data.select_dtypes(include=["string", "object"]).columns.to_list()
+        return select_string_columns(data)
 
-    def _apply(self: Typo, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
+    def _apply(self: Typo, data: nw.DataFrame, error_mask: nw.DataFrame, column: int | str) -> nw.Series:
         """Applies the Typo ErrorType to a column of data.
 
         Args:
-            data (pd.DataFrame): DataFrame containing the column to add errors to.
-            error_mask (pd.DataFrame): A Pandas DataFrame with the same index & columns as 'data' that will be modified and returned.
+            data (nw.DataFrame): DataFrame containing the column to add errors to.
+            error_mask (nw.DataFrame): A DataFrame with the same index & columns as 'data' that will be modified and returned.
             column (int | str): The column of 'data' to create an error mask for.
         typo_error_period: specifies how frequent typo corruptions are - see class description for details.
 
         Returns:
-            pd.Series: The data column, 'column', after Typo errors at the locations specified by 'error_mask' are introduced.
+            nw.Series: The data column, 'column', after Typo errors at the locations specified by 'error_mask' are introduced.
         """
-        series = get_column(data, column).copy()
+        col_name = get_column_str(data, column)
+        series = get_column(data, column)
         series_mask = get_column(error_mask, column)
 
-        def butterfn(x: str) -> str:
-            return typo(x, self.config.typo_error_period, self.config.typo_keyboard_layout)
+        # Get numpy arrays
+        data_arr = series.to_numpy().copy()
+        mask_arr = series_mask.to_numpy()
 
-        series.loc[series_mask] = series.loc[series_mask].apply(butterfn)
-        return series
+        # Apply typo function to masked elements
+        for i in range(len(data_arr)):
+            if mask_arr[i]:
+                val = data_arr[i]
+                if val is not None and isinstance(val, str):
+                    data_arr[i] = typo(val, self.config.typo_error_period, self.config.typo_keyboard_layout)
+
+        return nw.new_series(col_name, data_arr.tolist(), backend=nw.get_native_namespace(data))
 
 
 def typo(input_text: str, typo_error_period: int = 10, layout: str = "ansi-qwerty") -> str:

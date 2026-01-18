@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-import pandas as pd
-from pandas.api.types import is_string_dtype
+import narwhals as nw
+import numpy as np
 
-from tab_err._utils import get_column
+from tab_err._utils import get_column, get_column_str, is_string_dtype, select_string_columns
 
 from ._error_type import ErrorType
 
@@ -11,39 +11,50 @@ from ._error_type import ErrorType
 class MissingValue(ErrorType):
     """Insert missing values into a column.
 
-    Missing value handling is not a solved problem in pandas and under active development.
-    Today, the best heuristic for inserting missing values is to assign None to the value.
-    Pandas will choose the missing value sentinel based on the column dtype
-    (https://pandas.pydata.org/docs/user_guide/missing_data.html#inserting-missing-data).
+    Missing value handling varies across DataFrame libraries. This implementation
+    inserts None/null values which will be handled appropriately by the underlying library.
     """
 
     @staticmethod
-    def _check_type(data: pd.DataFrame, column: int | str) -> None:
+    def _check_type(data: nw.DataFrame, column: int | str) -> None:
         # all dtypes are supported
         pass
 
-    def _get_valid_columns(self: MissingValue, data: pd.DataFrame) -> list[str | int]:
-        """If the config mising value is None, returns all columns. Otherwise, only the columns with the same type."""
-        return data.columns.to_list() if self.config.missing_value is None else data.select_dtypes(include=["object", "string"]).columns.to_list()
+    def _get_valid_columns(self: MissingValue, data: nw.DataFrame) -> list[str | int]:
+        """If the config missing value is None, returns all columns. Otherwise, only the columns with string type."""
+        return data.columns if self.config.missing_value is None else select_string_columns(data)
 
-    def _apply(self: MissingValue, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
+    def _apply(self: MissingValue, data: nw.DataFrame, error_mask: nw.DataFrame, column: int | str) -> nw.Series:
         """Applies the MissingValue ErrorType to a column of data.
 
         Args:
-            data (pd.DataFrame): DataFrame containing the column to add errors to.
-            error_mask (pd.DataFrame): A Pandas DataFrame with the same index & columns as 'data' that will be modified and returned.
+            data (nw.DataFrame): DataFrame containing the column to add errors to.
+            error_mask (nw.DataFrame): A DataFrame with the same index & columns as 'data' that will be modified and returned.
             column (int | str): The column of 'data' to create an error mask for.
 
         Returns:
-            pd.Series: The data column, 'column', after MissingValue errors at the locations specified by 'error_mask' are introduced.
+            nw.Series: The data column, 'column', after MissingValue errors at the locations specified by 'error_mask' are introduced.
         """
-        series = get_column(data, column).copy()
+        col_name = get_column_str(data, column)
+        series = get_column(data, column)
         series_mask = get_column(error_mask, column)
 
-        if is_string_dtype(series) and self.config.missing_value is None:  # Strings are finicky
-            series[series_mask] = pd.NA
-            series = series.astype(str)
-        else:
-            series[series_mask] = self.config.missing_value
+        # Get numpy arrays for manipulation
+        data_arr = series.to_numpy().copy()
+        mask_arr = series_mask.to_numpy()
 
-        return series
+        # Set values to missing_value or None where mask is True
+        if is_string_dtype(series) and self.config.missing_value is None:
+            # For string columns, convert to object array to allow None
+            data_arr = data_arr.astype(object)
+            data_arr[mask_arr] = None
+        else:
+            # For other types, use the configured missing value or None
+            missing_val = self.config.missing_value
+            if missing_val is None:
+                # Convert to object to allow None
+                data_arr = data_arr.astype(object)
+            data_arr[mask_arr] = missing_val
+
+        # Create new series with the modified data
+        return nw.new_series(col_name, data_arr.tolist(), backend=nw.get_native_namespace(data))

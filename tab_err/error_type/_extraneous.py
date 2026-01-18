@@ -2,14 +2,12 @@ from __future__ import annotations
 
 import string
 import warnings
-from typing import TYPE_CHECKING
 
-from tab_err._utils import get_column
+import narwhals as nw
+
+from tab_err._utils import get_column, get_column_str, select_string_columns
 
 from ._error_type import ErrorType
-
-if TYPE_CHECKING:
-    import pandas as pd
 
 
 class Extraneous(ErrorType):
@@ -25,30 +23,35 @@ class Extraneous(ErrorType):
         return prepend + r"{value}" + append
 
     @staticmethod
-    def _check_type(data: pd.DataFrame, column: int | str) -> None:
+    def _check_type(data: nw.DataFrame, column: int | str) -> None:
         # all data types are fine
         pass
 
-    def _get_valid_columns(self: Extraneous, data: pd.DataFrame) -> list[str | int]:
+    def _get_valid_columns(self: Extraneous, data: nw.DataFrame) -> list[str | int]:
         """Returns all column names with string dtype elements. Necessary for high level API."""
-        return data.select_dtypes(include=["string", "object"]).columns.to_list()
+        return select_string_columns(data)
 
-    def _apply(self: Extraneous, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
+    def _apply(self: Extraneous, data: nw.DataFrame, error_mask: nw.DataFrame, column: int | str) -> nw.Series:
         """Applies the Extraneous ErrorType to a column of data.
 
         Args:
-            data (pd.DataFrame): DataFrame containing the column to add errors to.
-            error_mask (pd.DataFrame): A Pandas DataFrame with the same index & columns as 'data' that will be modified and returned.
+            data (nw.DataFrame): DataFrame containing the column to add errors to.
+            error_mask (nw.DataFrame): A DataFrame with the same index & columns as 'data' that will be modified and returned.
             column (int | str): The column of 'data' to create an error mask for.
 
         Raises:
             ValueError: If extraneous_value_template does not contain the placeholder value, a ValueError will be thrown.
 
         Returns:
-            pd.Series: The data column, 'column', after Extraneous errors at the locations specified by 'error_mask' are introduced.
+            nw.Series: The data column, 'column', after Extraneous errors at the locations specified by 'error_mask' are introduced.
         """
-        series = get_column(data, column).copy()
+        col_name = get_column_str(data, column)
+        series = get_column(data, column)
         series_mask = get_column(error_mask, column)
+
+        # Get numpy arrays
+        data_arr = series.to_numpy().copy()
+        mask_arr = series_mask.to_numpy()
 
         if self.config.extraneous_value_template is None:
             msg = "self.config.extraneous_value_template is not set. Choosing a random string augmentation."
@@ -60,5 +63,10 @@ class Extraneous(ErrorType):
             msg += "{value}. Please add it for a valid format."
             raise ValueError(msg)
 
-        series.loc[series_mask] = series.loc[series_mask].apply(lambda x: self.config.extraneous_value_template.format(value=x))
-        return series
+        # Apply extraneous template where mask is True
+        for i in range(len(data_arr)):
+            if mask_arr[i]:
+                val = data_arr[i]
+                data_arr[i] = self.config.extraneous_value_template.format(value=val)
+
+        return nw.new_series(col_name, data_arr.tolist(), backend=nw.get_native_namespace(data))

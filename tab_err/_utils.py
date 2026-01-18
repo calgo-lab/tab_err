@@ -1,26 +1,21 @@
 from __future__ import annotations
 
 import random
-from typing import TYPE_CHECKING
 
+import narwhals as nw
 import numpy as np
 
-if TYPE_CHECKING:
-    import pandas as pd
 
-
-def set_column(data: pd.DataFrame, column: int | str, series: pd.Series) -> None:
+def set_column(data: nw.DataFrame, column: int | str, series: nw.Series) -> nw.DataFrame:
     """Replaces a column in the given DataFrame with the given Series.
 
-    Mutates data and changes the dtype of the original data to that of the series,
-    which, depending on the error type, might change.
+    Returns a new DataFrame with the column replaced.
     """
-    col = data.columns[column] if isinstance(column, int) else column
-    data[col] = data[col].astype(series.dtype)
-    data[col] = series
+    col_name = get_column_str(data, column)
+    return data.with_columns(series.alias(col_name))
 
 
-def get_column_str(data: pd.DataFrame, column: int | str) -> str:
+def get_column_str(data: nw.DataFrame, column: int | str) -> str:
     """Return column's name of the given DataFrame, where column can be defined as name or index."""
     if isinstance(column, int):
         col = data.columns[column]
@@ -33,7 +28,7 @@ def get_column_str(data: pd.DataFrame, column: int | str) -> str:
     return col
 
 
-def get_column(data: pd.DataFrame, column: int | str) -> pd.Series:
+def get_column(data: nw.DataFrame, column: int | str) -> nw.Series:
     """Selects a column from the given DataFrame and returns it as a Series."""
     return data[get_column_str(data, column)]
 
@@ -56,8 +51,58 @@ def check_error_rate(error_rate: float) -> None:
         raise ValueError(msg)
 
 
-def check_data_emptiness(data: pd.DataFrame) -> None:
+def check_data_emptiness(data: nw.DataFrame) -> None:
     """Check that the dataset is not empty, raise a ValueError otherwise."""
-    if data.empty:
+    if data.is_empty():
         msg = "The dataframe is empty, cannot introduce errors."
         raise ValueError(msg)
+
+
+def is_string_dtype(series: nw.Series) -> bool:
+    """Check if a series has a string dtype."""
+    return series.dtype == nw.String or series.dtype == nw.Object
+
+
+def is_numeric_dtype(series: nw.Series) -> bool:
+    """Check if a series has a numeric dtype."""
+    return series.dtype.is_numeric()
+
+
+def is_integer_dtype(series: nw.Series) -> bool:
+    """Check if a series has an integer dtype."""
+    return series.dtype.is_integer()
+
+
+def is_datetime_dtype(series: nw.Series) -> bool:
+    """Check if a series has a datetime dtype."""
+    return series.dtype == nw.Datetime
+
+
+def select_string_columns(data: nw.DataFrame) -> list[str]:
+    """Select columns with string dtype."""
+    return [col for col in data.columns if is_string_dtype(data[col])]
+
+
+def select_numeric_columns(data: nw.DataFrame) -> list[str]:
+    """Select columns with numeric dtype."""
+    return [col for col in data.columns if is_numeric_dtype(data[col])]
+
+
+def select_datetime_columns(data: nw.DataFrame) -> list[str]:
+    """Select columns with datetime dtype."""
+    return [col for col in data.columns if is_datetime_dtype(data[col])]
+
+
+def select_numeric_or_datetime_columns(data: nw.DataFrame) -> list[str]:
+    """Select columns with numeric or datetime dtype."""
+    return [col for col in data.columns if is_numeric_dtype(data[col]) or is_datetime_dtype(data[col])]
+
+
+def create_empty_boolean_mask(data: nw.DataFrame) -> nw.DataFrame:
+    """Create an empty boolean mask DataFrame with the same shape as data."""
+    n_rows = len(data)
+    mask_values = [False] * n_rows
+    return nw.from_dict(
+        dict.fromkeys(data.columns, mask_values),
+        backend=nw.get_native_namespace(data),
+    )

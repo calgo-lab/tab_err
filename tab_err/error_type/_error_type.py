@@ -3,13 +3,14 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any
 
+import narwhals as nw
+
 from tab_err._utils import seed_randomness_and_get_generator
 
 from ._config import ErrorTypeConfig
 
 if TYPE_CHECKING:
     import numpy as np
-    import pandas as pd
 
 
 class ErrorType(ABC):
@@ -46,16 +47,16 @@ class ErrorType(ABC):
         self._seed = seed
         self._random_generator: np.random.Generator
 
-    def apply(self: ErrorType, data: pd.DataFrame, error_mask: pd.DataFrame, column: str | int) -> pd.Series:
+    def apply(self: ErrorType, data: nw.DataFrame, error_mask: nw.DataFrame, column: str | int) -> nw.Series:
         """Applies an ErrorType to a column of 'data'. Does type and shape checking and creates a random number generator.
 
         Args:
-            data (pd.DataFrame): The Pandas DataFrame containing the column where errors are to be introduced.
-            error_mask (pd.DataFrame): The Pandas DataFrame containing the error mask for 'column'.
+            data (nw.DataFrame): The DataFrame containing the column where errors are to be introduced.
+            error_mask (nw.DataFrame): The DataFrame containing the error mask for 'column'.
             column (str | int): The index in the 'data' and 'error_mask' DataFrames where errors are to be introduced.
 
         Returns:
-            pd.Series: The data column, 'column', after errors of ErrorType at the locations specified by 'error_mask' are introduced.
+            nw.Series: The data column, 'column', after errors of ErrorType at the locations specified by 'error_mask' are introduced.
         """
         self._check_type(data, column)
 
@@ -66,35 +67,35 @@ class ErrorType(ABC):
         self._random_generator = seed_randomness_and_get_generator(self._seed)
         return self._apply(data, error_mask, column)
 
-    def get_valid_columns(self: ErrorType, data: pd.DataFrame) -> list[str | int]:
+    def get_valid_columns(self: ErrorType, data: nw.DataFrame) -> list[str | int]:
         """Finds the valid columns to which the error type can be applied. Wrapper around _get_valid_columns."""
         return self._get_valid_columns(data)
 
     @staticmethod
     @abstractmethod
-    def _check_type(data: pd.DataFrame, column: str | int) -> None:
+    def _check_type(data: nw.DataFrame, column: str | int) -> None:
         """Static abstract method that checks if the given columns are valid for this 'ErrorType'.
 
         Args:
-            data (pd.DataFrame): The Pandas DataFrame containing the column where errors are to be introduced.
+            data (nw.DataFrame): The DataFrame containing the column where errors are to be introduced.
             column (str | int): The 'column' of 'data' where errors are to be introduced.
         """
 
     @abstractmethod
-    def _get_valid_columns(self: ErrorType, data: pd.DataFrame) -> list[str | int]:
+    def _get_valid_columns(self: ErrorType, data: nw.DataFrame) -> list[str | int]:
         """Finds the valid columns to which the error type can be applied."""
 
     @abstractmethod
-    def _apply(self: ErrorType, data: pd.DataFrame, error_mask: pd.DataFrame, column: str | int) -> pd.Series:
+    def _apply(self: ErrorType, data: nw.DataFrame, error_mask: nw.DataFrame, column: str | int) -> nw.Series:
         """Abstract method for the application of an ErrorType to the cells in 'data' where 'error_mask' is True.
 
         Args:
-            data (pd.DataFrame): The Pandas DataFrame containing the column where errors are to be introduced.
-            error_mask (pd.DataFrame): The Pandas DataFrame containing the error mask for 'column'.
+            data (nw.DataFrame): The DataFrame containing the column where errors are to be introduced.
+            error_mask (nw.DataFrame): The DataFrame containing the error mask for 'column'.
             column (str | int): The index in the 'data' and 'error_mask' DataFrames where errors are to be introduced.
 
         Returns:
-            pd.Series: The data column, 'column', after errors of ErrorType at the locations specified by 'error_mask' are introduced.
+            nw.Series: The data column, 'column', after errors of ErrorType at the locations specified by 'error_mask' are introduced.
         """
 
     def to_dict(self: ErrorType) -> dict[str, Any]:

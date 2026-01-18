@@ -3,9 +3,9 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
-import pandas as pd
+import narwhals as nw
 
-from tab_err._utils import seed_randomness_and_get_generator
+from tab_err._utils import create_empty_boolean_mask, seed_randomness_and_get_generator
 
 if TYPE_CHECKING:
     import numpy as np
@@ -40,12 +40,12 @@ class ErrorMechanism(ABC):
 
     def sample(
         self: ErrorMechanism,
-        data: pd.DataFrame,
+        data: nw.DataFrame,
         column: str | int,
         error_rate: float,
-        error_mask: pd.DataFrame | None = None,
-    ) -> pd.DataFrame:
-        """Returns an error mask for locations to introduce errors in a pandas DataFrame.
+        error_mask: nw.DataFrame | None = None,
+    ) -> nw.DataFrame:
+        """Returns an error mask for locations to introduce errors in a DataFrame.
 
         Description:
             Does error checking for the abstract method '_sample'.
@@ -53,24 +53,24 @@ class ErrorMechanism(ABC):
             Calls subclass _sample method.
 
         Args:
-            data (pd.DataFrame): DataFrame containing the column to add errors to
+            data (nw.DataFrame): DataFrame containing the column to add errors to
             column (str | int): The column of 'data' to create an error mask for
             error_rate (float): Percentage of rows to be affected by errors in range [0,1].
-            error_mask (pd.DataFrame | None, optional): An existing error mask to add more errors to in the case of the mid-/high-level APIs. Defaults to None.
+            error_mask (nw.DataFrame | None, optional): An existing error mask to add more errors to in the case of the mid-/high-level APIs. Defaults to None.
 
         Raises:
             ValueError: If error rate is out of the [0,1] interval, a ValueError is thrown
-            TypeError: If the 'data' argument is not a pandas dataframe or the data is empty, a TypeError is thrown
+            TypeError: If the 'data' argument is not a DataFrame or the data is empty, a TypeError is thrown
             ValueError: If required and there are not 2 columns in the 'data' argument, a ValueError is thrown.
 
         Returns:
-            pd.DataFrame: Updated dataframe with the generated error mask
+            nw.DataFrame: Updated dataframe with the generated error mask
         """
         if error_rate < 0 or error_rate > 1:
             error_rate_msg = "'error_rate' need to be float: 0 <= error_rate <= 1."
             raise ValueError(error_rate_msg)
 
-        if not isinstance(data, pd.DataFrame) or data.empty:
+        if not isinstance(data, nw.DataFrame) or data.is_empty():
             data_msg = "'data' needs to be a non-empty DataFrame."
             raise TypeError(data_msg)
 
@@ -84,21 +84,21 @@ class ErrorMechanism(ABC):
         # already inserted errors into, we have error mechanisms sample only from cells that
         # do not contain errors.
         if error_mask is None:  # initialize empty error_mask
-            error_mask = pd.DataFrame(data=False, index=data.index, columns=data.columns)
+            error_mask = create_empty_boolean_mask(data)
 
         self._random_generator = seed_randomness_and_get_generator(self._seed)
         return self._sample(data, column, error_rate, error_mask)
 
     @abstractmethod
-    def _sample(self: ErrorMechanism, data: pd.DataFrame, column: str | int, error_rate: float, error_mask: pd.DataFrame) -> pd.DataFrame:
-        """Abstract method for the creation of an error mask over a given Pandas DataFrame.
+    def _sample(self: ErrorMechanism, data: nw.DataFrame, column: str | int, error_rate: float, error_mask: nw.DataFrame) -> nw.DataFrame:
+        """Abstract method for the creation of an error mask over a given DataFrame.
 
         Args:
-            data (pd.DataFrame): DataFrame containing the column to add errors to
+            data (nw.DataFrame): DataFrame containing the column to add errors to
             column (str | int): The column of `data` to create an error mask for
             error_rate (float): Proportion of rows to be affected by errors; in range [0,1]
-            error_mask (pd.DataFrame): A Pandas `DataFrame` with the same index & columns as `data` that will be modified and returned
+            error_mask (nw.DataFrame): A `DataFrame` with the same index & columns as `data` that will be modified and returned
 
         Returns:
-            pd.DataFrame: A Pandas `DataFrame` with `True` values at entries where an error should be introduced, `False` otherwise
+            nw.DataFrame: A `DataFrame` with `True` values at entries where an error should be introduced, `False` otherwise
         """

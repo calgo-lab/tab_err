@@ -1,16 +1,12 @@
 from __future__ import annotations
 
 import random
-from typing import TYPE_CHECKING
 
-from pandas.api.types import is_string_dtype
+import narwhals as nw
 
-from tab_err._utils import get_column
+from tab_err._utils import get_column, get_column_str, is_string_dtype, select_string_columns
 
 from ._error_type import ErrorType
-
-if TYPE_CHECKING:
-    import pandas as pd
 
 
 def _generate_shuffle_pattern(format_len: int) -> list[int]:
@@ -36,16 +32,16 @@ class Permutate(ErrorType):
     """Permutates the parts of a compound value in a column."""
 
     @staticmethod
-    def _check_type(data: pd.DataFrame, column: int | str) -> None:
+    def _check_type(data: nw.DataFrame, column: int | str) -> None:
         series = get_column(data, column)
 
         if not is_string_dtype(series):
             msg = f"Column {column} does not contain values of the string dtype. Cannot Permutate values."
             raise TypeError(msg)
 
-    def _get_valid_columns(self: Permutate, data: pd.DataFrame) -> list[str | int]:
+    def _get_valid_columns(self: Permutate, data: nw.DataFrame) -> list[str | int]:
         """Returns column names with string dtype elements."""
-        return data.select_dtypes(include=["string", "object"]).columns.to_list()
+        return select_string_columns(data)
 
     def _random_pattern_function(self: Permutate, old_string: str) -> str:
         """Generates a random permutation of `old_string` elements split on the `permutation_separator`."""
@@ -63,42 +59,66 @@ class Permutate(ErrorType):
 
         return self.config.permutation_separator.join(new_string_as_part_list)
 
-    def _apply(self: Permutate, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
+    def _apply(self: Permutate, data: nw.DataFrame, error_mask: nw.DataFrame, column: int | str) -> nw.Series:
         """Applies the `Permutate` `ErrorType` to a column of data.
 
         Args:
-            data (pd.DataFrame): DataFrame containing the column to add errors to.
-            error_mask (pd.DataFrame): A Pandas DataFrame with the same index & columns as 'data' that will be modified and returned.
+            data (nw.DataFrame): DataFrame containing the column to add errors to.
+            error_mask (nw.DataFrame): A DataFrame with the same index & columns as 'data' that will be modified and returned.
             column (int | str): The column of 'data' to create an error mask for.
 
         Raises:
-            ValueError: If the column conatins values not supported by the seperator, a ValueError will be thrown.
+            ValueError: If the column contains values not supported by the separator, a ValueError will be thrown.
             ValueError: If a fixed_permutation_pattern is selected and all values are not formatted the same way, a ValueError will be thrown.
 
         Returns:
-            pd.Series: The data column, 'column', after Permutate errors at the locations specified by 'error_mask' are introduced.
+            nw.Series: The data column, 'column', after Permutate errors at the locations specified by 'error_mask' are introduced.
         """
-        series = get_column(data, column).copy()
+        col_name = get_column_str(data, column)
+        series = get_column(data, column)
         series_mask = get_column(error_mask, column)
 
-        separator_counts = [x.count(self.config.permutation_separator) for x in series.dropna()]
+        # Get numpy arrays
+        data_arr = series.to_numpy().copy()
+        mask_arr = series_mask.to_numpy()
+
+        # Get separator counts for non-null values
+        separator_counts = []
+        for val in data_arr:
+            if val is not None and isinstance(val, str):
+                separator_counts.append(val.count(self.config.permutation_separator))
+
         for i, count in enumerate(separator_counts):
             if count == 0:
-                msg = f'Cannot permutate values, because column {column} contains value "{series[i]}" that is not separated by the separator '
+                msg = f'Cannot permutate values, because column {column} contains value "{data_arr[i]}" that is not separated by the separator '
                 msg += f'"{self.config.permutation_separator}". To use another separator, define it in the ErrorTypeConfig.'
                 raise ValueError(msg)
 
         if self.config.permutation_pattern is not None:  # Permutation of each entry from pattern.
             _check_column_format_consistency(separator_counts, column)
             new_pattern = self.config.permutation_pattern
-            series.loc[series_mask] = series.loc[series_mask].apply(self._fixed_pattern_function, args=(new_pattern,))
+
+            for i in range(len(data_arr)):
+                if mask_arr[i]:
+                    val = data_arr[i]
+                    if val is not None and isinstance(val, str):
+                        data_arr[i] = self._fixed_pattern_function(val, new_pattern)
 
         elif self.config.permutation_automation_pattern == "fixed":  # Fixed permutation -- random once, applied to all.
             _check_column_format_consistency(separator_counts, column)
             new_pattern = _generate_shuffle_pattern(separator_counts[0])
-            series.loc[series_mask] = series.loc[series_mask].apply(self._fixed_pattern_function, args=(new_pattern,))
+
+            for i in range(len(data_arr)):
+                if mask_arr[i]:
+                    val = data_arr[i]
+                    if val is not None and isinstance(val, str):
+                        data_arr[i] = self._fixed_pattern_function(val, new_pattern)
 
         else:  # Random permutation -- random for each entry.
-            series.loc[series_mask] = series.loc[series_mask].apply(self._random_pattern_function)
+            for i in range(len(data_arr)):
+                if mask_arr[i]:
+                    val = data_arr[i]
+                    if val is not None and isinstance(val, str):
+                        data_arr[i] = self._random_pattern_function(val)
 
-        return series
+        return nw.new_series(col_name, data_arr.tolist(), backend=nw.get_native_namespace(data))

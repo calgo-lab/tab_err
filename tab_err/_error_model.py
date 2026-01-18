@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 from tab_err.api import low_level
 
 if TYPE_CHECKING:
-    import pandas as pd
+    from narwhals.typing import IntoDataFrame
 
     from tab_err import ErrorMechanism, ErrorType
 
@@ -25,17 +25,18 @@ class ErrorModel:
     error_type: ErrorType
     error_rate: float
 
-    def apply(self: ErrorModel, data: pd.DataFrame, column: str | int) -> tuple[pd.DataFrame, pd.DataFrame]:
-        """Applies the defined ErrorModel to the given column of a pandas DataFrame.
+    def apply(self: ErrorModel, data: IntoDataFrame, column: str | int) -> tuple[IntoDataFrame, IntoDataFrame]:
+        """Applies the defined ErrorModel to the given column of a DataFrame.
 
         Args:
-            data (pd.DataFrame): The pandas DataFrame to create errors in.
+            data (IntoDataFrame): The DataFrame to create errors in. Supports pandas, Polars, and other narwhals-compatible backends.
             column (str | int): The column to create errors in.
 
         Returns:
-            tuple[pd.DataFrame, pd.DataFrame]:
+            tuple[IntoDataFrame, IntoDataFrame]:
                 - The first element is a copy of 'data' with errors.
                 - The second element is the associated error mask.
+                Both are returned in the same format as the input data.
         """
         data_with_errors, error_mask = low_level.create_errors(
             data=data, column=column, error_rate=self.error_rate, error_mechanism=self.error_mechanism, error_type=self.error_type

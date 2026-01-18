@@ -1,10 +1,9 @@
 from __future__ import annotations
 
+import narwhals as nw
 import numpy as np
-import pandas as pd
-from pandas.api.types import is_datetime64_dtype, is_integer_dtype, is_numeric_dtype
 
-from tab_err._utils import get_column
+from tab_err._utils import get_column, get_column_str, is_datetime_dtype, is_integer_dtype, is_numeric_dtype, select_numeric_or_datetime_columns
 
 from ._error_type import ErrorType
 
@@ -27,40 +26,49 @@ class Outlier(ErrorType):
     """
 
     @staticmethod
-    def _check_type(data: pd.DataFrame, column: int | str) -> None:
+    def _check_type(data: nw.DataFrame, column: int | str) -> None:
         series = get_column(data, column)
 
-        if not (is_numeric_dtype(series) or is_datetime64_dtype(series)):
+        if not (is_numeric_dtype(series) or is_datetime_dtype(series)):
             msg = f"Column {column} with dtype: {series.dtype} does not contain numeric or datetime64 values. Cannot apply outliers."
             raise TypeError(msg)
 
-    def _get_valid_columns(self: Outlier, data: pd.DataFrame) -> list[str | int]:
+    def _get_valid_columns(self: Outlier, data: nw.DataFrame) -> list[str | int]:
         """Returns all column names with numeric dtype elements."""
-        return data.select_dtypes(include=["number", "datetime64"]).columns.tolist()
+        return select_numeric_or_datetime_columns(data)
 
-    def _apply(self: Outlier, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
+    def _apply(self: Outlier, data: nw.DataFrame, error_mask: nw.DataFrame, column: int | str) -> nw.Series:
         """Applies the Outlier ErrorType to a column of data.
 
         Args:
-            data (pd.DataFrame): DataFrame containing the column to add errors to.
-            error_mask (pd.DataFrame): A Pandas DataFrame with the same index & columns as 'data' that will be modified and returned.
+            data (nw.DataFrame): DataFrame containing the column to add errors to.
+            error_mask (nw.DataFrame): A DataFrame with the same index & columns as 'data' that will be modified and returned.
             column (int | str): The column of 'data' to create an error mask for.
 
         Returns:
-            pd.Series: The data column, 'column', after Outlier errors at the locations specified by 'error_mask' are introduced.
+            nw.Series: The data column, 'column', after Outlier errors at the locations specified by 'error_mask' are introduced.
         """
-        # Get the column series and mask
-        series = get_column(data, column).copy()
+        col_name = get_column_str(data, column)
+        series = get_column(data, column)
         series_mask = get_column(error_mask, column)
-        was_datetime = False  # Default to false -- changes to code only occur if the series is datetime
+        was_datetime = False
+        original_dtype = series.dtype
 
-        if is_datetime64_dtype(series):  # Convert to int if datetime (ns since UNIX epoch) -- We need to add robustness against intmax/floatmax
-            series = series.astype("int64")
+        # Get numpy arrays
+        data_arr = series.to_numpy().copy()
+        mask_arr = series_mask.to_numpy()
+
+        if is_datetime_dtype(series):
+            # Convert datetime to int64 (nanoseconds since epoch)
+            data_arr = data_arr.astype("datetime64[ns]").astype("int64")
             was_datetime = True
 
-        mean_value = series.mean()
-        q1 = series.quantile(0.25)
-        q3 = series.quantile(0.75)
+        # Ensure float for calculations
+        data_arr = data_arr.astype(np.float64)
+
+        mean_value = np.nanmean(data_arr)
+        q1 = np.nanquantile(data_arr, 0.25)
+        q3 = np.nanquantile(data_arr, 0.75)
         iqr = q3 - q1
 
         upper_boundary = q3 + 1.5 * iqr
@@ -70,32 +78,40 @@ class Outlier(ErrorType):
         perturbation_upper = self.config.outlier_coefficient * (upper_boundary - mean_value)
         perturbation_lower = self.config.outlier_coefficient * (mean_value - lower_boundary)
 
-        if is_integer_dtype(series):  # round float to int when series is int
+        is_integer = is_integer_dtype(series) and not was_datetime
+        if is_integer:
             perturbation_upper = np.ceil(perturbation_upper)
             perturbation_lower = np.floor(perturbation_lower)
 
         # Get masks for the different outlier types depending on the mean
-        mask_lower = (series < mean_value) & series_mask
-        mask_upper = (series > mean_value) & series_mask
-        mask_equal = (series == mean_value) & series_mask
+        mask_lower = (data_arr < mean_value) & mask_arr
+        mask_upper = (data_arr > mean_value) & mask_arr
+        mask_equal = (data_arr == mean_value) & mask_arr
 
         # Apply the constant perturbation to the respective mask
-        series.loc[mask_lower] -= perturbation_lower
-        series.loc[mask_upper] += perturbation_upper
+        data_arr[mask_lower] -= perturbation_lower
+        data_arr[mask_upper] += perturbation_upper
 
         # Handle the mean values with a coin flip
-        coin_flips = self._random_generator.random(mask_equal.sum())
-        series.loc[mask_equal] += np.where(coin_flips > self.config.outlier_coin_flip_threshold, perturbation_upper, -perturbation_lower)
+        n_equal = np.sum(mask_equal)
+        if n_equal > 0:
+            coin_flips = self._random_generator.random(n_equal)
+            perturbations = np.where(coin_flips > self.config.outlier_coin_flip_threshold, perturbation_upper, -perturbation_lower)
+            data_arr[mask_equal] += perturbations
 
         # Apply Gaussian noise to simulate the increase in measurement error of the outliers
         noise_std = self.config.outlier_noise_coeff * iqr
+        n_errors = np.sum(mask_arr)
 
-        if is_integer_dtype(series):  # round float to int when series is int
-            series.loc[series_mask] += np.rint(self._random_generator.normal(loc=0, scale=noise_std, size=series_mask.sum()))
+        if is_integer:
+            data_arr[mask_arr] += np.rint(self._random_generator.normal(loc=0, scale=noise_std, size=n_errors))
         else:
-            series.loc[series_mask] += self._random_generator.normal(loc=0, scale=noise_std, size=series_mask.sum())
+            data_arr[mask_arr] += self._random_generator.normal(loc=0, scale=noise_std, size=n_errors)
 
-        if was_datetime:  # Handle datetime objects
-            series = pd.to_datetime(series)
+        if was_datetime:
+            # Convert back to datetime
+            data_arr = data_arr.astype("int64").astype("datetime64[ns]")
+        elif is_integer:
+            data_arr = data_arr.astype(np.int64)
 
-        return series
+        return nw.new_series(col_name, data_arr.tolist(), backend=nw.get_native_namespace(data))

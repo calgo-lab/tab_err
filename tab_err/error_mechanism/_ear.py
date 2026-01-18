@@ -1,24 +1,23 @@
 from __future__ import annotations
 
 import warnings
-from typing import TYPE_CHECKING
+
+import narwhals as nw
+import numpy as np
 
 from tab_err._utils import check_error_rate, get_column, get_column_str
 
 from ._error_mechanism import ErrorMechanism
 
-if TYPE_CHECKING:
-    import pandas as pd
-
 
 class EAR(ErrorMechanism):
-    """`ErrorMechanism` subclass implementing the `Erroneous Completely At Random` error mechanism.
+    """`ErrorMechanism` subclass implementing the `Erroneous At Random` error mechanism.
 
     Description:
-        Errors are assumed to be completely independent of the data distribution
+        Errors are assumed to depend on another column's values
     """
 
-    def _sample(self: EAR, data: pd.DataFrame, column: str | int, error_rate: float, error_mask: pd.DataFrame) -> pd.DataFrame:
+    def _sample(self: EAR, data: nw.DataFrame, column: str | int, error_rate: float, error_mask: nw.DataFrame) -> nw.DataFrame:
         """Creates an error mask according to the `Erroneous At Random` error mechanism.
 
         Description:
@@ -28,17 +27,17 @@ class EAR(ErrorMechanism):
             This ensures that occurrence of errors is related to the value of the another `column`.
 
         Args:
-            data (pd.DataFrame): `DataFrame` containins the column to add errors to
+            data (nw.DataFrame): `DataFrame` containing the column to add errors to
             column (str | int): The column of `data` to create an error mask for
-            error_rate (float): Proportion of rows to be affected by errors; in ranse [0,1]
-            error_mask (pd.DataFrame): A Pandas `DataFrame` with the same index & columns as `data` that will be modified and returned
+            error_rate (float): Proportion of rows to be affected by errors; in range [0,1]
+            error_mask (nw.DataFrame): A `DataFrame` with the same index & columns as `data` that will be modified and returned
 
         Raises:
             ValueError: If there are fewer than two columns in `data`, a `ValueError` will be returned
             ValueError: If there are insufficient entries to add errors to with respect to the error rate, a `ValueError` will be returned
 
         Returns:
-            pd.DataFrame: A Pandas `DataFrame` with `True` values at entries where an error should be introduced, `False` otherwise
+            nw.DataFrame: A `DataFrame` with `True` values at entries where an error should be introduced, `False` otherwise
         """
         check_error_rate(error_rate)
 
@@ -46,8 +45,9 @@ class EAR(ErrorMechanism):
             msg = "The data into which error at random (EAR) are to be injected requires at least 2 columns."
             raise ValueError(msg)
 
+        col = get_column_str(data, column)
+
         if self.condition_to_column is None:
-            col = get_column_str(data, column)
             column_selection = [x for x in data.columns if x != col]
             condition_to_column = self._random_generator.choice(column_selection)
             warnings.warn(
@@ -60,22 +60,35 @@ class EAR(ErrorMechanism):
 
         se_data = get_column(data, column)
         se_mask = get_column(error_mask, column)
-        n_errors = int(se_data.size * error_rate)
+        se_condition = get_column(data, condition_to_column)
 
-        se_mask_error_free = se_mask[~se_mask]
-        data_column_error_free = data.loc[se_mask_error_free.index, :]
+        n_errors = int(len(se_data) * error_rate)
 
-        if len(se_mask_error_free) < n_errors:
+        # Get arrays
+        mask_arr = se_mask.to_numpy()
+        condition_arr = se_condition.to_numpy()
+
+        # Get indices where mask is False (error-free cells)
+        error_free_indices = np.where(~mask_arr)[0]
+
+        if len(error_free_indices) < n_errors:
             msg = f"The error rate of {error_rate} requires {n_errors} error-free cells. "
-            msg += f"However, only {len(se_mask_error_free)} error-free cells are available."
+            msg += f"However, only {len(error_free_indices)} error-free cells are available."
             raise ValueError(msg)
 
-        # we offset the upper bound of the lower_error_index by a) the existing number of errors in the row, and b) the number of errors to-be generated.
-        upper_bound = len(se_data) - sum(se_mask) - n_errors  # upper bound = length of data - current number of errors - number of errors to be generated
+        # Get values at error-free indices from the conditioning column and sort them
+        error_free_condition_values = condition_arr[error_free_indices]
+        sorted_order = np.argsort(error_free_condition_values)
+        sorted_error_free_indices = error_free_indices[sorted_order]
+
+        # Calculate upper bound for lower_error_index
+        upper_bound = len(error_free_indices) - n_errors
         lower_error_index = self._random_generator.integers(0, upper_bound) if upper_bound > 0 else 0
-        error_index_range = range(lower_error_index, lower_error_index + n_errors)
-        selected_rows = data_column_error_free.sort_values(by=condition_to_column).iloc[error_index_range, :]  # Sort by the condition_to_column values
+        selected_indices = sorted_error_free_indices[lower_error_index : lower_error_index + n_errors]
 
-        se_mask.loc[selected_rows.index] = True
+        # Create new mask array with selected indices set to True
+        new_mask_arr = mask_arr.copy()
+        new_mask_arr[selected_indices] = True
 
-        return error_mask
+        # Update the error_mask DataFrame
+        return error_mask.with_columns(nw.new_series(col, new_mask_arr.tolist(), backend=nw.get_native_namespace(error_mask)))

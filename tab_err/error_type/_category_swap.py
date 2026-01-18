@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import random
 
-import pandas as pd
+import narwhals as nw
+import numpy as np
 
-from tab_err._utils import get_column
+from tab_err._utils import get_column, get_column_str
 
 from ._error_type import ErrorType
 
@@ -13,11 +14,11 @@ class CategorySwap(ErrorType):
     """Simulate incorrect labels in a column that contains categorical values."""
 
     @staticmethod
-    def _check_type(data: pd.DataFrame, column: int | str) -> None:
+    def _check_type(data: nw.DataFrame, column: int | str) -> None:
         """Checks that the data type is Categorical and the number of categories is at least two in the column to be modified.
 
         Args:
-            data (pd.DataFrame): DataFrame containing the column to add errors to.
+            data (nw.DataFrame): DataFrame containing the column to add errors to.
             column (int | str): The column of 'data' to create an error mask for.
 
         Raises:
@@ -26,57 +27,82 @@ class CategorySwap(ErrorType):
         """
         series = get_column(data, column)
 
-        if not isinstance(series.dtype, pd.CategoricalDtype):
-            msg = f"Column {column} does not contain values of the Categorical dtype. Cannot insert Mislables.\n"
-            msg += "Try casting the column to CategoricalDtype using df[column].astype('category')."
+        if series.dtype != nw.Categorical:
+            msg = f"Column {column} does not contain values of the Categorical dtype. Cannot insert Mislabels.\n"
+            msg += "Try casting the column to Categorical dtype."
             raise TypeError(msg)
 
-        if len(series.cat.categories) <= 1:
-            msg = f"Column {column} contains {len(series.cat.categories)} categories. Require at least 2 categories to insert mislabels."
+        # Get unique values to check number of categories
+        unique_vals = series.unique()
+        if len(unique_vals) <= 1:
+            msg = f"Column {column} contains {len(unique_vals)} categories. Require at least 2 categories to insert mislabels."
             raise ValueError(msg)
 
-    def _get_valid_columns(self: CategorySwap, data: pd.DataFrame) -> list[str | int]:
+    def _get_valid_columns(self: CategorySwap, data: nw.DataFrame) -> list[str | int]:
         """Checks which columns are categorical and returns the indices of those with two or more categories."""
         valid_columns = []
         for col_name in data.columns:
             series = get_column(data, col_name)
 
-            if isinstance(series.dtype, pd.CategoricalDtype) and len(series.cat.categories) > 1:
-                valid_columns.append(col_name)
+            if series.dtype == nw.Categorical:
+                unique_vals = series.unique()
+                if len(unique_vals) > 1:
+                    valid_columns.append(col_name)
 
         return valid_columns
 
-    def _apply(self: CategorySwap, data: pd.DataFrame, error_mask: pd.DataFrame, column: int | str) -> pd.Series:
+    def _apply(self: CategorySwap, data: nw.DataFrame, error_mask: nw.DataFrame, column: int | str) -> nw.Series:
         """Applies the CategorySwap ErrorType to a column of data.
 
         Args:
-            data (pd.DataFrame): DataFrame containing the column to add errors to.
-            error_mask (pd.DataFrame): A Pandas DataFrame with the same index & columns as 'data' that will be modified and returned.
+            data (nw.DataFrame): DataFrame containing the column to add errors to.
+            error_mask (nw.DataFrame): A DataFrame with the same index & columns as 'data' that will be modified and returned.
             column (int | str): The column of 'data' to create an error mask for.
 
         Raises:
             ValueError: If the value for parameter 'config.mislabel_weighing' is invalid (not 'uniform' or 'frequency'), a ValueError will be thrown.
 
         Returns:
-            pd.Series: The data column, 'column', after CategorySwap errors at the locations specified by 'error_mask' are introduced.
+            nw.Series: The data column, 'column', after CategorySwap errors at the locations specified by 'error_mask' are introduced.
         """
-        series = get_column(data, column).copy()
+        col_name = get_column_str(data, column)
+        series = get_column(data, column)
+        series_mask = get_column(error_mask, column)
+
+        # Get numpy arrays
+        data_arr = series.to_numpy().copy()
+        mask_arr = series_mask.to_numpy()
+
+        # Get categories
+        categories = series.unique().to_numpy()
 
         if self.config.mislabel_weighing == "uniform":
 
-            def sample_label(old_label: pd.Series) -> pd.Series:
-                choices = [x for x in series.cat.categories.to_numpy() if x != old_label]
+            def sample_label(old_label: str) -> str:
+                choices = [x for x in categories if x != old_label]
                 return random.choice(choices)
 
         elif self.config.mislabel_weighing == "frequency":
+            # Calculate frequency weights
+            value_counts = {}
+            for val in data_arr:
+                if val not in value_counts:
+                    value_counts[val] = 0
+                value_counts[val] += 1
 
-            def sample_label(old_label: pd.Series) -> pd.Series:
-                se_sample = series.loc[series != old_label]
-                return se_sample.sample(1, replace=True).to_numpy()[0]
+            def sample_label(old_label: str) -> str:
+                choices = [x for x in categories if x != old_label]
+                weights = [value_counts.get(x, 1) for x in choices]
+                total = sum(weights)
+                weights = [w / total for w in weights]
+                return random.choices(choices, weights=weights, k=1)[0]
         else:
             msg = "Invalid value for parameter 'config.mislabel_weighing'. Allowed values are: 'uniform', 'frequency'."
             raise ValueError(msg)
 
-        series_mask = get_column(error_mask, column)
-        series.loc[series_mask] = series.loc[series_mask].apply(sample_label)
-        return series
+        # Apply mislabeling where mask is True
+        for i in range(len(data_arr)):
+            if mask_arr[i]:
+                data_arr[i] = sample_label(data_arr[i])
+
+        return nw.new_series(col_name, data_arr.tolist(), backend=nw.get_native_namespace(data))
