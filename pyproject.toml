@@ -43,6 +43,7 @@ dev = [
     "numpy>=1.24.0",
     "pandas>=2.0.0",
     "polars>=1.0.0",
+    "pyarrow>=14.0.0",  # Required for polars.to_pandas()
     "pytest>=8.3.5,<9.0.0",
     "ruff>=0.9.8",
     "pre-commit>=4.0.1,<5.0.0",
@@ -100,3 +101,8 @@ convention = "google"
 
 [tool.ty.environment]
 python-version = "3.10"
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore::UserWarning"
+]
