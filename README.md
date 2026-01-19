@@ -33,7 +33,7 @@ The library's building blocks are `ErrorMechanism`s, `ErrorType`s, and `ErrorMod
 - An `ErrorType` describes _how_ the value is wrong: a typo, an outlier, a category swap, and so on. Read the documentation for a [full list of supported error types](https://tab-err.readthedocs.io/latest/api/tab_err/error_type/index.html).
 - An `ErrorModel` is a set of mechanisms and types to perturb existing data with realistic errors. It is shareable as metadata.
 
-`tab_err` is supported by a `pandas` backend.
+`tab_err` supports pandas and Polars backends, and has experimental support for cuDF, Modin, and PyArrow.
 
 ## Examples
 
