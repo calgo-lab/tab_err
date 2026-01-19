@@ -1,3 +1,5 @@
+from typing import cast
+
 import pandas as pd
 
 from tab_err import error_mechanism, error_type
@@ -12,4 +14,5 @@ def test_typo() -> None:
         }
     )
     modified_df, _ = create_errors(test_data, "A", 1, error_mechanism.ECAR(), error_type.Typo())
-    assert modified_df.iloc[0, 0] != ""
+    modified_df_pd = cast("pd.DataFrame", modified_df)
+    assert modified_df_pd.iloc[0, 0] != ""
