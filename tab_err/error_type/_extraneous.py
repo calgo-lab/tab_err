@@ -2,13 +2,14 @@ from __future__ import annotations
 
 import string
 import warnings
+from typing import TYPE_CHECKING
 
-import narwhals as nw
-
-from tab_err._utils import get_column, get_column_str, select_string_columns
+from tab_err._utils import get_column, new_series_like, select_string_columns
 
 from ._error_type import ErrorType
 
+if TYPE_CHECKING:
+    import narwhals as nw
 
 class Extraneous(ErrorType):
     """Adds Extraneous strings around the values in a column."""
@@ -45,7 +46,6 @@ class Extraneous(ErrorType):
         Returns:
             nw.Series: The data column, 'column', after Extraneous errors at the locations specified by 'error_mask' are introduced.
         """
-        col_name = get_column_str(data, column)
         series = get_column(data, column)
         series_mask = get_column(error_mask, column)
 
@@ -69,4 +69,4 @@ class Extraneous(ErrorType):
                 val = data_arr[i]
                 data_arr[i] = self.config.extraneous_value_template.format(value=val)
 
-        return nw.new_series(col_name, data_arr.tolist(), backend=nw.get_native_namespace(data))
+        return new_series_like(data, column, data_arr)

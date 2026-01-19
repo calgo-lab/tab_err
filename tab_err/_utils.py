@@ -1,6 +1,15 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from narwhals.typing import IntoDType
+
 import random
+import warnings
+from typing import Any
 
 import narwhals as nw
 import numpy as np
@@ -60,7 +69,7 @@ def check_data_emptiness(data: nw.DataFrame) -> None:
 
 def is_string_dtype(series: nw.Series) -> bool:
     """Check if a series has a string dtype."""
-    return series.dtype == nw.String or series.dtype == nw.Object
+    return series.dtype in {nw.String, nw.Object}
 
 
 def is_numeric_dtype(series: nw.Series) -> bool:
@@ -78,22 +87,22 @@ def is_datetime_dtype(series: nw.Series) -> bool:
     return series.dtype == nw.Datetime
 
 
-def select_string_columns(data: nw.DataFrame) -> list[str]:
+def select_string_columns(data: nw.DataFrame) -> list[str | int]:
     """Select columns with string dtype."""
     return [col for col in data.columns if is_string_dtype(data[col])]
 
 
-def select_numeric_columns(data: nw.DataFrame) -> list[str]:
+def select_numeric_columns(data: nw.DataFrame) -> list[str | int]:
     """Select columns with numeric dtype."""
     return [col for col in data.columns if is_numeric_dtype(data[col])]
 
 
-def select_datetime_columns(data: nw.DataFrame) -> list[str]:
+def select_datetime_columns(data: nw.DataFrame) -> list[str | int]:
     """Select columns with datetime dtype."""
     return [col for col in data.columns if is_datetime_dtype(data[col])]
 
 
-def select_numeric_or_datetime_columns(data: nw.DataFrame) -> list[str]:
+def select_numeric_or_datetime_columns(data: nw.DataFrame) -> list[str | int]:
     """Select columns with numeric or datetime dtype."""
     return [col for col in data.columns if is_numeric_dtype(data[col]) or is_datetime_dtype(data[col])]
 
@@ -106,3 +115,32 @@ def create_empty_boolean_mask(data: nw.DataFrame) -> nw.DataFrame:
         dict.fromkeys(data.columns, mask_values),
         backend=nw.get_native_namespace(data),
     )
+
+
+def cast_series_like(series: nw.Series, like: nw.Series, column: int | str) -> nw.Series:
+    """Cast series to the dtype of 'like' when possible, otherwise keep original."""
+    if series.dtype == like.dtype:
+        return series
+    dtype: IntoDType = like.dtype
+
+    try:
+        return series.cast(dtype)
+    except Exception as exc:  # noqa: BLE001
+        msg = f"Failed to cast column {column} to dtype {like.dtype}: {exc}. Keeping inferred dtype."
+        warnings.warn(msg, stacklevel=2)
+        return series
+
+
+def _values_to_list(values: Sequence[Any] | np.ndarray) -> list[Any]:
+    """Normalize values into a list for nw.new_series."""
+    if isinstance(values, np.ndarray):
+        return values.tolist()
+    return list(values)
+
+
+def new_series_like(data: nw.DataFrame, column: int | str, values: Sequence[Any] | np.ndarray) -> nw.Series:
+    """Create a new series for 'column' and cast it back to the original dtype."""
+    col_name = get_column_str(data, column)
+    original = get_column(data, column)
+    series = nw.new_series(col_name, _values_to_list(values), backend=nw.get_native_namespace(data))
+    return cast_series_like(series, original, column)

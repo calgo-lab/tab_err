@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-import narwhals as nw
-import numpy as np
+from typing import TYPE_CHECKING, Union, cast
 
-from tab_err._utils import get_column, get_column_str, is_string_dtype, select_string_columns
+from tab_err._utils import get_column, is_string_dtype, new_series_like, select_string_columns
 
 from ._error_type import ErrorType
 
+if TYPE_CHECKING:
+    import narwhals as nw
 
 class MissingValue(ErrorType):
     """Insert missing values into a column.
@@ -22,7 +23,9 @@ class MissingValue(ErrorType):
 
     def _get_valid_columns(self: MissingValue, data: nw.DataFrame) -> list[str | int]:
         """If the config missing value is None, returns all columns. Otherwise, only the columns with string type."""
-        return data.columns if self.config.missing_value is None else select_string_columns(data)
+        if self.config.missing_value is None:
+            return cast("list[Union[str, int]]", list(data.columns))
+        return select_string_columns(data)
 
     def _apply(self: MissingValue, data: nw.DataFrame, error_mask: nw.DataFrame, column: int | str) -> nw.Series:
         """Applies the MissingValue ErrorType to a column of data.
@@ -35,7 +38,6 @@ class MissingValue(ErrorType):
         Returns:
             nw.Series: The data column, 'column', after MissingValue errors at the locations specified by 'error_mask' are introduced.
         """
-        col_name = get_column_str(data, column)
         series = get_column(data, column)
         series_mask = get_column(error_mask, column)
 
@@ -57,4 +59,4 @@ class MissingValue(ErrorType):
             data_arr[mask_arr] = missing_val
 
         # Create new series with the modified data
-        return nw.new_series(col_name, data_arr.tolist(), backend=nw.get_native_namespace(data))
+        return new_series_like(data, column, data_arr)

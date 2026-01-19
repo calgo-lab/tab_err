@@ -3,9 +3,8 @@ from __future__ import annotations
 import random
 
 import narwhals as nw
-import numpy as np
 
-from tab_err._utils import get_column, get_column_str
+from tab_err._utils import get_column, new_series_like
 
 from ._error_type import ErrorType
 
@@ -40,7 +39,7 @@ class CategorySwap(ErrorType):
 
     def _get_valid_columns(self: CategorySwap, data: nw.DataFrame) -> list[str | int]:
         """Checks which columns are categorical and returns the indices of those with two or more categories."""
-        valid_columns = []
+        valid_columns: list[str | int] = []
         for col_name in data.columns:
             series = get_column(data, col_name)
 
@@ -65,7 +64,6 @@ class CategorySwap(ErrorType):
         Returns:
             nw.Series: The data column, 'column', after CategorySwap errors at the locations specified by 'error_mask' are introduced.
         """
-        col_name = get_column_str(data, column)
         series = get_column(data, column)
         series_mask = get_column(error_mask, column)
 
@@ -84,7 +82,7 @@ class CategorySwap(ErrorType):
 
         elif self.config.mislabel_weighing == "frequency":
             # Calculate frequency weights
-            value_counts = {}
+            value_counts: dict[str, int] = {}
             for val in data_arr:
                 if val not in value_counts:
                     value_counts[val] = 0
@@ -92,8 +90,8 @@ class CategorySwap(ErrorType):
 
             def sample_label(old_label: str) -> str:
                 choices = [x for x in categories if x != old_label]
-                weights = [value_counts.get(x, 1) for x in choices]
-                total = sum(weights)
+                weights: list[float] = [float(value_counts.get(x, 1)) for x in choices]
+                total = float(sum(weights))
                 weights = [w / total for w in weights]
                 return random.choices(choices, weights=weights, k=1)[0]
         else:
@@ -105,4 +103,4 @@ class CategorySwap(ErrorType):
             if mask_arr[i]:
                 data_arr[i] = sample_label(data_arr[i])
 
-        return nw.new_series(col_name, data_arr.tolist(), backend=nw.get_native_namespace(data))
+        return new_series_like(data, column, data_arr)

@@ -1,12 +1,15 @@
 from __future__ import annotations
 
-import narwhals as nw
+from typing import TYPE_CHECKING
+
 import numpy as np
 
-from tab_err._utils import get_column, get_column_str, is_datetime_dtype, is_integer_dtype, is_numeric_dtype, select_numeric_or_datetime_columns
+from tab_err._utils import get_column, is_datetime_dtype, is_integer_dtype, is_numeric_dtype, new_series_like, select_numeric_or_datetime_columns
 
 from ._error_type import ErrorType
 
+if TYPE_CHECKING:
+    import narwhals as nw
 
 class Outlier(ErrorType):
     """Inserts outliers into a column by pushing data points outside the interquartile range (IQR) boundaries.
@@ -48,11 +51,9 @@ class Outlier(ErrorType):
         Returns:
             nw.Series: The data column, 'column', after Outlier errors at the locations specified by 'error_mask' are introduced.
         """
-        col_name = get_column_str(data, column)
         series = get_column(data, column)
         series_mask = get_column(error_mask, column)
         was_datetime = False
-        original_dtype = series.dtype
 
         # Get numpy arrays
         data_arr = series.to_numpy().copy()
@@ -93,7 +94,7 @@ class Outlier(ErrorType):
         data_arr[mask_upper] += perturbation_upper
 
         # Handle the mean values with a coin flip
-        n_equal = np.sum(mask_equal)
+        n_equal: int = int(np.sum(mask_equal))
         if n_equal > 0:
             coin_flips = self._random_generator.random(n_equal)
             perturbations = np.where(coin_flips > self.config.outlier_coin_flip_threshold, perturbation_upper, -perturbation_lower)
@@ -101,7 +102,7 @@ class Outlier(ErrorType):
 
         # Apply Gaussian noise to simulate the increase in measurement error of the outliers
         noise_std = self.config.outlier_noise_coeff * iqr
-        n_errors = np.sum(mask_arr)
+        n_errors: int = int(np.sum(mask_arr))
 
         if is_integer:
             data_arr[mask_arr] += np.rint(self._random_generator.normal(loc=0, scale=noise_std, size=n_errors))
@@ -114,4 +115,4 @@ class Outlier(ErrorType):
         elif is_integer:
             data_arr = data_arr.astype(np.int64)
 
-        return nw.new_series(col_name, data_arr.tolist(), backend=nw.get_native_namespace(data))
+        return new_series_like(data, column, data_arr)

@@ -3,13 +3,12 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any
 
-import narwhals as nw
-
 from tab_err._utils import seed_randomness_and_get_generator
 
 from ._config import ErrorTypeConfig
 
 if TYPE_CHECKING:
+    import narwhals as nw
     import numpy as np
 
 

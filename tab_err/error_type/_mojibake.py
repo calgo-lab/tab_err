@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import random
+from typing import TYPE_CHECKING
 
-import narwhals as nw
-
-from tab_err._utils import get_column, get_column_str, is_string_dtype, select_string_columns
+from tab_err._utils import get_column, is_string_dtype, new_series_like, select_string_columns
 
 from ._error_type import ErrorType
 
+if TYPE_CHECKING:
+    import narwhals as nw
 
 class Mojibake(ErrorType):
     """Inserts mojibake into a column containing strings."""
@@ -53,7 +54,6 @@ class Mojibake(ErrorType):
             "iso-8859-2": top10 - {"iso-8859-2", "windows-1250", "iso-8859-1", "windows-1252"},
         }
 
-        col_name = get_column_str(data, column)
         series = get_column(data, column)
         series_mask = get_column(error_mask, column)
 
@@ -77,4 +77,4 @@ class Mojibake(ErrorType):
                 if val is not None and isinstance(val, str):
                     data_arr[i] = val.encode(encoding_sender, errors="ignore").decode(encoding_receiver, errors="ignore")
 
-        return nw.new_series(col_name, data_arr.tolist(), backend=nw.get_native_namespace(data))
+        return new_series_like(data, column, data_arr)

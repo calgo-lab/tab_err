@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import random
+from typing import TYPE_CHECKING
 
-import narwhals as nw
+if TYPE_CHECKING:
+    import narwhals as nw
 
-from tab_err._utils import get_column, get_column_str, is_string_dtype, select_string_columns
+from tab_err._utils import get_column, is_string_dtype, new_series_like, select_string_columns
 
 from ._error_type import ErrorType
 
@@ -74,7 +76,6 @@ class Permutate(ErrorType):
         Returns:
             nw.Series: The data column, 'column', after Permutate errors at the locations specified by 'error_mask' are introduced.
         """
-        col_name = get_column_str(data, column)
         series = get_column(data, column)
         series_mask = get_column(error_mask, column)
 
@@ -83,10 +84,11 @@ class Permutate(ErrorType):
         mask_arr = series_mask.to_numpy()
 
         # Get separator counts for non-null values
-        separator_counts = []
-        for val in data_arr:
-            if val is not None and isinstance(val, str):
-                separator_counts.append(val.count(self.config.permutation_separator))
+        separator_counts = [
+            val.count(self.config.permutation_separator)
+            for val in data_arr
+            if val is not None and isinstance(val, str)
+        ]
 
         for i, count in enumerate(separator_counts):
             if count == 0:
@@ -121,4 +123,4 @@ class Permutate(ErrorType):
                     if val is not None and isinstance(val, str):
                         data_arr[i] = self._random_pattern_function(val)
 
-        return nw.new_series(col_name, data_arr.tolist(), backend=nw.get_native_namespace(data))
+        return new_series_like(data, column, data_arr)

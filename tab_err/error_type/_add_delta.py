@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import warnings
+from typing import TYPE_CHECKING
 
-import narwhals as nw
+if TYPE_CHECKING:
+    import narwhals as nw
 import numpy as np
 
-from tab_err._utils import get_column, get_column_str, is_datetime_dtype, is_numeric_dtype, select_numeric_or_datetime_columns
+from tab_err._utils import get_column, is_datetime_dtype, is_numeric_dtype, new_series_like, select_numeric_or_datetime_columns
 
 from ._error_type import ErrorType
 
@@ -39,7 +41,6 @@ class AddDelta(ErrorType):
         Returns:
             nw.Series: The data column, 'column', after AddDelta errors at the locations specified by 'error_mask' are introduced.
         """
-        col_name = get_column_str(data, column)
         series = get_column(data, column)
         series_mask = get_column(error_mask, column)
         was_datetime = False
@@ -62,13 +63,14 @@ class AddDelta(ErrorType):
             mean_val = np.nanmean(data_arr)
             std_val = np.nanstd(data_arr)
             random_choice = self._random_generator.choice(data_arr[~np.isnan(data_arr)])
-            self.config.add_delta_value = (random_choice - mean_val) / std_val if std_val != 0 else 0
+            delta_value = (random_choice - mean_val) / std_val if std_val != 0 else 0
+        else:
+            delta_value = self.config.add_delta_value
 
-        # Apply delta where mask is True
-        data_arr[mask_arr] += self.config.add_delta_value
+        data_arr[mask_arr] += delta_value
 
         if was_datetime:
             # Convert back to datetime (from seconds)
             data_arr = (data_arr * 10**9).astype("int64").astype("datetime64[ns]")
 
-        return nw.new_series(col_name, data_arr.tolist(), backend=nw.get_native_namespace(data))
+        return new_series_like(data, column, data_arr)

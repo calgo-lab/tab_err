@@ -7,7 +7,7 @@ import narwhals as nw
 
 from tab_err import ErrorMechanism, ErrorType, error_mechanism, error_type
 from tab_err._error_model import ErrorModel
-from tab_err._utils import check_data_emptiness, check_error_rate, create_empty_boolean_mask, seed_randomness_and_get_generator
+from tab_err._utils import check_data_emptiness, check_error_rate, seed_randomness_and_get_generator
 from tab_err.api import MidLevelConfig, mid_level
 
 if TYPE_CHECKING:
@@ -124,7 +124,7 @@ def _build_column_mechanism_dictionary(
         msg = "Possible conflict in error mechanisms to apply. Set at least on of: error_mechanisms_to_exclude or error_mechanisms_to_include to None."
         raise ValueError(msg)
 
-    columns_mechanisms = {}
+    columns_mechanisms: dict[int | str, list[ErrorMechanism]] = {}
 
     if error_mechanisms_to_include is not None and error_mechanisms_to_exclude is None:  # Include specified
         if not all(issubclass(type(cls), ErrorMechanism) for cls in error_mechanisms_to_include):  # Check input
@@ -177,7 +177,7 @@ def _build_column_number_of_models_dictionary(
     Returns:
         dict[int | str, int]: A dictionary mapping from column names to the number of error models to apply to that column.
     """
-    column_num_models = {}
+    column_num_models: dict[int | str, int] = {}
 
     for column in data.columns:
         column_num_models[column] = len(column_types[column]) * len(column_mechanisms[column])
@@ -202,7 +202,7 @@ def create_errors(  # noqa: PLR0913
     """Creates errors in a given DataFrame, at a rate of *approximately* max_error_rate.
 
     Args:
-        data (IntoDataFrame): The DataFrame to create errors in. Supports pandas, Polars, and other narwhals-compatible backends.
+        data (IntoDataFrame): The DataFrame to create errors in. Supports pandas, Polars, and (experimental) other narwhals-compatible backends.
         error_rate (float): The maximum error rate to be introduced to each column in the DataFrame.
         n_error_models_per_column (int, optional): The number of valid error models to apply to each column. Defaults to 1.
         error_types_to_include (list[ErrorType] | None, optional): A list of the error types to be included when building error models. Defaults to None.
@@ -231,7 +231,6 @@ def create_errors(  # noqa: PLR0913
 
     # Set Up Data
     data_copy = data_nw.clone()
-    error_mask = create_empty_boolean_mask(data_nw)
 
     # Build Dictionaries
     col_type = _build_column_type_dictionary(
@@ -271,5 +270,5 @@ def create_errors(  # noqa: PLR0913
         raise ValueError(msg)
 
     # Create Errors & Return (mid_level handles native conversion)
-    dirty_data, error_mask = mid_level.create_errors(nw.to_native(data_copy), config)
-    return dirty_data, error_mask
+    dirty_data_native, error_mask_native = mid_level.create_errors(nw.to_native(data_copy), config)
+    return dirty_data_native, error_mask_native

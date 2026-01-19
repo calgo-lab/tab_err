@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import warnings
+from typing import TYPE_CHECKING
 
-import narwhals as nw
+if TYPE_CHECKING:
+    import narwhals as nw
+
 import numpy as np
 
-from tab_err._utils import get_column, get_column_str, is_numeric_dtype, select_numeric_columns
+from tab_err._utils import get_column, is_numeric_dtype, new_series_like, select_numeric_columns
 
 from ._error_type import ErrorType
 
@@ -41,7 +44,6 @@ class WrongUnit(ErrorType):
             warnings.warn(msg, stacklevel=2)
             self.config.wrong_unit_scaling = lambda x: 10.0 * x
 
-        col_name = get_column_str(data, column)
         series = get_column(data, column)
         series_mask = get_column(error_mask, column)
 
@@ -54,4 +56,4 @@ class WrongUnit(ErrorType):
             if mask_arr[i]:
                 data_arr[i] = self.config.wrong_unit_scaling(data_arr[i])
 
-        return nw.new_series(col_name, data_arr.tolist(), backend=nw.get_native_namespace(data))
+        return new_series_like(data, column, data_arr)

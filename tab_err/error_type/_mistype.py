@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import narwhals as nw
-import numpy as np
 
 from tab_err._utils import get_column, get_column_str
 
@@ -60,9 +59,7 @@ class Mistype(ErrorType):
                 target_dtype = "object"
             elif current_dtype == nw.Int64:
                 target_dtype = "float64"
-            elif current_dtype == nw.Float64:
-                target_dtype = "int64"
-            elif current_dtype == nw.Boolean:
+            elif current_dtype in {nw.Float64, nw.Boolean}:
                 target_dtype = "int64"
             elif current_dtype.is_integer():
                 target_dtype = "float64"

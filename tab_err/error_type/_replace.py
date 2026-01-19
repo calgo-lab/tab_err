@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import warnings
+from typing import TYPE_CHECKING
 
-import narwhals as nw
+if TYPE_CHECKING:
+    import narwhals as nw
 
-from tab_err._utils import get_column, get_column_str, is_string_dtype, select_string_columns
+from tab_err._utils import get_column, is_string_dtype, new_series_like, select_string_columns
 
 from ._error_type import ErrorType
 
@@ -35,7 +37,6 @@ class Replace(ErrorType):
         Returns:
             nw.Series: The data column, 'column', after Replace errors at the locations specified by 'error_mask' are introduced.
         """
-        col_name = get_column_str(data, column)
         series = get_column(data, column)
         series_mask = get_column(error_mask, column)
 
@@ -51,15 +52,17 @@ class Replace(ErrorType):
             if valid_values:
                 random_row = self._random_generator.choice(len(valid_values))
                 random_val = valid_values[random_row]
-                self.config.replace_what = self._random_generator.choice(list(random_val))
+                replace_what = self._random_generator.choice(list(random_val))
             else:
-                self.config.replace_what = ""
+                replace_what = ""
+        else:
+            replace_what = self.config.replace_what
 
         # Apply replace where mask is True
         for i in range(len(data_arr)):
             if mask_arr[i]:
                 val = data_arr[i]
                 if val is not None and isinstance(val, str):
-                    data_arr[i] = val.replace(self.config.replace_what, self.config.replace_with)
+                    data_arr[i] = val.replace(replace_what, self.config.replace_with)
 
-        return nw.new_series(col_name, data_arr.tolist(), backend=nw.get_native_namespace(data))
+        return new_series_like(data, column, data_arr)
