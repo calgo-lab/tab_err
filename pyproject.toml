@@ -27,6 +27,7 @@ classifiers = [
 requires-python = ">=3.10,<3.15"
 dependencies = [
     "narwhals>=1.30.0",
+    "numpy>=1.24.0",
 ]
 
 [project.urls]
@@ -40,7 +41,6 @@ ci = [
     "tomli>=2.2.1",
 ]
 dev = [
-    "numpy>=1.24.0",
     "pandas>=2.0.0",
     "polars>=1.0.0",
     "pyarrow>=14.0.0",  # Required for polars.to_pandas()
