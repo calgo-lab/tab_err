@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     import narwhals as nw
+    import numpy as np
 
 from tab_err._utils import get_column, is_string_dtype, new_series_like, select_string_columns
 
@@ -61,6 +62,25 @@ class Permutate(ErrorType):
 
         return self.config.permutation_separator.join(new_string_as_part_list)
 
+    def _pattern_permutation(self, permutation_pattern: list[int], data_arr: np.ndarray, mask_arr: np.ndarray) -> np.ndarray:
+        """Permutates values of a series data_arr as specified in permutation_pattern."""
+        for i in range(len(data_arr)):
+            if mask_arr[i]:
+                val = data_arr[i]
+                if val is not None and isinstance(val, str):
+                    data_arr[i] = self._fixed_pattern_function(val, permutation_pattern)
+        return data_arr
+
+    def _random_permutation(self, data_arr: np.ndarray, mask_arr: np.ndarray) -> np.ndarray:
+        """Permutates values of a series data_arr using a new, random pattern for each value."""
+        for i in range(len(data_arr)):
+            if mask_arr[i]:
+                val = data_arr[i]
+                if val is not None and isinstance(val, str):
+                    data_arr[i] = self._random_pattern_function(val)
+
+        return data_arr
+
     def _apply(self: Permutate, data: nw.DataFrame, error_mask: nw.DataFrame, column: int | str) -> nw.Series:
         """Applies the `Permutate` `ErrorType` to a column of data.
 
@@ -98,29 +118,15 @@ class Permutate(ErrorType):
 
         if self.config.permutation_pattern is not None:  # Permutation of each entry from pattern.
             _check_column_format_consistency(separator_counts, column)
-            new_pattern = self.config.permutation_pattern
-
-            for i in range(len(data_arr)):
-                if mask_arr[i]:
-                    val = data_arr[i]
-                    if val is not None and isinstance(val, str):
-                        data_arr[i] = self._fixed_pattern_function(val, new_pattern)
+            data_arr = self._pattern_permutation(self.config.permutation_pattern, data_arr, mask_arr)
 
         elif self.config.permutation_automation_pattern == "fixed":  # Fixed permutation -- random once, applied to all.
             _check_column_format_consistency(separator_counts, column)
-            new_pattern = _generate_shuffle_pattern(separator_counts[0])
+            rnd_permutatin_pattern = _generate_shuffle_pattern(separator_counts[0])
 
-            for i in range(len(data_arr)):
-                if mask_arr[i]:
-                    val = data_arr[i]
-                    if val is not None and isinstance(val, str):
-                        data_arr[i] = self._fixed_pattern_function(val, new_pattern)
+            data_arr = self._pattern_permutation(rnd_permutatin_pattern, data_arr, mask_arr)
 
         else:  # Random permutation -- random for each entry.
-            for i in range(len(data_arr)):
-                if mask_arr[i]:
-                    val = data_arr[i]
-                    if val is not None and isinstance(val, str):
-                        data_arr[i] = self._random_pattern_function(val)
+            data_arr = self._random_permutation(data_arr, mask_arr)
 
         return new_series_like(data, column, data_arr)
