@@ -10,6 +10,7 @@ from ._error_type import ErrorType
 if TYPE_CHECKING:
     import narwhals as nw
 
+
 class Mojibake(ErrorType):
     """Inserts mojibake into a column containing strings."""
 

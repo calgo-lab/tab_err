@@ -9,6 +9,7 @@ from ._error_type import ErrorType
 if TYPE_CHECKING:
     import narwhals as nw
 
+
 class MissingValue(ErrorType):
     """Insert missing values into a column.
 

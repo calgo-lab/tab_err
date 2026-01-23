@@ -68,11 +68,7 @@ def test_datetime_dtype_preserved(backend: str) -> None:
 def test_nullable_int_dtype_preserved(backend: str) -> None:
     """Ensure nullable integer dtype is preserved after error injection."""
     raw = {"x": [1, 2, 3, 4]}
-    df = (
-        pd.DataFrame({"x": pd.Series(raw["x"], dtype="Int64")})
-        if backend == "pandas"
-        else pl.DataFrame({"x": pl.Series(raw["x"], dtype=pl.Int64)})
-    )
+    df = pd.DataFrame({"x": pd.Series(raw["x"], dtype="Int64")}) if backend == "pandas" else pl.DataFrame({"x": pl.Series(raw["x"], dtype=pl.Int64)})
 
     mutated, _mask = low_level.create_errors(
         df,

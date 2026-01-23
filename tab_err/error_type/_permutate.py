@@ -104,11 +104,7 @@ class Permutate(ErrorType):
         mask_arr = series_mask.to_numpy()
 
         # Get separator counts for non-null values
-        separator_counts = [
-            val.count(self.config.permutation_separator)
-            for val in data_arr
-            if val is not None and isinstance(val, str)
-        ]
+        separator_counts = [val.count(self.config.permutation_separator) for val in data_arr if val is not None and isinstance(val, str)]
 
         for i, count in enumerate(separator_counts):
             if count == 0:

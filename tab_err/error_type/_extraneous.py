@@ -11,6 +11,7 @@ from ._error_type import ErrorType
 if TYPE_CHECKING:
     import narwhals as nw
 
+
 class Extraneous(ErrorType):
     """Adds Extraneous strings around the values in a column."""
 

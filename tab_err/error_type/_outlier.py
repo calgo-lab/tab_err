@@ -11,6 +11,7 @@ from ._error_type import ErrorType
 if TYPE_CHECKING:
     import narwhals as nw
 
+
 class Outlier(ErrorType):
     """Inserts outliers into a column by pushing data points outside the interquartile range (IQR) boundaries.
 
