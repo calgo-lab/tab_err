@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Union, cast
+from typing import TYPE_CHECKING, cast
 
 from tab_err._utils import get_column, is_string_dtype, new_series_like, select_string_columns
 
@@ -24,7 +24,7 @@ class MissingValue(ErrorType):
     def _get_valid_columns(self: MissingValue, data: nw.DataFrame) -> list[str | int]:
         """If the config missing value is None, returns all columns. Otherwise, only the columns with string type."""
         if self.config.missing_value is None:
-            return cast("list[Union[str, int]]", list(data.columns))
+            return cast("list[str | int]", list(data.columns))
         return select_string_columns(data)
 
     def _apply(self: MissingValue, data: nw.DataFrame, error_mask: nw.DataFrame, column: int | str) -> nw.Series:

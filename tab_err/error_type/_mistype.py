@@ -1,6 +1,11 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import narwhals as nw
+
+if TYPE_CHECKING:
+    import numpy as np
 
 from tab_err._utils import get_column, get_column_str
 
@@ -22,6 +27,25 @@ class Mistype(ErrorType):
     def _get_valid_columns(self: Mistype, data: nw.DataFrame) -> list[str | int]:
         """Returns all column names of columns with dtypes other than object. This is necessary for the high level API."""
         return [col_name for col_name in data.columns if data[col_name].dtype != nw.Object]
+
+    def _convert_dtypes(self, data_arr: np.ndarray, mask_arr: np.ndarray, target_dtype: str) -> np.ndarray:
+        # Convert to object array to allow mixed types
+        result_arr = data_arr.astype(object)
+
+        # Apply type conversion where mask is True
+        for i in range(len(result_arr)):
+            if mask_arr[i]:
+                val = result_arr[i]
+                if target_dtype in ("int64", "Int64"):
+                    result_arr[i] = int(val) if val is not None else val
+                elif target_dtype in ("float64", "Float64"):
+                    result_arr[i] = float(val) if val is not None else val
+                elif target_dtype in ("object", "string"):
+                    result_arr[i] = str(val) if val is not None else val
+                else:
+                    msg = f"Unsupported dtype to cast into: {target_dtype}"
+                    raise ValueError(msg)
+        return result_arr
 
     def _apply(self: Mistype, data: nw.DataFrame, error_mask: nw.DataFrame, column: int | str) -> nw.Series:
         """Applies the Mistype ErrorType to a column of data. Note that the dtype of the column is changed by this operation.
@@ -73,22 +97,5 @@ class Mistype(ErrorType):
         data_arr = series.to_numpy().copy()
         mask_arr = series_mask.to_numpy()
 
-        # Convert to object array to allow mixed types
-        result_arr = data_arr.astype(object)
-
-        # Apply type conversion where mask is True
-        for i in range(len(result_arr)):
-            if mask_arr[i]:
-                val = result_arr[i]
-                try:
-                    if target_dtype in ("int64", "Int64"):
-                        result_arr[i] = int(val) if val is not None else val
-                    elif target_dtype in ("float64", "Float64"):
-                        result_arr[i] = float(val) if val is not None else val
-                    elif target_dtype in ("object", "string"):
-                        result_arr[i] = str(val) if val is not None else val
-                except (ValueError, TypeError):
-                    # Keep original value if conversion fails
-                    pass
-
+        result_arr = self._convert_dtypes(data_arr, mask_arr, target_dtype)
         return nw.new_series(col_name, result_arr.tolist(), backend=nw.get_native_namespace(data))
