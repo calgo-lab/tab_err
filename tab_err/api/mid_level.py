@@ -82,7 +82,6 @@ def create_errors(data: IntoDataFrame, config: MidLevelConfig | dict) -> tuple[I
             error_mask = error_mechanism.sample(data_nw, column, error_rate, error_mask)
 
             # Compute new error positions (where mask changed from False to True)
-            # We need to XOR the old and new masks to find new errors
             old_mask_col = old_error_mask[column if isinstance(column, str) else data_nw.columns[column]]
             new_mask_col = error_mask[column if isinstance(column, str) else data_nw.columns[column]]
 
