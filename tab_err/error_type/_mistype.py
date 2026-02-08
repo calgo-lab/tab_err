@@ -74,7 +74,10 @@ class Mistype(ErrorType):
                 raise TypeError(msg)
 
             target_dtype = self.config.mistype_dtype
-        else:  # no user-specified dtype, use heuristic to infer one
+        # no user-specified dtype, use heuristic to infer one -- that's the hard-coded logic below, with pairs of
+        # current_dtype and target_dtype that can be cast without raising errors. Not very principled approach, but
+        # works as a fallback.
+        else:
             current_dtype = series.dtype
             if current_dtype == nw.Object:
                 msg = "Cannot infer a dtype that is safe to cast to if the original dtype is 'object'."

@@ -19,7 +19,7 @@ class Replace(ErrorType):
         series = get_column(data, column)
 
         if not is_string_dtype(series):
-            msg = f"Column {column} does not contain values of the string dtype. Cannot Permutate values."
+            msg = f"Column {column} does not contain values of the string dtype. Cannot replace values."
             raise TypeError(msg)
 
     def _get_valid_columns(self: Replace, data: nw.DataFrame) -> list[str | int]:

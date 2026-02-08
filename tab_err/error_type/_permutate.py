@@ -118,9 +118,9 @@ class Permutate(ErrorType):
 
         elif self.config.permutation_automation_pattern == "fixed":  # Fixed permutation -- random once, applied to all.
             _check_column_format_consistency(separator_counts, column)
-            rnd_permutatin_pattern = _generate_shuffle_pattern(separator_counts[0])
+            rnd_permutation_pattern = _generate_shuffle_pattern(separator_counts[0])
 
-            data_arr = self._pattern_permutation(rnd_permutatin_pattern, data_arr, mask_arr)
+            data_arr = self._pattern_permutation(rnd_permutation_pattern, data_arr, mask_arr)
 
         else:  # Random permutation -- random for each entry.
             data_arr = self._random_permutation(data_arr, mask_arr)
