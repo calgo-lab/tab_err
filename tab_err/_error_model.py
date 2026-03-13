@@ -35,21 +35,19 @@ class ErrorModel:
                 f"error_type={self.error_type.__class__.__name__}, "
                 f"error_rate={self.error_rate})"
             )
-        else:
-            return (
-                f"{self.__class__.__name__}("
-                f"error_mechanism={self.error_mechanism.__class__.__name__}, "
-                f"error_type={self.error_type.__class__.__name__}, "
-                f"error_rate={self.error_rate})"
-            )
+        return (
+            f"{self.__class__.__name__}("
+            f"error_mechanism={self.error_mechanism.__class__.__name__}, "
+            f"error_type={self.error_type.__class__.__name__}, "
+            f"error_rate={self.error_rate})"
+        )
 
     def __str__(self) -> str:
         """Readable representation for end-users."""
         # Assumes error_rate is a float like 0.05. Displays as 5.0%.
         if self.error_mechanism.__class__ == EAR:
-            return f"ErrorModel: {self.error_rate:.1%} '{self.error_type.__class__.__name__}' errors via {self.error_mechanism.__class__.__name__} conditioning on column '{self.error_mechanism.condition_to_column}'"
-        else:
-            return f"ErrorModel: {self.error_rate:.1%} '{self.error_type.__class__.__name__}' errors via {self.error_mechanism.__class__.__name__}"
+            return f"ErrorModel: {self.error_rate:.1%} '{self.error_type.__class__.__name__}' errors via {self.error_mechanism.__class__.__name__} conditioning on column '{self.error_mechanism.condition_to_column}'"  # Noqa: E501
+        return f"ErrorModel: {self.error_rate:.1%} '{self.error_type.__class__.__name__}' errors via {self.error_mechanism.__class__.__name__}"
 
     def apply(self: ErrorModel, data: pd.DataFrame, column: str | int) -> tuple[pd.DataFrame, pd.DataFrame]:
         """Applies the defined ErrorModel to the given column of a pandas DataFrame.

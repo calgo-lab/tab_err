@@ -198,7 +198,10 @@ def create_errors(  # noqa: PLR0913
     error_mechanisms_to_exclude: list[ErrorMechanism] | None = None,
     seed: int | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Creates errors in a given DataFrame, at a rate of *approximately* max_error_rate. Allows for terse usage of create errors with config when information about errors is unnecessary.
+    """Creates errors in a given DataFrame, at a rate of *approximately* max_error_rate.
+
+    Description:
+        Functionally identical to `create_errors_with_config`, but allows for terser usage when detailed configuration is not needed.
 
     Args:
         data (pd.DataFrame): The pandas DataFrame to create errors in.
@@ -240,8 +243,12 @@ def create_errors_with_config(  # noqa: PLR0913
     error_mechanisms_to_include: list[ErrorMechanism] | None = None,
     error_mechanisms_to_exclude: list[ErrorMechanism] | None = None,
     seed: int | None = None,
-) -> tuple[pd.DataFrame, pd.DataFrame]:
+) -> tuple[pd.DataFrame, pd.DataFrame, MidLevelConfig]:
     """Creates errors in a given DataFrame, at a rate of *approximately* max_error_rate.
+
+    Description:
+        Builds a configuration of error models to apply to the DataFrame based on the input parameters and then applies the error models to the DataFrame.
+        Returns the dirty DataFrame, the error mask, and the configuration for reproducibility.
 
     Args:
         data (pd.DataFrame): The pandas DataFrame to create errors in.
