@@ -198,6 +198,49 @@ def create_errors(  # noqa: PLR0913
     error_mechanisms_to_exclude: list[ErrorMechanism] | None = None,
     seed: int | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Creates errors in a given DataFrame, at a rate of *approximately* max_error_rate. Allows for terse usage of create errors with config when information about errors is unnecessary.
+
+    Args:
+        data (pd.DataFrame): The pandas DataFrame to create errors in.
+        error_rate (float): The maximum error rate to be introduced to each column in the DataFrame.
+        n_error_models_per_column (int, optional): The number of valid error models to apply to each column. Defaults to 1.
+        error_types_to_include (list[ErrorType] | None, optional): A list of the error types to be included when building error models. Defaults to None.
+        error_types_to_exclude (list[ErrorType] | None, optional): A list of the error types to be excluded when building error models. Defaults to None.
+            When both error_types_to_include and error_types_to_exclude are none, the maximum number of default error types will be used.
+            At least one must be None or an error will occur.
+        error_mechanisms_to_include (list[ErrorMechanism] | None = None): A list of the error mechanisms to be included when building error models.
+            Defaults to None.
+        error_mechanisms_to_exclude (list[ErrorMechanism] | None = None): A list of the error mechanisms to be excluded when building error models.
+            Defaults to None.
+        seed (int | None, optional): Random seed. Defaults to None.
+
+    Returns:
+        tuple[pd.DataFrame, pd.DataFrame]:
+            - The first element is a copy of 'data' with errors.
+            - The second element is the associated error mask.
+    """
+    return create_errors_with_config(
+        data=data,
+        error_rate=error_rate,
+        n_error_models_per_column=n_error_models_per_column,
+        error_types_to_include=error_types_to_include,
+        error_types_to_exclude=error_types_to_exclude,
+        error_mechanisms_to_include=error_mechanisms_to_include,
+        error_mechanisms_to_exclude=error_mechanisms_to_exclude,
+        seed=seed,
+    )[:2]  # Drop the config from the return for this function.
+
+
+def create_errors_with_config(  # noqa: PLR0913
+    data: pd.DataFrame,
+    error_rate: float,
+    n_error_models_per_column: int = 1,
+    error_types_to_include: list[ErrorType] | None = None,
+    error_types_to_exclude: list[ErrorType] | None = None,
+    error_mechanisms_to_include: list[ErrorMechanism] | None = None,
+    error_mechanisms_to_exclude: list[ErrorMechanism] | None = None,
+    seed: int | None = None,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Creates errors in a given DataFrame, at a rate of *approximately* max_error_rate.
 
     Args:
@@ -266,4 +309,4 @@ def create_errors(  # noqa: PLR0913
 
     # Create Errors & Return
     dirty_data, error_mask = mid_level.create_errors(data_copy, config)
-    return dirty_data, error_mask
+    return dirty_data, error_mask, config
