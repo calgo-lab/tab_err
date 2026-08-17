@@ -188,7 +188,7 @@ def _build_column_number_of_models_dictionary(
     return column_num_models
 
 
-def create_errors(  # noqa: PLR0913
+def create_errors(  # noqa: PLR0913, PLR0917
     data: pd.DataFrame,
     error_rate: float,
     n_error_models_per_column: int = 1,
