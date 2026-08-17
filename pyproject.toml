@@ -82,6 +82,7 @@ ignore = [
     "TD003", # Allow TODOs without links
     "ISC003", # Do not implicitly concatenate strings
     "S101", # Allow testing methods
+    "CPY001", # Missing copyright at the top of file
 ]
 
 [tool.ruff.lint.per-file-ignores]
