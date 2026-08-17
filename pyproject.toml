@@ -1,6 +1,6 @@
 [project]
 name = "tab_err"
-version = "0.2.1"
+version = "0.2.2"
 description = "Fully-controllable error generation for tabular data."
 readme = "README.md"
 authors = [
@@ -82,6 +82,7 @@ ignore = [
     "TD003", # Allow TODOs without links
     "ISC003", # Do not implicitly concatenate strings
     "S101", # Allow testing methods
+    "CPY001", # We dont req. copyright at top of files
 ]
 
 [tool.ruff.lint.per-file-ignores]
