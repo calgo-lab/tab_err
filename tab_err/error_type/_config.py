@@ -61,6 +61,8 @@ class ErrorTypeConfig:
     encoding_sender: str | None = None
     encoding_receiver: str | None = None
 
+    numerictypo_keyboard_layout: str = "numpad"
+
     typo_keyboard_layout: str = "ansi-qwerty"
     typo_error_period: int = 10
 

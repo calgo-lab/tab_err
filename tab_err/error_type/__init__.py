@@ -6,6 +6,7 @@ from tab_err.error_type._extraneous import Extraneous
 from tab_err.error_type._missing import MissingValue
 from tab_err.error_type._mistype import Mistype
 from tab_err.error_type._mojibake import Mojibake
+from tab_err.error_type._numerictypo import NumericTypo
 from tab_err.error_type._outlier import Outlier
 from tab_err.error_type._permutate import Permutate
 from tab_err.error_type._replace import Replace
