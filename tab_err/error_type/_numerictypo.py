@@ -109,7 +109,7 @@ def numerictypo(value: str, layout: str = "numpad") -> str:
         return random.choice(list(neighbors.keys()))
 
     char_position = random.choice(list(range(len(value))))
-    
+
     new_choice = True
     new_char = ""
     while new_choice:
