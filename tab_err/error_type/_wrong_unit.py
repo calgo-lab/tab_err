@@ -42,10 +42,9 @@ class WrongUnit(ErrorType):
         if self.config.wrong_unit_scaling is None:
             msg = "No scaling function was supplied for WrongUnit, defaulting to multiplication by 10.0."
             warnings.warn(msg, stacklevel=2)
-            self.config.wrong_unit_scaling = lambda x: 10.0 * x
 
         series = get_column(data, column).copy()
         series_mask = get_column(error_mask, column)
 
-        series.loc[series_mask] = series.loc[series_mask].apply(self.config.wrong_unit_scaling)
+        series.loc[series_mask] = series.loc[series_mask].apply(self.config.wrong_unit_scaling or (lambda x: 10.0 * x))
         return series

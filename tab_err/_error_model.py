@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 import dataclasses
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from tab_err.api import low_level
+from tab_err.error_mechanism._error_mechanism import ErrorMechanism
+from tab_err.error_type._error_type import ErrorType
 
 if TYPE_CHECKING:
     import pandas as pd
-
-    from tab_err import ErrorMechanism, ErrorType
 
 
 @dataclasses.dataclass
@@ -42,3 +42,20 @@ class ErrorModel:
         )
 
         return data_with_errors, error_mask
+
+    def to_dict(self: ErrorModel) -> dict[str, Any]:
+        """Serializes the ErrorModel to a dict."""
+        return {
+            "error_mechanism": self.error_mechanism.to_dict(),
+            "error_type": self.error_type.to_dict(),
+            "error_rate": self.error_rate,
+        }
+
+    @staticmethod
+    def from_dict(data: dict[str, Any]) -> ErrorModel:
+        """Deserializes an ErrorModel from a dict."""
+        return ErrorModel(
+            error_mechanism=ErrorMechanism.from_dict(data["error_mechanism"]),
+            error_type=ErrorType.from_dict(data["error_type"]),
+            error_rate=data["error_rate"],
+        )

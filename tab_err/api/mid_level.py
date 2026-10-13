@@ -27,12 +27,14 @@ class MidLevelConfig:
 
     def to_dict(self: MidLevelConfig) -> dict[str, Any]:
         """Serializes the MidLevelConfig to a dict."""
-        return dataclasses.asdict(self)
+        return {"columns": {column: [model.to_dict() for model in models] for column, models in self.columns.items()}}
 
     @staticmethod
     def from_dict(data: dict[str, Any]) -> MidLevelConfig:
         """Deserializes the MidLevelConfig from a dict."""
-        return MidLevelConfig(**data)
+        from tab_err._error_model import ErrorModel  # noqa: PLC0415 - circular import
+
+        return MidLevelConfig({column: [ErrorModel.from_dict(model) for model in models] for column, models in data["columns"].items()})
 
 
 def create_errors(data: pd.DataFrame, config: MidLevelConfig | dict) -> tuple[pd.DataFrame, pd.DataFrame]:
