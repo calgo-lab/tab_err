@@ -234,7 +234,7 @@ def create_errors(  # noqa: PLR0913, PLR0917
     )[:2]  # Drop the config from the return for this function.
 
 
-def create_errors_with_config(  # noqa: PLR0913
+def create_errors_with_config(  # noqa: PLR0913, PLR0917
     data: pd.DataFrame,
     error_rate: float,
     n_error_models_per_column: int = 1,
