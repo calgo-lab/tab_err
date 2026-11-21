@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  ruff:
+    uses: ./.github/workflows/ruff.yaml
+  mypy:
+    uses: ./.github/workflows/mypy.yaml
+  tests:
+    uses: ./.github/workflows/tests.yaml
+
+  # Single required status check for the main branch ruleset.
+  # Fails if any job above failed, was cancelled or skipped.
+  ci-passed:
+    name: CI passed
+    if: always()
+    needs: [ruff, mypy, tests]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check results of all CI jobs
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped')
+        run: |
+          echo "At least one CI job did not succeed: ${{ toJSON(needs.*.result) }}"
+          exit 1
+      - run: echo "All CI jobs succeeded."

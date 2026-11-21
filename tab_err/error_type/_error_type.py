@@ -106,6 +106,7 @@ class ErrorType(ABC):
         return {
             "error_type": self.__class__.__name__,
             "config": self.config.to_dict(),
+            "seed": self._seed,
         }
 
     @classmethod
@@ -118,7 +119,9 @@ class ErrorType(ABC):
         Returns:
             ErrorType: An ErrorType object deserialized from the dictionary.
         """
-        error_type_name = data["error_type"]
-        error_type_class = globals()[error_type_name]
+        from tab_err import error_type  # noqa: PLC0415 - circular import
 
-        return error_type_class(data["config"])
+        error_type_name = data["error_type"]
+        error_type_class = getattr(error_type, error_type_name)
+
+        return error_type_class(data["config"], seed=data.get("seed"))

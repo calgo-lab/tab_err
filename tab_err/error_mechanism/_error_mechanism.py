@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import pandas as pd
 
@@ -102,3 +102,21 @@ class ErrorMechanism(ABC):
         Returns:
             pd.DataFrame: A Pandas `DataFrame` with `True` values at entries where an error should be introduced, `False` otherwise
         """
+
+    def to_dict(self: ErrorMechanism) -> dict[str, Any]:
+        """Serializes the ErrorMechanism to a dict."""
+        return {
+            "error_mechanism": self.__class__.__name__,
+            "condition_to_column": self.condition_to_column,
+            "seed": self._seed,
+        }
+
+    @classmethod
+    def from_dict(cls: type[ErrorMechanism], data: dict[str, Any]) -> ErrorMechanism:
+        """Deserializes an ErrorMechanism from a dict."""
+        from tab_err import error_mechanism  # noqa: PLC0415 - circular import
+
+        error_mechanism_name = data["error_mechanism"]
+        error_mechanism_class = getattr(error_mechanism, error_mechanism_name)
+
+        return error_mechanism_class(condition_to_column=data.get("condition_to_column"), seed=data.get("seed"))
