@@ -10,5 +10,6 @@ from tab_err.error_type._numerictypo import NumericTypo
 from tab_err.error_type._outlier import Outlier
 from tab_err.error_type._permutate import Permutate
 from tab_err.error_type._replace import Replace
+from tab_err.error_type._sticky_key import StickyKey
 from tab_err.error_type._typo import Typo
 from tab_err.error_type._wrong_unit import WrongUnit

@@ -23,6 +23,10 @@ class ErrorTypeConfig:
 
         typo_error_period (int): When using Typo, the period at which the error occurs. Defaults to 10.
 
+        sticky_key_min_repeats (int): Minimum number of additional character copies when using StickyKey. Defaults to 1.
+
+        sticky_key_max_repeats (int): Maximum number of additional character copies when using StickyKey. Defaults to 5.
+
         missing_value (str | None, optional): Token used to indicate missing values in Pandas. Defaults to None.
 
         mislabel_weighing (str): Weight of the distribution that mislables are drawn from. Either "uniform" or "frequency". Defaults to "uniform"
@@ -89,6 +93,9 @@ class ErrorTypeConfig:
     outlier_coin_flip_threshold: float = 0.5
     outlier_coefficient: float = 1.0
     outlier_noise_coeff: float = 0.1
+
+    sticky_key_min_repeats: int = 1
+    sticky_key_max_repeats: int = 5
 
     def to_dict(self: ErrorTypeConfig) -> dict[str, Any]:
         """Serializes the ErrorTypeConfig to a dict."""
